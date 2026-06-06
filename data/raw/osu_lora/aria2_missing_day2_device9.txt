@@ -1,0 +1,6 @@
+https://research.engr.oregonstate.edu/hamdaoui/RFFP-dataset/LoRa-Dataset/Diff_Days_Indoor_Setup/Day2/Device9/IQ_1.dat
+  dir=D:\llm4ee\data\raw\osu_lora\Diff_Days_Indoor_Setup\Day2\Device9
+  out=IQ_1.dat
+https://research.engr.oregonstate.edu/hamdaoui/RFFP-dataset/LoRa-Dataset/Diff_Days_Indoor_Setup/Day2/Device9/IQ_1.sigmf-meta
+  dir=D:\llm4ee\data\raw\osu_lora\Diff_Days_Indoor_Setup\Day2\Device9
+  out=IQ_1.sigmf-meta

@@ -1,0 +1,48 @@
+https://research.engr.oregonstate.edu/hamdaoui/RFFP-dataset/LoRa-Dataset/Diff_Days_Indoor_Setup/Day1/Device1/IQ_1.dat
+  dir=D:\llm4ee\data\raw\osu_lora\Diff_Days_Indoor_Setup\Day1\Device1
+  out=IQ_1.dat
+https://research.engr.oregonstate.edu/hamdaoui/RFFP-dataset/LoRa-Dataset/Diff_Days_Indoor_Setup/Day1/Device1/IQ_1.sigmf-meta
+  dir=D:\llm4ee\data\raw\osu_lora\Diff_Days_Indoor_Setup\Day1\Device1
+  out=IQ_1.sigmf-meta
+https://research.engr.oregonstate.edu/hamdaoui/RFFP-dataset/LoRa-Dataset/Diff_Days_Indoor_Setup/Day1/Device2/IQ_1.dat
+  dir=D:\llm4ee\data\raw\osu_lora\Diff_Days_Indoor_Setup\Day1\Device2
+  out=IQ_1.dat
+https://research.engr.oregonstate.edu/hamdaoui/RFFP-dataset/LoRa-Dataset/Diff_Days_Indoor_Setup/Day1/Device2/IQ_1.sigmf-meta
+  dir=D:\llm4ee\data\raw\osu_lora\Diff_Days_Indoor_Setup\Day1\Device2
+  out=IQ_1.sigmf-meta
+https://research.engr.oregonstate.edu/hamdaoui/RFFP-dataset/LoRa-Dataset/Diff_Days_Indoor_Setup/Day2/Device1/IQ_1.dat
+  dir=D:\llm4ee\data\raw\osu_lora\Diff_Days_Indoor_Setup\Day2\Device1
+  out=IQ_1.dat
+https://research.engr.oregonstate.edu/hamdaoui/RFFP-dataset/LoRa-Dataset/Diff_Days_Indoor_Setup/Day2/Device1/IQ_1.sigmf-meta
+  dir=D:\llm4ee\data\raw\osu_lora\Diff_Days_Indoor_Setup\Day2\Device1
+  out=IQ_1.sigmf-meta
+https://research.engr.oregonstate.edu/hamdaoui/RFFP-dataset/LoRa-Dataset/Diff_Days_Indoor_Setup/Day2/Device2/IQ_1.dat
+  dir=D:\llm4ee\data\raw\osu_lora\Diff_Days_Indoor_Setup\Day2\Device2
+  out=IQ_1.dat
+https://research.engr.oregonstate.edu/hamdaoui/RFFP-dataset/LoRa-Dataset/Diff_Days_Indoor_Setup/Day2/Device2/IQ_1.sigmf-meta
+  dir=D:\llm4ee\data\raw\osu_lora\Diff_Days_Indoor_Setup\Day2\Device2
+  out=IQ_1.sigmf-meta
+https://research.engr.oregonstate.edu/hamdaoui/RFFP-dataset/LoRa-Dataset/Diff_Receivers_Setup/Diff_Receivers_Setup_Indoor_SameTx/RX1/Device1_IQ.dat
+  dir=D:\llm4ee\data\raw\osu_lora\Diff_Receivers_Setup\Diff_Receivers_Setup_Indoor_SameTx\RX1
+  out=Device1_IQ.dat
+https://research.engr.oregonstate.edu/hamdaoui/RFFP-dataset/LoRa-Dataset/Diff_Receivers_Setup/Diff_Receivers_Setup_Indoor_SameTx/RX1/Device1_IQ.sigmf-meta
+  dir=D:\llm4ee\data\raw\osu_lora\Diff_Receivers_Setup\Diff_Receivers_Setup_Indoor_SameTx\RX1
+  out=Device1_IQ.sigmf-meta
+https://research.engr.oregonstate.edu/hamdaoui/RFFP-dataset/LoRa-Dataset/Diff_Receivers_Setup/Diff_Receivers_Setup_Indoor_SameTx/RX1/Device2_IQ.dat
+  dir=D:\llm4ee\data\raw\osu_lora\Diff_Receivers_Setup\Diff_Receivers_Setup_Indoor_SameTx\RX1
+  out=Device2_IQ.dat
+https://research.engr.oregonstate.edu/hamdaoui/RFFP-dataset/LoRa-Dataset/Diff_Receivers_Setup/Diff_Receivers_Setup_Indoor_SameTx/RX1/Device2_IQ.sigmf-meta
+  dir=D:\llm4ee\data\raw\osu_lora\Diff_Receivers_Setup\Diff_Receivers_Setup_Indoor_SameTx\RX1
+  out=Device2_IQ.sigmf-meta
+https://research.engr.oregonstate.edu/hamdaoui/RFFP-dataset/LoRa-Dataset/Diff_Receivers_Setup/Diff_Receivers_Setup_Indoor_SameTx/RX2/Device1_IQ.dat
+  dir=D:\llm4ee\data\raw\osu_lora\Diff_Receivers_Setup\Diff_Receivers_Setup_Indoor_SameTx\RX2
+  out=Device1_IQ.dat
+https://research.engr.oregonstate.edu/hamdaoui/RFFP-dataset/LoRa-Dataset/Diff_Receivers_Setup/Diff_Receivers_Setup_Indoor_SameTx/RX2/Device1_IQ.sigmf-meta
+  dir=D:\llm4ee\data\raw\osu_lora\Diff_Receivers_Setup\Diff_Receivers_Setup_Indoor_SameTx\RX2
+  out=Device1_IQ.sigmf-meta
+https://research.engr.oregonstate.edu/hamdaoui/RFFP-dataset/LoRa-Dataset/Diff_Receivers_Setup/Diff_Receivers_Setup_Indoor_SameTx/RX2/Device2_IQ.dat
+  dir=D:\llm4ee\data\raw\osu_lora\Diff_Receivers_Setup\Diff_Receivers_Setup_Indoor_SameTx\RX2
+  out=Device2_IQ.dat
+https://research.engr.oregonstate.edu/hamdaoui/RFFP-dataset/LoRa-Dataset/Diff_Receivers_Setup/Diff_Receivers_Setup_Indoor_SameTx/RX2/Device2_IQ.sigmf-meta
+  dir=D:\llm4ee\data\raw\osu_lora\Diff_Receivers_Setup\Diff_Receivers_Setup_Indoor_SameTx\RX2
+  out=Device2_IQ.sigmf-meta
