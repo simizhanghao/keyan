@@ -1,0 +1,214 @@
+1
+
+Towards Channel-Robust and Receiver-Independent
+Radio Frequency Fingerprint Identification
+
+arXiv:2512.12070v1 [cs.CR] 12 Dec 2025
+
+Jie Ma, Student Member, IEEE, Junqing Zhang, Senior Member, IEEE, Guanxiong Shen, Member, IEEE,
+Linning Peng, Member, IEEE, Alan Marshall, Senior Member, IEEE
+
+Abstract—Radio frequency fingerprint identification (RFFI)
+is an emerging method for authenticating Internet of Things
+(IoT) devices. RFFI exploits the intrinsic and unique hardware
+imperfections for classifying IoT devices. Deep learning-based
+RFFI has shown excellent performance. However, there are still
+remaining research challenges, such as limited public training
+datasets as well as impacts of channel and receive effects. In
+this paper, we proposed a three-stage RFFI approach involving contrastive learning-enhanced pretraining, Siamese networkbased classification network training, and inference. Specifically,
+we employed spectrogram as signal representation to decouple
+the transmitter impairments from channel effects and receiver
+impairments. We proposed an unsupervised contrastive learning
+method to pretrain a channel-robust RFF extractor. In addition, the Siamese network-based scheme is enhanced by data
+augmentation and contrastive loss, which is capable of jointly
+mitigating the effects of channel and receiver impairments.
+We carried out a comprehensive experimental evaluation using
+three public LoRa datasets and one self-collected LoRa dataset.
+The results demonstrated that our approach can effectively
+and simultaneously mitigate the effects of channel and receiver
+impairments. We also showed that pretraining can significantly
+reduce the required amount of the fine-tuning data. Our proposed
+approach achieved an accuracy of over 90% in dynamic non-lineof-sight (NLOS) scenarios when there are only 20 packets per
+device.
+Index Terms—Contrastive learning, device authentication, Internet of Things, radio frequency fingerprint identification,
+Siamese network, unsupervised learning
+
+I. I NTRODUCTION
+
+T
+
+HE increasing use of wireless devices has raised security
+concerns regarding device authentication in the Internet
+of Things (IoT) [2]. Conventional authentication methods
+rely on cryptographic algorithms combined with software
+Manuscript received xxx; revised xxx; accepted xxx. Date of publication
+xxx; date of current version xxx. The work of J. Zhang was supported
+in part by the UK Engineering and Physical Sciences Research Council
+(EPSRC) under grant ID EP/Y037197/1 and in part by the UK Royal Society
+Research Grants RGS\R1\231435. This article was presented in part at the
+IEEE WCNC 2025 [1]. For the purpose of open access, the authors have
+applied a Creative Commons Attribution (CC BY) licence to any Accepted
+Manuscript version arising. The review of this paper was coordinated by xxx.
+(Corresponding author: Junqing Zhang.)
+J. Ma, J. Zhang, and A. Marshall are with the School of Computer
+Science and Informatics, University of Liverpool, Liverpool, L69 3DR, United
+Kingdom. (email: Jie.Ma@liverpool.ac.uk; Junqing.Zhang@liverpool.ac.uk;
+Alan.Marshall@liverpool.ac.uk)
+G. Shen and L. Peng are with the School of Cyber Science and Engineering, Southeast University, Nanjing, China. (email: gxshen@seu.edu.cn;
+pengln@seu.edu.cn)
+Color versions of one or more of the figures in this paper are available
+online at http://ieeexplore.ieee.org.
+Digital Object Identifier xxx
+
+addresses. However, cryptographic approaches rely on complicated mathematical algorithms, which tend to be computationally expensive. Many IoT devices are only equipped
+with limited processing capability and cannot afford costly
+cryptographic schemes [3]. Moreover, software addresses, e.g.,
+media access control (MAC) addresses, can be easily tampered
+with. Therefore, there is a strong need for a low-complexity
+and reliable authentication scheme that is applicable to low
+cost IoT devices.
+Radio frequency fingerprint identification (RFFI) is a
+lightweight physical layer-based device authentication technique [2]. It identifies wireless devices by analyzing the unique
+distortion of the received waveform caused by the imperfections of hardware components. The imperfection comes from
+the transmitter chain of the wireless device, such as mixers, oscillators, power amplifiers, etc [4]. These components deviate
+slightly from their nominal specifications due to the inevitable
+manufacturing process variations. It manifests as hardware
+imperfections such as I/Q imbalance, carrier frequency offset
+(CFO), and power amplifier non-linearity [5]–[12].
+An RFFI system typically involves a few transmitters, also
+known as devices under test (DUTs), and one or multiple
+receivers. A receiver will capture the physical layer waveform
+with the hardware impairments embedded. It will then predict
+the device identity based on the wireless signals by extracting
+unique features, using an RFFI engine. Deep learning has
+been the core of the RFFI engine to extract the discriminative
+features from interrelated hardware impairments [13]–[26].
+In the last decade, deep learning has demonstrated excellent
+capabilities in feature extraction and classification, leading
+to significant progress in image processing, natural language
+processing, etc [27]. However, RFFI tackles RF signals, which
+are different from images, videos, or text [28]. There are
+unique challenges to deep learning-based RFFI, such as limited
+public datasets [29], varying channel effects [30], [31], and the
+hardware impairments of the receiver [32], [33], etc.
+Deep learning training is data-hungry, which requires a large
+amount of labelled training datasets. Acquiring a sufficient
+amount of training signals requires substantial collection and
+labour costs. It is common to fine-tune a pretrained model
+with a similar task in the deep learning community. However,
+most of the RFFI literature trains deep learning models from
+scratch [13]–[26], with a few exceptions [29], [34], [35]. Xu et
+al. [34] constructs a pretrained encoder using an unsupervised
+learning method, but overlooked several key factors, such as
+channels and receivers. Shen et al. [35] pretrained an RFF
+extractor in a supervised learning manner, but such a labelled
+
+2
+
+training dataset may not always be available. The work in [29]
+adopted federated learning to train an RFF extractor among
+several edge receivers. However, distributed training may not
+be necessary when centralized training can be done offline,
+which will be less complicated.
+The varying channel effects will impact the RFF extraction
+because the multipath will distort the received signals [36]. It
+is very common that RFFI will be subject to various channel
+effects, especially in mobile IoT systems, which calls for channel mitigation approaches. Such approaches can be categorized
+into signal processing-based methods and deep learning-based
+methods. Signal processing-based methods carefully design
+algorithms to eliminate channel effects, but preserve hardware
+impairments. For example, the work in [35] proposed channel
+independent spectrogram, which mitigates the channel effect
+by dividing the adjacent columns of the spectrogram. Channel
+equalization is also adopted for RFFI [36]. However, these
+algorithms may accidentally erase some hardware impairments. In addition, designing such algorithms require expert
+understanding on the signal features, which is not trivial.
+Regarding deep learning-based methods, data augmentation is
+widely employed [35], [37]. Specifically, data augmentation
+enriches the channel effects by simulation in the training stage,
+to make the training dataset as generalizable as possible. While
+the effectiveness of data augmentation has been demonstrated,
+it is not possible to emulate all the possible channel effects
+that will occur in the test stage.
+The receiver hardware impairments also affect the RFFI
+performance, when multiple receivers are involved and/or
+different receivers are used in the deep learning training
+and test [32], [33], [38]–[40]. The work in [38] incorporates
+adversarial training to learn receiver-independent features by
+utilizing the gradient reversal layer to mitigate the influence
+of receivers. Zhao et al. [33] employs generative adversarial
+networks (GANs) to address the receiver-related challenges.
+However, a substantial volume of labelled datasets is essential
+for developing the system, particularly in the first phase,
+involving over one million signals, along with 50 transmitters
+and 28 receivers. Zha et al. [39] proposes a cross-receiver RFF
+learning based on contrastive learning. However, the evaluation
+is limited as only two types of USRP software-defined radio
+(SDR) platforms were involved as receivers. In [32], a global
+domain adaptation approach based on adversarial training,
+along with a subdomain adaptation method leveraging Local
+Maximum Mean Discrepancy (LMMD), is introduced to facilitate the extraction of receiver-independent features. Zhang et
+al. [40] proposes a separability condition aimed at minimizing
+the classification error probability at a new receiver.
+Although previous studies have addressed channel and receiver challenges in RFFI, their effects are mitigated separately. In practice, these effects are highly likely to exist in
+the same system, e.g., in a mobile IoT system with multiple
+receivers. Joint mitigation of channel and receiver effects is
+essential but currently missing.
+This paper proposed a three-stage approach involving contrastive learning-based pretraining, Siamese network-based
+RFFI classification network training, and inference, in order
+to tackle the challenges posed by limited training datasets as
+
+well as channel and receiver effects. We first pretrained an
+RFF feature extractor using unsupervised contrastive learning.
+Then, we fine-tuned a Siamese network-based RFFI classification network to jointly mitigate channel and receiver
+variations. During the inference stage, the received samples are
+fed into the trained neural network for device identification.
+Extensive experimental evaluations have been carried out by
+using three public LoRa datasets [35], [38], [41]. Additionally,
+we constructed a testbed consisting of ten LoRa DUTs and
+six SDR platforms as receivers; we collected a dataset that
+includes dynamic channel variations and multiple receivers.
+We carried out comprehensive experimental evaluations to
+assess the performance of pretraining and classification. Our
+technical contributions are summarized as follows.
+We used the spectrogram as the signal representation,
+which decouples transmitter impairments, channel effects,
+and receiver impairments without resulting in information
+loss.
+• We pretrained an RFF feature extractor using unsupervised contrastive learning and publicly available training
+datasets. Since it is unsupervised learning, the label
+space is not required, which allows us to freely choose
+public resources. Data augmentation is adopted to train a
+channel-robust feature extractor.
+• We designed a Siamese network-based RFFI classification network, enhanced by data augmentation and
+contrastive loss. We specifically constructed two finetuning datasets from two receivers for all the DUTs.
+A pair of these two signals from the same DUT but
+different receivers were augmented by channel effects.
+The contrastive learning then jointly mitigates the channel
+and receiver effects.
+• We carried out extensive experimental evaluations on
+three labelled datasets for training/fine-tuning and one
+unlabelled dataset for pretraining. The experiment results
+demonstrated that pretraining is effective, especially when
+the fine-tuning data is limited. In addition, the channel
+and receiver effects can also be eliminated effectively by
+the Siamese network-based RFFI.
+•
+
+In our previous work [1], we showed that the contrastive
+learning-based RFFI system is robust to channel variation. Moreover, compared with IQ signals, spectrogram, and
+channel-independent spectrogram, the spectrogram with contrastive learning showed a higher accuracy in both static and
+dynamic channels. This paper further extended our previous
+work by jointly solving the impacts of channel and receivers
+via a Siamese network with contrastive learning. In addition,
+we explored the importance of the pretrain model in scenarios
+with a limited number of training samples. We also carried
+out a more comprehensive experimental evaluation.
+The rest of the paper is organized as follows. Section II
+introduces the background and problem statement. Section III
+outlines our proposed system. Then, the detailed design methods of the Siamese-based RFFI and contrastive learning-based
+pretraining are elaborated in Sections IV and V, respectively.
+The experimental setup and involved datasets are introduced
+in Section VI. Sections VII and VIII present the experimen-
+
+

@@ -1,0 +1,251 @@
+1
+
+Towards Scalable and Channel-Robust Radio
+Frequency Fingerprint Identification for LoRa
+
+arXiv:2107.02867v1 [eess.SP] 6 Jul 2021
+
+Guanxiong Shen, Junqing Zhang, Alan Marshall, Senior Member, IEEE, and Joseph Cavallaro, Fellow, IEEE
+
+Abstract—Radio frequency fingerprint identification (RFFI)
+is a promising device authentication technique based on the
+transmitter hardware impairments. In this paper, we propose a
+scalable and robust RFFI framework achieved by deep learning
+powered radio frequency fingerprint (RFF) extractor. Specifically,
+we leverage the deep metric learning to train an RFF extractor,
+which has excellent generalization ability and can extract RFFs
+from previously unseen devices. Any devices can be enrolled
+via the pre-trained RFF extractor and the RFF database can
+be maintained efficiently for allowing devices to join and leave.
+Wireless channel impacts the RFF extraction and is tackled by
+exploiting channel independent feature and data augmentation.
+We carried out extensive experimental evaluation involving 60
+commercial off-the-shelf LoRa devices and a USRP N210 software defined radio platform. The results have successfully demonstrated that our framework can achieve excellent generalization
+abilities for device classification and rogue device detection as
+well as effective channel mitigation.
+Index Terms—Internet of things, device authentication, radio
+frequency fingerprint identification, deep learning, LoRa
+
+I. I NTRODUCTION
+With the rapid growth in the population of the Internet of
+things (IoT) devices, their security is becoming increasingly
+important. Device authentication is required to prevent the
+intrusion of rogue devices that may execute harmful processes
+or access to private data [1]. It is usually achieved by cryptographic schemes such as the common challenge-responsebased protocols. These schemes require a common key preshared which may be difficult for IoT devices because they are
+usually low-cost and power constrained [2]. They also rely on
+software addresses such as MAC address, which can however
+be tampered with easily.
+Lightweight and reliable device authentication is thus urgently required for ensuring IoT security. Radio frequency fingerprint identification (RFFI) is a promising non-cryptographic
+technique that relies on the device intrinsic hardware impairments of radio frequency (RF) components generated during
+Manuscript received xxx; revised xxx; accepted xxx. Date of publication
+xxx; date of current version xxx. The work was in part supported by
+UK Royal Society Research Grants under grant ID RGS/R1/191241 and
+National Key Research and Development Program of China under grant
+ID 2020YFE0200600. The review of this paper was coordinated by xxx.
+(Corresponding author: Junqing Zhang.)
+G. Shen, J. Zhang and A. Marshall are with the Department of Electrical Engineering and Electronics, University of Liverpool, Liverpool,
+L69 3GJ, United Kingdom. (email: Guanxiong.Shen@liverpool.ac.uk; junqing.zhang@liverpool.ac.uk; alan.marshall@liverpool.ac.uk)
+J. Cavallaro is with the Department of Electrical and Computer Engineering,
+Rice University, Houston, USA. (email: cavallar@rice.edu)
+Color versions of one or more of the figures in this paper are available
+online at http://ieeexplore.ieee.org.
+Digital Object Identifier xxx
+
+the manufacturing process. The hardware characteristics of
+these components slightly deviate from their nominal values
+but the deviation is so small that the normal communication
+functionality is not affected. These hardware features are
+unique and difficult to be tampered with, thus they can be
+treated as the fingerprint of IoT devices, in a similar manner as
+the biometrics of human beings. The transmitter hardware impairments will distort the transmission waveform, from which
+the receiver can infer the transmitter identity by extracting
+the device-specific radio frequency fingerprints (RFFs). RFFI
+can thus identify transmitters on a per-packet basis. All the
+RFFI operations are completed at the receiver and there is
+no modification of the transmitter. Hence, it is particularly
+suitable for power-constrained and low-cost IoT devices.
+The existing RFFI work can be categorized into traditional
+RFF extractor-based and deep learning-based approaches. The
+former relies on the manually designed RFF extractor to obtain
+hardware features such as IQ imbalance [3], [4], CFO [4]–[9],
+signal transient part [10], [11], power spectral density [12],
+[13], power amplifier non-linearity [14], beam pattern [15], etc.
+However, such schemes are highly dependent on the quality
+of the designed feature extraction algorithms and require a
+deep understanding on the adopted communication protocol.
+Some hardware characteristics are interrelated with each other,
+making it challenging to extract each feature individually.
+On the other hand, deep learning-based approaches usually
+rely on a classification neural network to process raw signals
+and directly infer device identity without the need of feature
+engineering, which has attracted wide attention in recent
+years [16]–[35].
+While deep learning-based RFFI has excellent classification
+accuracy, it suffers from the limited scalability and channel
+robustness issues, as shown in Fig. 1. The number of neurons
+of the softmax layer in deep learning-based RFFI systems
+is unchangeable after training, which restricts the RFFI to a
+close-set problem. Hence, the scalability of such design is limited as only a fixed number of devices can be identified [36],
+[37], which raises two concerns:
+The deep learning model needs to be re-trained whenever
+legitimate devices join and leave the IoT network, which
+is time-consuming.
+• Rogue devices cannot be predicted and their data is usually not available for training. During the classification,
+they will be classified as the legitimate devices with the
+most similar characteristics in the training categories [20],
+[22], [29], which is not acceptable.
+•
+
+Moreover, all the RFFI systems are subject to channel effects
+
+2
+
+Training devices
+
+Rogue device
+
+This packet is
+sent from Dev 1
+
+……
+
+Data
+Augmentation
+Preprocessing
+
+Training
+
+Train RFF
+Extractor
+Channel independent
+spectrogram
+
+Legitimate devices
+
+Dev 1
+
+RFFI system
+
+Dev 2
+Device moving
+Dev 3
+
+(channel changes)
+
+Preprocessing
+
+……
+Devices to be
+identified
+
+Preprocessing
+
+……
+
+Fig. 1: IoT networks secured by RFFI. Deep learning-based
+RFFI systems suffer from limited scalability and channel
+robustness.
+
+as the received signal is not only distorted by hardware
+impairments but also the wireless channel.
+In our prior work, we explored the selection of signal representation (IQ samples, FFT coeefficients and spectrogram),
+stability, and deep learning models for RFFI systems [38].
+However, the above mentioned challenges, i.e., the scalability
+and channel robustness, are not well addressed. This paper
+aims to design a scalable and channel-agnostic RFFI system.
+To achieve this, our approach introduces an enrollment stage
+and uses k-nearest neighbor (k-NN) to replace the softmax
+layer for recognition. The channel independent spectrogram
+is also constructed to mitigate channel effects. Extensive
+experiments were carried out with 60 commercial off-the-shelf
+LoRa devices of four models at various channel conditions to
+demonstrate the excellent performance of the proposed RFFI
+system. Our contributions are highlighted as follows.
+We design a scalable RFFI framework based on a deep
+metric learning-powered RFF extractor, which enables
+device joining and leaving without the need for retraining. It maintains an RFF database by enrolling a new
+device using the pre-trained RFF extractor or deleting the
+record of a leaving device.
+• We propose a channel robust RFFI protocol by constructing the channel independent spectrogram and exploiting
+data augmentation. The channel independent spectrogram
+can mitigate the channel effect in the time-frequency
+domain while reserving the RFF of the LoRa signal. The
+data augmentation is carefully designed to represent real
+channel conditions with both multipath and Doppler shift.
+• We conduct extensive experiments involving different
+LoRa devices, various channel conditions and antenna
+polarization. We experimentally demonstrate that the RFF
+extractor is able to extract features from devices that
+are not present during training, even they are from
+other manufacturers. The proposed channel independent
+spectrogram is shown to be effective in mitigating the
+channel effect and data augmentation can further increase
+the system robustness. Antenna polarization is found to
+affect the classification performance.
+
+•
+
+This paper provides a general RFFI framework and studies
+LoRa as an example. LoRa devices are manufactured with
+
+Enrollment
+
+Identification
+
+RFF Extractor
+
+RFF Database
+
+Channel independent
+spectrogram
+
+RFF Extractor
+Channel independent
+spectrogram
+
+Rogue Device
+Detection
+Device
+Classification
+
+Fig. 2: System diagram of the proposed RFFI system.
+low-cost components therefore have abundant hardware impairments, which are suitable for RFFI. Moreover, the commercial LoRaWAN specification defines cryptography-based
+device authentication schemes. The root keys are assigned
+to the end-nodes during fabrication and secure storage of
+them is a huge challenge. The proposed RFFI can provide an
+alternative method to identify and authenticate LoRa devices.
+The rest of the paper is organized as follows. Section II
+shows the system overview. Section III introduces the LoRa
+signal processing. Section IV presents the procedure of constructing the channel independent spectrogram. The training of
+RFF extractor is introduced in Section V while the enrollment
+and identification of RFFI systems is introduced in Section VI.
+Section VII provides extensive evaluation results to show the
+system performance. Section VIII and Section IX introduces
+related work and concludes the paper, respectively.
+II. S YSTEM OVERVIEW
+The proposed system is based the deep learning-powered
+RFF extractor. As shown in Fig. 2, it involves training,
+enrollment and identification stages.
+Training: The training stage will leverage the outstanding
+feature extraction capability of deep learning to generate an
+RFF extractor rather than a classification neural network.
+Specifically, a large number of training packets are collected
+from numerous training devices. The data augmentation is
+used to increase channel diversity. The training samples are
+then transformed to channel independent spectrograms to
+mitigate channel effects. Finally, we leverage the triplet loss
+in deep metric learning to train the extractor. The input of the
+RFF extractor is a 2-D channel independent spectrogram, and
+the output is a vector consists of 512 elements, which is the
+unique RFF of that device.
+The training only needs to be done once as the trained RFF
+extractor is able to extract unique RFFs from out-of-library
+(unseen) devices. The training devices are not necessarily the
+same as the ones for enrollment and identification. The training
+can be done by a third party that owns massive data collected
+from a huge number of devices to train an RFF extractor with
+excellent generalization capability.
+Enrollment: The enrollment will obtain the RFFs of legitimate devices using the RFF extractor. These are the actual
+working devices in an IoT network, which are probably
+
+

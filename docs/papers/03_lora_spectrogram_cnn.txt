@@ -1,0 +1,203 @@
+Radio Frequency Fingerprint Identification for LoRa
+Using Spectrogram and CNN
+Guanxiong Shen∗ , Junqing Zhang∗§ , Alan Marshall∗ , Linning Peng† , and Xianbin Wang‡
+∗ Department of Electrical Engineering and Electronics, University of Liverpool, Liverpool, L69 3GJ, United Kingdom
+
+Email: {Guanxiong.Shen, junqing.zhang, alan.marshall}@liverpool.ac.uk
+† School of Cyber Science and Engineering, Southeast University, No. 2 Sipailou, Nanjing, China
+
+Email: pengln@seu.edu.cn
+
+arXiv:2101.01668v1 [eess.SP] 30 Dec 2020
+
+‡ Department of Electrical and Computer Engineering, Western University, London, Ontario, N6A 5B9, Canada
+
+Email: xianbin.wang@uwo.ca
+§ Corresponding Author
+Abstract—Radio frequency fingerprint identification (RFFI) is
+an emerging device authentication technique that relies on intrinsic hardware characteristics of wireless devices. We designed an
+RFFI scheme for Long Range (LoRa) systems based on spectrogram and convolutional neural network (CNN). Specifically, we
+used spectrogram to represent the fine-grained time-frequency
+characteristics of LoRa signals. In addition, we revealed that
+the instantaneous carrier frequency offset (CFO) is drifting,
+which will result in misclassification and significantly compromise
+the system stability; we demonstrated CFO compensation is an
+effective mitigation. Finally, we designed a hybrid classifier that
+can adjust CNN outputs with the estimated CFO. The mean value
+of CFO remains relatively stable, hence it can be used to rule
+out CNN predictions whose estimated CFO falls out of the range.
+We performed experiments in real wireless environments using
+20 LoRa devices under test (DUTs) and a Universal Software
+Radio Peripheral (USRP) N210 receiver. By comparing with the
+IQ-based and FFT-based RFFI schemes, our spectrogram-based
+scheme can reach the best classification accuracy, i.e., 97.61%
+for 20 LoRa DUTs.
+Index Terms—Internet of Things, LoRa, device authentication,
+radio frequency fingerprint, convolutional neural network, carrier frequency offset
+
+I. I NTRODUCTION
+The Internet of things (IoT) applications are blooming with
+numerous exciting applications such as connected healthcare,
+smart cities and intelligent industries [1]. Statista estimated
+there would be 75.44 billion IoT devices by 20251 . Device
+authentication is critical to safeguard IoT applications for allowing legitimate users to access the network while preventing
+malicious users [2]. This task is becoming more challenging
+with the rapid growth of low cost IoT devices. Conventional
+authentication schemes rely on software addresses such as
+Internet Protocol (IP) and/or Media Access Control (MAC)
+addresses, which are prone to be tampered or forged [3]. Once
+the security credentials are obtained by malicious users, they
+can masquerade as the legitimate users to access the private
+data or launch fatal attacks on the IoT networks.
+Radio frequency fingerprint identification (RFFI) is a
+promising authentication scheme that can identify wireless
+1 https://www.statista.com/statistics/471264/iot-number-of-connecteddevices-worldwide/
+
+devices from their emitted transmissions [2], [4], [5]. Radio
+frequency fingerprint (RFF) is originated from the hardware
+imperfections introduced during the manufacturing process,
+which is inherent to the analog front-end components. These
+imperfections deviate slightly from their nominal specifications hence do not affect the normal communication functions;
+but we can design advanced algorithms to extract them as a
+device identifier. Similar to a biometric fingerprint, RFF is
+unique and hard to tamper without tremendous efforts.
+RFFI consists of two stages, namely training and classification. During the training stage, an authenticator will collect
+sufficient wireless packets from devices under test (DUTs),
+then extract features from the received packets to train a classifier. Various features are considered in previous work including
+Hilbert spectrum [6], carrier frequency offset (CFO) [7]–
+[11], inphase and quadrature (IQ) offset [12], spectrum [13],
+time-frequency statistics [14], phase error [12], and power
+amplifier nonlinearity [15], etc. During the classification stage,
+the authenticator will extract the same type of features from
+received packets, feed them to the trained classifier and infer
+the device identity.
+Compared with conventional cryptography-based security
+schemes [3], one major advantage of RFFI is that it does
+not impose any additional computational burden and power
+consumption on the devices to be authenticated [2], [16]. This
+is particularly desirable for many IoT applications because
+most of the end nodes are low-cost with limited computational
+and energy resources. For instance, RFFI could be utilized
+in Long Range (LoRa) networks to relieve the severe battery
+power constraint of LoRa devices.
+RFFI can be considered as a multi-class classification problem, hence the most recent development on deep learning
+could be leveraged [17]–[26]. Manually extracting handcrafted
+features requires comprehensive knowledge on the adopted
+communication technology and protocol. In addition, it is
+difficult to estimate each individual feature accurately as the
+hardware imperfections are interrelated [27]. Deep learning
+algorithms can automatically extract features from the received
+signals and can extract more distinguishable and high-level
+fingerprints [18]. Deep learning-based RFFI systems are built
+
+with the latest convolutional neural network (CNN) [17]–[25]
+or recurrent neural network (RNN) such as long short-term
+memory (LSTM) [26]. Most of them often use the IQ samples
+as the network input [17]–[21], which may not be the best
+solution as the signal characteristics is not explicit in the time
+domain. The system performance can be improved by transforming IQ samples and obtaining more distinguishable signal
+representations, such as bispectrum [22], [23], differential
+constellation trace figure [24], Hilbert-Huang spectrum [25],
+error signal [17], etc. During the classification stage, softmax
+function is often used in neural networks to return a list
+of probabilities with respect to the classes, indicating the
+confidence of the predictions. In some cases, the classifier
+is not confident about its prediction, i.e, confidence score is
+low and the probabilities of several classes are quite close.
+However, there is no existing work to leverage this confidence
+information to calibrate the uncertain predictions.
+As a device authentication scheme, RFFI should remain
+stable [2]. Robyns et al. [28] indicated that the accuracy
+of their system dropped over time and inferred this was
+caused by oscillator frequency drift. However, the authors
+did not provide an in-depth analysis or mitigation methods.
+Andrews et al. [29] experimentally examined the effect of
+temperature variation on different analog components, e.g.
+oscillator, power amplifier, phase locked loop, mixer, etc.,
+and concluded that the oscillator is particularly sensitive to
+temperature fluctuations. While CFO has been successfully
+used to identify WiFi devices [10], [11], it was also observed
+that low-cost ZigBee devices have severe CFO variations even
+within 15 minutes [18], [30]. A comprehensive investigation
+of the CFO variation on low cost IoT devices and its effect
+on the RFFI is still missing.
+In this paper, we take LoRa as a case study to investigate the
+above challenges. LoRa is a physical layer standard developed
+by Cycleo and patented by Semtech in 2014 [31], which has
+been widely used for long range IoT applications. LoRaWAN,
+a higher layer protocol for LoRa, relies on cryptography-based
+schemes for device registration, namely Over The Air Activation (OTAA) and Activation by Personalization (ABP) [32],
+which are prone to be tampered by malicious users. Therefore,
+the emerging RFFI technique is promising for LoRa device
+authentication. To the best knowledge of the authors, there
+are three papers on the LoRa RFFI [26], [28], [33]. LoRa
+employes chirp spread spectrum (CSS) modulation which
+exhibits time-frequency characteristics, which can be explicitly
+revealed in spectrogram. However, none of them considered
+the unique modulation techniques of LoRa, which may not be
+able to reach optimal performance. In addition, LoRa devices
+are low cost and usually manufactured with cheap components
+including oscillators. The effect of CFO variation on the LoRa
+RFFI has never been investigated.
+This paper designs a CNN-based RFFI system to classify
+LoRa devices. We aim to answer three questions: (1) Can
+we employ a signal representation that is unique to LoRa
+modulation and improve the classification accuracy? (2) How
+does the CFO variation affect the RFFI stability and can
+
+we mitigate it? (3) Can we leverage the probabilities of the
+softmax output to further enhance the deep learning-based
+RFFI? We carried out an in-depth investigation and extensive
+experiments that involved 20 LoRa devices as DUTs and a
+Universal Software Radio Peripheral (USRP) N210 software
+defined radio (SDR) platform as the authenticator to answer
+these questions. Our contributions are listed as follows.
+We experimentally compare three signal representations
+for LoRa signals, namely IQ samples, Fast Fourier
+transform (FFT) results and spectrogram. It is found
+spectrogram can reach the highest accuracy of 96.44%
+while the IQ samples and FFT can reach 83.36% and
+87.36%, respectively. In addition to this, the training
+time of spectrogram-based model (20 minutes) is much
+shorter than that of IQ/FFT-based model (one hour),
+which indicates the training cost can be significantly
+reduced.
+• We experimentally demonstrate that CFO is unstable
+and degrades the system performance. We established a
+bespoke setup by connecting a LoRa DUT and USRP
+with an attenuator to eliminate channel effects. CFO is
+found to vary in a short time frame but stays relatively
+stable in long terms. CFO compensation is found to be effective in mitigating the performance degradation, which
+can improve the classification accuracy from 75.59% to
+96.44% for spectrogram CNN-based scheme.
+• We design a hybrid classifier based on the softmax output
+and CFO to further increase the classification accuracy.
+The CNN may be uncertain when some devices have very
+similar hardware characteristics and their softmax output
+probabilities will be close. As the CFO has long term
+stability, we calibrate the output of CNN according to
+the estimated CFO. The designed hybrid classifier can
+significantly improve the system performance, namely
+from 83.36% to 92.01% in the best case for the IQ-based
+RFFI.
+•
+
+The rest of the paper is organized as follows. Section II
+briefly introduces the background of LoRa modulation and
+spectrogram. Then we present the LoRa receiver operations
+in Section III. The design details of the RFFI system and the
+CNN architecture are introduced in Section IV and Section V,
+respectively. In Section VI, we experimentally demonstrate
+CFO drift and its effect on the stability of RFFI, and in
+Section VII the performance of the proposed RFFI systems
+is thoroughly evaluated in a real wireless environment. The
+paper is finally concluded in Section VIII.
+II. P RELIMINARY
+A. LoRa Modulation Technique
+LoRa employs CSS modulation which uses linear chirps for
+communications. The linear chirps are also known as linear
+frequency modulation (LFM) signals, of which the frequency
+increases or decreases linearly with time. The information in
+each symbol is encoded to the initial phase of the chirp. A
+
+

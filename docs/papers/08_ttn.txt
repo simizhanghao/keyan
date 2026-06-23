@@ -1,0 +1,150 @@
+Published as a conference paper at ICLR 2023
+
+TTN: A D OMAIN -S HIFT AWARE BATCH N ORMALIZA TION IN T EST-T IME A DAPTATION
+Hyesu Lim1,2∗, Byeonggeun Kim∗ , Jaegul Choo2 , Sungha Choi1‡
+1
+Qualcomm AI Research† , 2 KAIST
+
+arXiv:2302.05155v2 [cs.CV] 18 Feb 2023
+
+A BSTRACT
+This paper proposes a novel batch normalization strategy for test-time adaptation.
+Recent test-time adaptation methods heavily rely on the modified batch normalization, i.e., transductive batch normalization (TBN), which calculates the mean
+and the variance from the current test batch rather than using the running mean and
+variance obtained from source data, i.e., conventional batch normalization (CBN).
+Adopting TBN that employs test batch statistics mitigates the performance degradation caused by the domain shift. However, re-estimating normalization statistics
+using test data depends on impractical assumptions that a test batch should be large
+enough and be drawn from i.i.d. stream, and we observed that the previous methods with TBN show critical performance drop without the assumptions. In this
+paper, we identify that CBN and TBN are in a trade-off relationship and present
+a new test-time normalization (TTN) method that interpolates the standardization
+statistics by adjusting the importance between CBN and TBN according to the
+domain-shift sensitivity of each BN layer. Our proposed TTN improves model
+robustness to shifted domains across a wide range of batch sizes and in various
+realistic evaluation scenarios. TTN is widely applicable to other test-time adaptation methods that rely on updating model parameters via backpropagation. We
+demonstrate that adopting TTN further improves their performance and achieves
+state-of-the-art performance in various standard benchmarks.
+
+1
+
+I NTRODUCTION
+
+When we deploy deep neural networks (DNNs) trained on the source domain into test environments
+(i.e., target domains), the model performance on the target domain deteriorates due to the domain
+shift from the source domain. For instance, in autonomous driving, a well-trained DNNs model
+may exhibit significant performance degradation at test time due to environmental changes, such as
+camera sensors, weather, and region (Choi et al., 2021; Lee et al., 2022; Kim et al., 2022b).
+Test-time adaptation (TTA) has emerged to tackle the distribution shift between source and target
+domains during test time (Sun et al., 2020; Wang et al., 2020). Recent TTA approaches (Wang
+et al., 2020; Choi et al., 2022; Liu et al., 2021) address this issue by 1) (re-)estimating normalization statistics from current test input and 2) optimizing model parameters in unsupervised manner,
+such as entropy minimization (Grandvalet & Bengio, 2004; Long et al., 2016; Vu et al., 2019) and
+self-supervised losses (Sun et al., 2020; Liu et al., 2021). In particular, the former focused on the
+weakness of conventional batch normalization (CBN) (Ioffe & Szegedy, 2015) for domain shift in
+a test time. As described in Fig. 1(b), when standardizing target feature activations using source
+statistics, which are collected from the training data, the activations can be transformed into an unintended feature space, resulting in misclassification. To this end, the TTA approaches (Wang et al.,
+2020; Choi et al., 2022; Wang et al., 2022) have heavily depended on the direct use of test batch
+statistics to fix such an invalid transformation in BN layers, called transductive BN (TBN) (Nado
+et al., 2020; Schneider et al., 2020; Bronskill et al., 2020) (see Fig. 1(c)).
+The approaches utilizing TBN showed promising results but have mainly been assessed in limited
+evaluation settings (Wang et al., 2020; Choi et al., 2022; Liu et al., 2021). For instance, such evaluation settings assume large test batch sizes (e.g., 200 or more) and a single stationary distribution shift
+∗
+†
+
+Work completed while at Qualcomm Technologies, Inc. ‡ Corresponding author.
+Qualcomm AI Research is an initiative of Qualcomm Technologies, Inc.
+
+1
+
+Published as a conference paper at ICLR 2023
+
+Standardize ● Source features
+
+Error rate (%)
+
+(a) Valid output using CBN
+
+⨯ Test features ● Class A ● Class B
+
+(b) Invalid output using CBN
+
+100
+80
+60
+40
+20
+0
+
+Test batch size
+
+CBN
+
+TBN
+
+TTN(Ours)
+Ours
+
+Source mean
+
+Test mean
+
+(c) Valid output using TBN
+
+200
+
+64
+
+TENT TENT+TTN(Ours)
+TENT+Ours
+
+SWR
+
+16
+
+4
+
+2
+
+1
+
+SWR+TTN(Ours)
+SWR+Ours
+
+(d) Performance drops in small test batches using TBN
+
+Figure 1: Trade-off between CBN & TBN. In conceptual illustrations (a), (b), and (c), the depicted
+standardization only considers making the feature distribution have a zero mean, disregarding making it have unit variance. When the source and test distributions are different, and the test batch size
+is large, (b) test features can be wrongly standardized when using CBN (Ioffe & Szegedy, 2015),
+but (c) TBN (Nado et al., 2020) can provide a valid output. (d) Error rates (↓) on shifted domains
+(CIFAR-10-C). TBN and TBN applied (TENT (Wang et al., 2020), SWR (Choi et al., 2022)) methods suffer from severe performance drop when the batch size becomes small, while TTN (Ours)
+improves overall performance.
+(i.e., single corruption). Recent studies suggest more practical evaluation scenarios based on small
+batch sizes (Mirza et al., 2022; Hu et al., 2021; Khurana et al., 2021) or continuously changing data
+distribution during test time (Wang et al., 2022). We show that the performance of existing methods
+significantly drops once their impractical assumptions of the evaluation settings are violated. For
+example, as shown in Fig. 1(d), TBN (Nado et al., 2020) and TBN applied methods suffer from
+severe performance drop when the test batch size becomes small, while CBN is irrelevant to the test
+batch sizes. We identify that CBN and TBN are in a trade-off relationship (Fig. 1), in the sense that
+one of each shows its strength when the other falls apart.
+To tackle this problem, we present a novel test-time normalization (TTN) strategy that controls the
+trade-off between CBN and TBN by adjusting the importance of source and test batch statistics
+according to the domain-shift sensitivity of each BN layer. Intuitively, we linearly interpolate between CBN and TBN so that TBN has a larger weight than CBN if the standardization needs to be
+adapted toward the test data. We optimize the interpolating weight after the pre-training but before
+the test time, which we refer to as the post-training phase. Specifically, given a pre-trained model,
+we first estimate channel-wise sensitivity of the affine parameters in BN layers to domain shift by
+analyzing the gradients from the back-propagation of two input images, clean input and its augmented one (simulating unseen distribution). Afterward, we optimize the interpolating weight using
+the channel-wise sensitivity replacing BN with the TTN layers. It is noteworthy that none of the
+pre-trained model weights are modified, but we only train newly added interpolating weight.
+We empirically show that TTN outperforms existing TTA methods in realistic evaluation settings,
+i.e., with a wide range of test batch sizes for single, mixed, and continuously changing domain
+adaptation through extensive experiments on image classification and semantic segmentation tasks.
+TTN as a stand-alone method shows compatible results with the state-of-the-art methods and combining our TTN with the baselines even boosts their performance in overall scenarios. Moreover,
+TTN applied methods flexibly adapt to new target domains while sufficiently preserving the source
+knowledge. No action other than computing per batch statistics (which can be done simultaneously
+to the inference) is needed in test-time; TTN is compatible with other TTA methods without requiring additional computation cost.
+Our contributions are summarized as follows:
+• We propose a novel domain-shift aware test-time normalization (TTN) layer that combines
+source and test batch statistics using channel-wise interpolating weights considering the
+sensitivity to domain shift in order to flexibly adapt to new target domains while preserving
+the well-trained source knowledge.
+2
+
+

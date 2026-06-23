@@ -1,0 +1,200 @@
+Towards Channel-Robust Radio Frequency
+Fingerprint Identification Using Contrastive Learning
+Jie Ma→ , Junqing Zhang→ , Guanxiong Shen† , Linning Peng† , and Alan Marshall→
+
+→ Department of Electrical Engineering and Electronics, University of Liverpool, Liverpool, L69 3GJ, United Kingdom
+† School of Cyber Science and Engineering, Southeast University, Nanjing, China
+
+Abstract—Radio frequency fingerprint identification (RFFI) is
+an emerging device authentication technique that is based on
+intrinsic hardware impairments. Internet of things (IoT) devices
+can be identified and classified based on their wireless signals using
+RFFI. Developing a robust RFFI system that can maintain high
+classification accuracy across diverse communication scenarios is
+a critical challenge. In this paper, we proposed a contrastive
+learning-based RFFI approach to establish a channel-robust
+system using the spectrogram. Specifically, we leverage contrastive
+learning in the training stage, which has been implemented with
+data augmentation techniques to mitigate the influence of channels
+on RFFI. We carried out extensive experimental evaluations
+involving a public dataset and a self-collected dataset, both with
+ten LoRa devices. Utilizing these datasets, the performance of
+the system has been tested in various channel environments,
+including stationary, mobile, line-of-sight (LOS) and non-lineof-sight (NLOS) scenarios. The results demonstrated that our
+approach is effective and robust to channel variation, achieving
+93% and 82% on static and dynamic channels, respectively.
+Index Terms—Contrastive Learning, Radio Frequency Fingerprint Identification, Deep Learning
+
+T
+
+I. I NTRODUCTION
+
+HE increasing use of wireless devices has raised security
+concerns regarding device authentication in Internet of
+Things (IoT) networks. Conventional authentication methods
+rely on cryptographic algorithms combined with software addresses, e.g., media access control (MAC) addresses. However,
+cryptographic authentication approaches heavily rely on substantial computational resources, which is not affordable to
+low-cost IoT devices [1]. Moreover, software addresses can be
+easily tampered with. Therefore, there is a strong need for a
+low-complexity and reliable IoT authentication scheme.
+Radio frequency fingerprint identification (RFFI) is an effective and secure method for physical layer identity authentication. It identifies wireless devices by analyzing the unique
+distortion of the received waveform caused by the imperfections
+of hardware components. The imperfection comes from the
+transmitter chain of the wireless device [2], such as mixers,
+oscillators, power amplifiers, etc. These components deviate
+slightly from their nominal specifications due to the inevitable
+manufacturing process variations. It manifests as hardware
+imperfections such as IQ imbalance, carrier frequency offset
+(CFO), and power amplifier non-linearity [3]–[5]. These hardware impairments slightly impact the wireless signal waveform,
+Corresponding author: J. Zhang. (Email: junqing.zhang@liverpool.ac.uk)
+
+but do not affect communication transmission [2]. The RFFI
+system extracts unique features from wireless signals emitted
+by IoT devices to determine their identities.
+Deep learning (DL) has the excellent capability of feature
+extraction and classification, which has been widely applied
+in RFFI [6]–[8]. It contributes to automatically extracting the
+discriminative features from interrelated hardware impairments
+and benefits to build a well-performance RFFI system. However, there are several challenges with the RFFI, with one of
+the most crucial issues being to develop a system that is robust
+to channel variations.
+Addressing the effects of channel variations in RFFI is
+essential, as wireless devices frequently change locations or
+move, causing signals to be influenced by different channels.
+The work in [9] extracts the channel-independent spectrogram
+by dividing adjacent columns in the spectrogram. This process
+eliminates channel interference, enabling the extraction of
+device characteristics. However, the algorithm assumes that the
+channel does not undergo significant changes over short periods
+of time, which may become invalid in certain mobile scenarios.
+The work in [10] utilized spectral quotient sequences and
+moment-based statistical feature extractor to build a channelagnostic RFFI system. However, only simulation results are
+provided and its performance in real environments remains
+unknown. Despite several techniques have been proposed to
+reduce the impact of channel effects [9]–[12], certain limitations still persist. These challenges motivate further exploration
+to address the channel issues in RFFI.
+Contrastive learning is a DL method that helps neural
+networks learn meaningful representations by comparing the
+similarities and differences between samples. Prevalent methods in contrastive learning include SimCLR [13], triplets [14],
+InfoNCE [15], etc. The goal of the above methods is to
+bring similar samples closer together in the latent space while
+pushing dissimilar samples further apart. There are some initial
+explorations in applying contrastive learning in RFFI [16], [17].
+A scheme that alleviates performance degradation in the crossreceiver scenario has been proposed in [16]. [17] proposed
+a noise-tolerant RFFI system by data augmentation and contrastive learning. It considers the impact of different signalto-noise ratios (SNR) on the system but overlooks different
+communication scenarios, such as dynamic channel scenarios.
+We proposed to employ contrastive learning to mitigate
+
+B. Channel Effect in IQ Samples
+The received signal is expressed as
+x(t) = h(t) ↑ Fm (s(t)) + n(t),
+(a)
+
+(b)
+
+(c)
+
+Fig. 1. (a) Time domain signal of the preamble (I branch). (b) Spectrogram
+of the preamble. (c) Channel-independent spectrogram of the preamble.
+
+the effects of channel variations. To assess its performance,
+we conducted evaluations on two datasets including a public
+LoRa dataset [9] and a self-collected LoRa dataset. Both
+datasets were gathered from diverse real-world environments,
+encompassing both static and mobile channels. The technical
+contributions of this paper are summarized as follows.
+We designed a contrastive learning-based RFFI system,
+which leverages spectrogram, data augmentation, and contrastive loss to extract device-specific features, making the
+system robust to channel variations.
+• We created a dataset involving 10 LoRa devices and a
+USRP N210 SDR platform. Data collection was performed
+in both line-of-sight (LOS) and non-line-of-sight (NLOS)
+mobile scenarios.
+• We evaluated the performance of the approach in both
+static and dynamic channels using a public LoRa dataset
+and a self-collected dataset. The classification accuracy
+remains above 93% across all positions in static channels.
+Our method is also robust in dynamic channels, and its
+accuracy reaches over 82% in mobile scenarios.
+•
+
+The rest of the paper is organized as follows. Section II
+presents the signal model of LoRa in the RFFI system. The
+design details of the RFFI system are introduced in Section III. Section IV illustrates the implementation of contrastive
+learning-based RFFI system. Section V demonstrates the experimental results and Section VI concludes the paper.
+
+A. LoRa Primer
+LoRa is a widely used wireless modulation technique for
+long-range IoT applications. It employs chirp spread spectrum
+(CSS) technology, and there are several up-chirps at the beginning of each LoRa packet, named preambles. The contents of
+the preambles are identical across all packets and are unaffected
+by the payload, making it ideal for RFFI.
+The LoRa signal’s instantaneous frequency varies continuously over time, and a baseband LoRa preamble is given as
+B 2
+
+(0 → t → T ),
+
+where h(t) is the wireless channel impulse response, ↑ represents the convolutional operation, Fm (·) denotes the effect of
+the mth DUT’s hardware impairments on the waveform, and
+n(t) denotes additive white Gaussian noise (AWGN).
+In a DL-based RFFI, the channel effect h(t) will change the
+data distribution of x(t) both in the training and test stage.
+Hence, mitigating the channel effect is essential. However, it
+is quite challenging to eliminate the channel effect in the time
+domain due to the convolutional process.
+C. Spectrogram
+IQ signals are typically distorted by wireless channels, while
+the frequency-varying nature of LoRa signals makes timefrequency analysis techniques, such as the short-time Fourier
+transform (STFT), a common choice for representation [18]–
+[20]. After STFT, the time-domain IQ signal, x(t), can be
+transformed to X(t, f ), given as
+!
+"
+!
+" !
+"
+!
+"
+X(t, f ) = S x(t) = S h(t) S Fm (s(t)) + S n(t) , (3)
+where S(·) represents STFT operation. We then convert the amplitude of the spectrogram from a linear scale to a logarithmic
+scale, which can be expressed as
+!
+" !
+"
+!
+"
+log |X(t, f )| = log |S h(t) S Fm (s(t)) + S n(t) |
+(4)
+↓ log |S(h(t))| + log |S(Fm (s(t))|.
+A spectrogram of the preamble part is exemplified in Fig. 1(b).
+As can be observed from (4), the channel effect still exists.
+However, it becomes a summation term in the spectrogram,
+which is easier to separate. This paper employs contrastive
+learning to eliminate the channel effect and improve the robustness of RFFI against channel variations.
+III. S YSTEM OVERVIEW
+As shown in Fig. 2, our RFFI system consists of M DUT and
+a receiver. It involves two stages, namely training and inference.
+
+II. P ROBLEM S TATEMENT
+
+s(t) = Aej (→ωBt+ω T t )
+
+(2)
+
+(1)
+
+where A, B, T are the amplitude, bandwidth and symbol duration, respectively. Fig. 1(a) shows the time-domain baseband
+signal of the preamble (I branch).
+
+A. Training
+In the training stage, each DUT emits hundreds of packets,
+which are captured by a receiver. The receiver will then create
+a training dataset, Dtrain , and train a neural network.
+1) Preprocessing: Once the signal is captured by the receiver, it undergoes signal preprocessing, including synchronization, preamble extraction, CFO compensation, and normalization.
+• Synchronization identifies the packet’s start to capture the
+signal accurately.
+• Preamble extraction is designed to capture the preamble
+part of the signal. It is beneficial for the system to acquire
+the unique inherent characteristics of the device.
+
+

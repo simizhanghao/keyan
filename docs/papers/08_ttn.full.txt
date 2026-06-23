@@ -1,0 +1,2745 @@
+Published as a conference paper at ICLR 2023
+
+TTN: A D OMAIN -S HIFT AWARE BATCH N ORMALIZA TION IN T EST-T IME A DAPTATION
+Hyesu Lim1,2∗, Byeonggeun Kim∗ , Jaegul Choo2 , Sungha Choi1‡
+1
+Qualcomm AI Research† , 2 KAIST
+
+arXiv:2302.05155v2 [cs.CV] 18 Feb 2023
+
+A BSTRACT
+This paper proposes a novel batch normalization strategy for test-time adaptation.
+Recent test-time adaptation methods heavily rely on the modified batch normalization, i.e., transductive batch normalization (TBN), which calculates the mean
+and the variance from the current test batch rather than using the running mean and
+variance obtained from source data, i.e., conventional batch normalization (CBN).
+Adopting TBN that employs test batch statistics mitigates the performance degradation caused by the domain shift. However, re-estimating normalization statistics
+using test data depends on impractical assumptions that a test batch should be large
+enough and be drawn from i.i.d. stream, and we observed that the previous methods with TBN show critical performance drop without the assumptions. In this
+paper, we identify that CBN and TBN are in a trade-off relationship and present
+a new test-time normalization (TTN) method that interpolates the standardization
+statistics by adjusting the importance between CBN and TBN according to the
+domain-shift sensitivity of each BN layer. Our proposed TTN improves model
+robustness to shifted domains across a wide range of batch sizes and in various
+realistic evaluation scenarios. TTN is widely applicable to other test-time adaptation methods that rely on updating model parameters via backpropagation. We
+demonstrate that adopting TTN further improves their performance and achieves
+state-of-the-art performance in various standard benchmarks.
+
+1
+
+I NTRODUCTION
+
+When we deploy deep neural networks (DNNs) trained on the source domain into test environments
+(i.e., target domains), the model performance on the target domain deteriorates due to the domain
+shift from the source domain. For instance, in autonomous driving, a well-trained DNNs model
+may exhibit significant performance degradation at test time due to environmental changes, such as
+camera sensors, weather, and region (Choi et al., 2021; Lee et al., 2022; Kim et al., 2022b).
+Test-time adaptation (TTA) has emerged to tackle the distribution shift between source and target
+domains during test time (Sun et al., 2020; Wang et al., 2020). Recent TTA approaches (Wang
+et al., 2020; Choi et al., 2022; Liu et al., 2021) address this issue by 1) (re-)estimating normalization statistics from current test input and 2) optimizing model parameters in unsupervised manner,
+such as entropy minimization (Grandvalet & Bengio, 2004; Long et al., 2016; Vu et al., 2019) and
+self-supervised losses (Sun et al., 2020; Liu et al., 2021). In particular, the former focused on the
+weakness of conventional batch normalization (CBN) (Ioffe & Szegedy, 2015) for domain shift in
+a test time. As described in Fig. 1(b), when standardizing target feature activations using source
+statistics, which are collected from the training data, the activations can be transformed into an unintended feature space, resulting in misclassification. To this end, the TTA approaches (Wang et al.,
+2020; Choi et al., 2022; Wang et al., 2022) have heavily depended on the direct use of test batch
+statistics to fix such an invalid transformation in BN layers, called transductive BN (TBN) (Nado
+et al., 2020; Schneider et al., 2020; Bronskill et al., 2020) (see Fig. 1(c)).
+The approaches utilizing TBN showed promising results but have mainly been assessed in limited
+evaluation settings (Wang et al., 2020; Choi et al., 2022; Liu et al., 2021). For instance, such evaluation settings assume large test batch sizes (e.g., 200 or more) and a single stationary distribution shift
+∗
+†
+
+Work completed while at Qualcomm Technologies, Inc. ‡ Corresponding author.
+Qualcomm AI Research is an initiative of Qualcomm Technologies, Inc.
+
+1
+
+Published as a conference paper at ICLR 2023
+
+Standardize ● Source features
+
+Error rate (%)
+
+(a) Valid output using CBN
+
+⨯ Test features ● Class A ● Class B
+
+(b) Invalid output using CBN
+
+100
+80
+60
+40
+20
+0
+
+Test batch size
+
+CBN
+
+TBN
+
+TTN(Ours)
+Ours
+
+Source mean
+
+Test mean
+
+(c) Valid output using TBN
+
+200
+
+64
+
+TENT TENT+TTN(Ours)
+TENT+Ours
+
+SWR
+
+16
+
+4
+
+2
+
+1
+
+SWR+TTN(Ours)
+SWR+Ours
+
+(d) Performance drops in small test batches using TBN
+
+Figure 1: Trade-off between CBN & TBN. In conceptual illustrations (a), (b), and (c), the depicted
+standardization only considers making the feature distribution have a zero mean, disregarding making it have unit variance. When the source and test distributions are different, and the test batch size
+is large, (b) test features can be wrongly standardized when using CBN (Ioffe & Szegedy, 2015),
+but (c) TBN (Nado et al., 2020) can provide a valid output. (d) Error rates (↓) on shifted domains
+(CIFAR-10-C). TBN and TBN applied (TENT (Wang et al., 2020), SWR (Choi et al., 2022)) methods suffer from severe performance drop when the batch size becomes small, while TTN (Ours)
+improves overall performance.
+(i.e., single corruption). Recent studies suggest more practical evaluation scenarios based on small
+batch sizes (Mirza et al., 2022; Hu et al., 2021; Khurana et al., 2021) or continuously changing data
+distribution during test time (Wang et al., 2022). We show that the performance of existing methods
+significantly drops once their impractical assumptions of the evaluation settings are violated. For
+example, as shown in Fig. 1(d), TBN (Nado et al., 2020) and TBN applied methods suffer from
+severe performance drop when the test batch size becomes small, while CBN is irrelevant to the test
+batch sizes. We identify that CBN and TBN are in a trade-off relationship (Fig. 1), in the sense that
+one of each shows its strength when the other falls apart.
+To tackle this problem, we present a novel test-time normalization (TTN) strategy that controls the
+trade-off between CBN and TBN by adjusting the importance of source and test batch statistics
+according to the domain-shift sensitivity of each BN layer. Intuitively, we linearly interpolate between CBN and TBN so that TBN has a larger weight than CBN if the standardization needs to be
+adapted toward the test data. We optimize the interpolating weight after the pre-training but before
+the test time, which we refer to as the post-training phase. Specifically, given a pre-trained model,
+we first estimate channel-wise sensitivity of the affine parameters in BN layers to domain shift by
+analyzing the gradients from the back-propagation of two input images, clean input and its augmented one (simulating unseen distribution). Afterward, we optimize the interpolating weight using
+the channel-wise sensitivity replacing BN with the TTN layers. It is noteworthy that none of the
+pre-trained model weights are modified, but we only train newly added interpolating weight.
+We empirically show that TTN outperforms existing TTA methods in realistic evaluation settings,
+i.e., with a wide range of test batch sizes for single, mixed, and continuously changing domain
+adaptation through extensive experiments on image classification and semantic segmentation tasks.
+TTN as a stand-alone method shows compatible results with the state-of-the-art methods and combining our TTN with the baselines even boosts their performance in overall scenarios. Moreover,
+TTN applied methods flexibly adapt to new target domains while sufficiently preserving the source
+knowledge. No action other than computing per batch statistics (which can be done simultaneously
+to the inference) is needed in test-time; TTN is compatible with other TTA methods without requiring additional computation cost.
+Our contributions are summarized as follows:
+• We propose a novel domain-shift aware test-time normalization (TTN) layer that combines
+source and test batch statistics using channel-wise interpolating weights considering the
+sensitivity to domain shift in order to flexibly adapt to new target domains while preserving
+the well-trained source knowledge.
+2
+
+Published as a conference paper at ICLR 2023
+
+…
+
+(a-1) Post-train (TTN)
+
+CBN
+
+CBN
+
+CBN
+
+Pre-train (CBN)
+
+Test time (TTN)
+
+Per-batch
+
+…
+
+…
+
+Frozen
+
+S Standardize
+𝑧𝑖𝑛 − 𝜇
+𝑧Ƹ =
+𝜎
+
+Optimize
+
+T Affine Transform
+𝑧𝑜𝑢𝑡 = 𝛾 ⋅ 𝑧Ƹ + 𝛽
+
+(a) Overall procedure of train and test phases
+CBN in test time
+
+𝑧𝑖𝑛
+
+𝑧Ƹ
+
+S
+𝜇𝑠 , 𝜎𝑠
+
+T
+
+TBN in test time
+
+𝑧𝑜𝑢𝑡
+
+𝑧𝑖𝑛
+
+𝑧Ƹ
+
+S
+𝜇𝑖𝑛 , 𝜎𝑖𝑛
+
+𝛾, 𝛽
+
+T
+
+𝑧𝑜𝑢𝑡
+
+(b-1) TTN(Ours) in post-train
+
+(b-2) TTN(Ours) in test time
+
+𝑧𝑖𝑛
+
+𝑧𝑖𝑛
+
+S
+𝛼
+
+𝛾, 𝛽
+
++
+
+𝜇𝑖𝑛 , 𝜎𝑖𝑛
+
+𝑧Ƹ
+
+𝑧𝑜𝑢𝑡
+
+T
+
+S
+𝛼
+
+1−𝛼
+
+𝛾, 𝛽
+𝜇𝑠 , 𝜎𝑠
+
++
+
+𝜇𝑖𝑛 , 𝜎𝑖𝑛
+
+𝑧Ƹ
+
+T
+
+𝑧𝑜𝑢𝑡
+
+1−𝛼
+
+𝛾, 𝛽
+𝜇𝑠 , 𝜎𝑠
+
+(b) Comparison of BN layers
+
+Figure 2: Method overview. (a) We introduce an additional training phase between pre-train and
+test time called (a-1) post-training phase. (b) Our proposed TTN layer combines per-batch statistics
+and frozen source statistics with interpolating weight α, which is (b-1) optimized in post-training
+phase and (b-2) fixed in test time.
+• To show the broad applicability of our proposed TTN, which does not alter training or testtime schemes, we show that adding TTN to existing TTA methods significantly improves
+the performance across a wide range of test batch sizes (from 200 to 1) and in three realistic
+evaluation scenarios; stationary, continuously changing, and mixed domain adaptation.
+• We evaluate our method through extensive experiments on image classification using
+CIFAR-10/100-C, and ImageNet-C (Hendrycks & Dietterich, 2018) and semantic segmentation task using CityScapes (Cordts et al., 2016), BDD-100K (Yu et al., 2020), Mapillary (Neuhold et al., 2017), GTAV (Richter et al., 2016), and SYNTHIA (Ros et al., 2016).
+
+2
+
+M ETHODOLOGY
+
+In this section, we describe our method, the Test-Time Normalization (TTN) layer, whose design
+is suitable for test-time adaptation (TTA) in practical usages out of the large batch size and i.i.d
+assumptions during a test time. We first define the problem setup in Section 2.1 and present our proposed TTN layers in Section 2.2. Finally, we discuss how we optimize TTN layers in Sections 2.3.
+2.1
+
+P ROBLEM S ETUP
+
+Let the train and test data be DS and DT and the corresponding probability distributions be PS and
+PT , respectively, where DS and DT share the output space, i.e., {yi } ∼ DS = {yi } ∼ DT . The
+covariate shift in TTA is defined as PS (x) 6= PT (x) where PS (y|x) = PT (y|x) (Quinonero-Candela
+|BS |
+
+et al., 2008). A model, fθ , with parameters θ, is trained with a mini-batch, B S = {(xi , yi )}i=1 ,
+from source data DS , where xi is an example and yi is the corresponding label. During the test, fθ
+encounters a test batch B T ∼ DT , and the objective of TTA is correctly managing the test batch
+from the different distribution.
+To simulate more practical TTA, we mainly consider two modifications: (1) various test batch sizes,
+|B T |, where small batch size indicates small latency while handling the test data online, and (2)
+T
+multi, N -target domains, DT = {DT,i }N
+i=1 . Under this setting, each test batch B is drawn by one
+of the test domains in DT , where DT may consist of a single target domain, multiple target domains,
+or mixture of target domains.
+2.2
+
+T EST-T IME N ORMALIZATION L AYER
+
+We denote an input of a BN layer as z ∈ RBCHW , forming a mini-batch size of B. The mean and
+variance of z are µ and σ 2 , respectively, which are computed as follows:
+B
+
+µc =
+
+H
+
+W
+
+1 XXX
+zbchw ,
+BHW
+w
+b
+
+σc2 =
+
+h
+
+B
+
+H
+
+b
+
+h
+
+W
+
+1 XXX
+(zbchw − µc )2 ,
+BHW
+w
+
+(1)
+
+where µ and σ 2 are in RC , and C, H, and W stand for the number of channels, dimension of height,
+and that of width, respectively. Based on µ and σ 2 , the source statistics µs , σs2 ∈ RC are usually
+estimated with exponential moving average over the training data.
+3
+
+Published as a conference paper at ICLR 2023
+
+(a-2) Prior 𝒜
+
+(a-1) Gradient of affine parameters 𝛾, 𝛽
+C1
+
+ℒ𝐶𝐸
+
+(b-1) Initialize 𝛼 with prior 𝒜
+
+C𝐿
+
+C2
+
+𝑥′
+
+TTN
+
+(a) Obtain prior 𝒜
+
+ReLU
+
+…
+
+(b-2) Optimize 𝛼
+
+…
+
+Conv
+
+Conv
+CBN
+ReLU
+
+(𝐿)
+
+FC
+
+ReLU
+
+(𝐿)
+
+∇𝛾′ , ∇𝛽′
+
+Conv
+CBN
+ReLU
+
+∇𝛾′ , ∇𝛽′
+
+CBN
+
+𝑥′
+
+(2)
+
+(1)
+
+Conv
+
+(1)
+
+(2)
+
+∇𝛾′ , ∇𝛽′
+
+0
+
+𝛼 (𝑙,𝐶𝑙)
+
+𝐶𝑙
+
+TTN
+
+…
+
+FC
+
+1
+
+(𝐿)
+
+∇𝛾 , ∇𝛽
+
+ReLU
+
+(𝐿)
+
+(𝑙)
+
+1 − 𝛼 (𝑙,𝐶𝑙 )
++
+
+TTN 𝜇𝑖𝑛
+
+Conv
+
+(2)
+
+1 − 𝛼 (𝑙,𝑐)
+…
++ … +
+𝛼 (𝑙,𝑐)
+
+𝛼
+
+ReLU
+
+(2)
+
+𝜇𝑠
+
+1−𝛼
+
+ℒ𝐶𝐸
+
+FC
+
+∇𝛾 , ∇𝛽
+
+(𝑙)
+
+Gradient flow
+
+Conv
+
+(1)
+
+∇𝛾 , ∇𝛽
+
+…
+
+Conv
+CBN
+ReLU
+
+Conv
+CBN
+ReLU
+
+(1)
+
+CBN
+
+Conv
+
+𝑥
+
+Frozen source statistics
+
+ReLU
+
+Per-batch statistics
+
+ℒ𝐶𝐸 + ℒ𝑀𝑆𝐸
+
+TTN
+
+(b) Optimize 𝛼
+
+Figure 3: Two stages in post-training phase. (a) Given a pre-trained model, which uses CBN, and
+its training data, we obtain prior knowledge of each BN layer. (a-1) We first compute gradients of
+affine parameters in each BN layer from clean x and augmented input x0 and obtain the gradient
+distance score (Eq. 4). (a-2) For BN layers with larger distance score, we put more importance
+on current batch statistics than source statistics (i.e., large α), and we define prior A accordingly
+(Eq. 5). (b) After obtaining prior A, we substitute BN layers from CBN to TTN. (b-1) Initializing α
+with prior A, (b-2) we optimize α using CE and MSE loss (Eq. 6) with augmented training data x0 .
+In BN layers, input z is first standardized with statistics µ and σ 2 and then is scaled and shifted with
+learnable parameters γ and β in RC . The standardization uses current input batch statistics during
+training and uses estimated source statistics µs and σs2 at test time (Fig. 2(b)). To address domain
+shifts in test time, we adjust the source statistics by combining the source and the test mini-batch
+statistics (Singh & Shrivastava, 2019; Summers & Dinneen, 2019) with a learnable interpolating
+weight α ∈ RC ranges [0, 1]. Precisely, TTN standardizes a feature with
+µ̃ = αµ + (1 − α)µs ,
+
+σ̃ 2 = ασ 2 + (1 − α)σs2 + α(1 − α)(µ − µs )2 ,
+
+(2)
+
+while using the same affine parameters, γ and β. Note that we have different mixing ratios αc for
+every layer and channel.
+2.3
+
+P OST T RAINING
+
+Like Choi et al. (2022), we introduce an additional training phase, the post-training (after pretraining but before testing), to optimize the mixing parameters α in Eq. 2 (Fig. 2(a)). Note that
+all parameters except α are frozen and we have access to the labeled source data during the posttraining. We first obtain prior knowledge A of α by identifying which layers and their channels are
+sensitive to domain shifts. Then, we optimize α with the prior knowledge and an additional objective
+term. The overall procedure is depicted in Fig. 3 and the pseudocode is provided in appendix A.3.
+Obtain Prior A. To identify which BN layers and corresponding channels are sensitive to domain
+shifts, we simulate the domain shifts by augmenting1 the clean image, i.e., original training data, and
+make a pair of (clean x, domain-shifted x0 ) images, where the semantic information is shared. To
+analyze in which layer and channel the standardization statistics should be corrected, we consider
+the standardized features ẑ (l,c) of z (l,c) , for a channel index c at a layer l, whose input is clean x.
+We compare ẑ (l,c) to that of domain-shifted one, ẑ 0(l,c) from x0 . Since the pre-trained CBN uses
+(l,c)
+(l,c)
+the same µs and σs for both inputs, the difference between ẑ (l,c) and ẑ 0(l,c) is caused by the
+domain discrepancy between x and x0 . We argue that if the difference is significant, the parameter
+at (l, c) is sensitive to the domain shift, i.e., intensely affected by the domain shift, and hence the
+standardization statistics at (l, c) should be adapted towards the shifted input.
+Drawing inspiration from Choi et al. (2022), we measure the domain-shift sensitivity by comparing
+gradients. Since the standardized feature ẑ is scaled and shifted by γ and β in each BN layer,
+we compare the gradients of affine parameters γ and β, ∇γ and ∇β , respectively, to measure the
+dissimilarity of ẑ and ẑ 0 . As described in Fig. 3(a-1), we collect the ∇γ and ∇β using cross-entropy
+1
+It is noteworthy that the post-training phase is robust to the choice of data augmentation types. Ablation
+study results and discussions are provided in the appendix B.4.
+
+4
+
+Published as a conference paper at ICLR 2023
+
+loss, LCE . To this end, we introduce a gradient distance score, d(l,c) ∈ R for each channel c at layer
+l as follows:
+N
+1 X gi · gi0
+s=
+,
+(3)
+N i=1 kgi kkgi0 k
+
+(l,c)
+
+(l,c)
+
+d(l,c) = 1 −
+
+1 (l,c)
+(l,c) 
+s
++ sβ
+,
+2 γ
+
+(l,c)
+
+(l,c)
+
+(l,c)
+
+(4)
+(l,c)
+
+where (g, g 0 ) is (∇γ , ∇γ 0 ) and (∇β , ∇β 0 ) for sγ and sβ , respectively, N is the number
+of training data, and the resulting d(l,c) ∈ [0, 1]. Once we obtain sγ and sβ from Eq. 3, we conduct
+(l,c)
+(l,c)
+min-max normalization over all sγ and sβ , before computing Eq. 4.
+To magnify the relative difference, we take the square as a final step and denote the result as a prior
+A (Fig. 3(a-2)):
+A = [d(1,.) , d(2,.) , . . . , d(L,.) ]2 ,
+where d
+
+(l,.)
+
+(5)
+
+l
+= [d(l,c) ]C
+c=1 .
+
+Optimize α. The goal of optimizing α is to make the combined statistics correctly standardize
+the features when the input is sampled from an arbitrary target domain. After obtaining the prior
+A, we replace CBN with TTN layers while keeping the affine parameters. Then, we initialize the
+interpolating weights α with A, which represents in which layer and channel the standardization
+statistics need to be adapted using test batch statistics (see Fig. 3(b-1)). To simulate distribution
+shifts, we use augmented training data. Expecting the model to make consistent predictions either
+given clean or augmented inputs, we use cross-entropy loss LCE . Furthermore, to prevent α from
+moving too far from the initial value A, we use mean-squared error loss LMSE between α and the
+prior A, i.e., LMSE = kα−Ak2 as a constraint. Total loss L can be written as L = LCE +λLMSE (6),
+where λ is a weighting hyperparameter (Details are provided in the appendix A.1 & B.1).
+
+3
+
+E XPERIMENTS
+
+In image classification, we evaluate TTN for corruption robustness in realistic evaluation settings,
+i.e., where the test batch size can be variant and where the target domain can be either stationary,
+continuously changing, or mixed with multiple domains. Additionally, we further validate TTN
+on domain generalization benchmarks incorporating natural domain shifts (e.g., changes in camera
+sensors, weather, time, and region) in semantic segmentation.
+3.1
+
+E XPERIMENTAL S ETUP
+
+Given models pre-trained on clean source data, we optimize TTN parameter α with the augmented
+source data in the post-training phase. Afterward, we evaluate our post-trained model on the corrupted target data. Implementation details are provided in the appendix A.1.
+Datasets and models. We use corruption benchmark datasets CIFAR-10/100-C and ImageNet-C,
+which consist of 15 types of common corruptions at five severity levels (Hendrycks & Dietterich,
+2018). Each corruption is applied to test images of the clean datasets (CIFAR-10/100 and ImageNet). We use a training set of the clean dataset for post-training and the corrupted dataset for
+evaluation. As backbone models, we used WideResNet-40-2 (Hendrycks et al., 2019) trained on
+CIFAR-10/100, and ResNet-50 (He et al., 2016) trained on ImageNet. To validate our method in semantic segmentation, we conduct experiments on Cityscapes (Cordts et al., 2016), BDD-100K (Yu
+et al., 2020), Mapillary (Neuhold et al., 2017), GTAV (Richter et al., 2016), and SYNTHIA (Ros
+et al., 2016) datasets, in accordance with the experimental setup for domain generalization proposed
+in RobustNet (Choi et al., 2021).
+Baselines. To demonstrate that TTN successfully controls the trade-off between CBN and TBN, we
+compare TTN with (1) AdaptiveBN (Schneider et al., 2020), (2) α-BN (You et al., 2021) and (3)
+MixNorm (Hu et al., 2021), which combines or takes the moving average of the source and the test
+batch statistics with a pre-defined hyperparameter (i.e., a constant α). The following baselines are
+suggested on top of TBN (Nado et al., 2020); (4) TENT (Wang et al., 2020) optimizes BN affine
+parameters via entropy minimization. (5) SWR (Choi et al., 2022) updates the entire model parameters considering the domain-shift sensitivity. (6) CoTTA (Wang et al., 2022) ensembles the output of
+5
+
+Published as a conference paper at ICLR 2023
+
+Table 1: Single domain adaptation on corruption benchmark. Error rate (↓) averaged over 15
+corruptions with severity level 5 using WideResNet-40-2 as a backbone for each test batch size. We
+used reported results of MixNorm with fixed parameters from the original paper and denoted as ∗.
+In appendix B.3, we provide variants of TTN, which show stronger performance for small test batch.
+Method
+
+200
+
+64
+
+16
+
+Optim.
+
+Norm
+
+Source (CBN) 18.27 18.27 18.27
+TBN
+AdaptiveBN
+α-BN
+MixNorm∗
+Ours (TTN)
+
+14.49
+12.21
+13.78
+13.85
+11.67
+
+15.02
+12.31
+13.77
+14.41
+11.80
+
+CIFAR-10-C
+4
+18.27
+
+17.10
+26.28
+12.89
+14.51
+13.89
+14.54
+14.23 14.60 (B=5)
+12.13
+13.93
+
+2
+
+Avg.
+
+1
+
+200
+
+64
+
+CIFAR-100-C
+16
+4
+2
+
+1
+
+Avg.
+
+18.27 18.27 18.27
+
+46.75 46.75 46.75 46.75 46.75 46.75 46.75
+
+35.65
+15.79
+15.16
+15.83
+
+39.25
+36.56
+39.72
+35.58
+
+90.00
+16.14
+15.47
+15.09
+17.99
+
+33.09
+13.98
+14.44
+14.44
+13.89
+
+40.21
+36.85
+39.85
+35.84
+
+44.03
+38.19
+39.99
+36.73
+
+59.10
+41.18
+41.34
+41.08
+
+80.65
+43.26
+42.66
+46.67
+
+99.04
+44.01
+45.64
+57.71
+
+60.38
+40.01
+41.53
+42.27
+
+TENT
+12.08 14.78 16.90
++Ours (TTN) 11.28 11.52 12.04
+
+25.61
+13.95
+
+35.69 90.00 32.51
+15.84 17.94 13.77
+
+35.52 39.90 43.78 59.02 80.68 99.02 59.65
+35.16 35.57 36.55 41.18 46.63 58.33 42.24
+
+SWR
+10.26 13.51 16.61
++Ours (TTN) 9.92 11.77 13.41
+
+27.33
+18.02
+
+40.48 90.04 33.04
+24.09 61.56 23.13
+
+32.68 37.41 43.15 59.90 87.07 99.05 59.88
+32.86 35.13 38.66 49.80 60.72 80.90 49.68
+
+Table 2: Continuously changing domain adaptation on corruption benchmark. Error rate (↓)
+averaged over 15 corruptions with severity level 5 using WideResNet-40-2 as backbone for each test
+batch size. We omitted ‘Norm’ methods results in this table since they are eqaul to that of Table 1.
+
+Optim.
+
+Method
+
+200
+
+64
+
+CIFAR-10-C
+16
+4
+2
+
+Avg.
+
+1
+
+200
+
+64
+
+CIFAR-100-C
+16
+4
+2
+
+1
+
+Avg.
+
+Source (CBN) 18.27 18.27 18.27 18.27 18.27 18.27 18.27
+
+46.75 46.75 46.75 46.75 46.75 46.75 46.75
+
+Ours (TTN)
+
+11.67 11.80 12.13 13.93 15.83 17.99 13.89
+
+35.58 35.84 36.73 41.08 46.67 57.71 42.27
+
+CoTTA
+
+12.46 14.60 21.26 45.69 58.87 90.00 40.48
+
+39.75 42.20 52.94 73.69 87.66 98.99 65.87
+
+TENT
+12.54 13.52 15.69 26.23 35.77 90.00 32.29
++Ours (TTN) 11.44 11.60 12.08 16.14 18.36 22.40 15.33
+
+36.11 37.90 43.78 58.71 81.76 99.04 59.55
+43.50 37.60 38.28 44.60 54.29 80.63 49.82
+
+SWR
+11.04 11.53 13.90 23.99 34.02 90.00 30.75
++Ours (TTN) 10.09 10.51 11.28 14.29 16.67 84.12 24.49
+
+34.16 35.79 40.71 58.15 80.55 99.03 62.56
+33.09 34.07 36.15 42.41 53.63 93.08 48.74
+
+augmented test inputs, updates the entire model parameters using a consistency loss between student
+and teacher models, and stochastically restores the pre-trained model. We refer to TBN, (1), (2), and
+(3) as normalization-based methods (Norm), the other as optimization-based methods (Optim.), and
+denote the pre-trained model using CBN as ‘source’.
+Evaluation scenarios. To show that TTN performs robust on various test batch sizes, we conduct
+experiments with test batch sizes of 200, 64, 16, 4, 2, and 1. We evaluate our method in three evaluation scenarios; single, continuously changing, and mixed domain adaptation. In the single domain
+adaptation, the model is optimized for one corruption type and then reset before adapting to the
+subsequent corruption, following the evaluation setting from TENT and SWR. In the continuously
+changing adaptation (Wang et al., 2022), the model is continuously adapted to 15 corruption types
+(w/o the reset), which is more realistic because it is impractical to precisely indicate when the data
+distribution has shifted in the real world. Finally, to simulate the non-stationary target domain where
+various domains coexist, we evaluate methods in the mixed domain adaptation setting, where a single batch contains multiple domains. We use a severity level of 5 (Hendrycks & Dietterich, 2018)
+for all experiments. It is noteworthy that we use a single checkpoint of TTN parameter α for each
+dataset across all experimental settings.
+3.2
+
+E XPERIMENTS ON I MAGE C LASSIFICATION
+
+Tables 1, 2, and 3 show error rates on corruption benchmark datasets in three different evaluation
+scenarios; single domain, continuously changing, and mixed domain adaptation, respectively. Note
+that the performance of normalization-based methods in the single (Table 1) and in the continuously changing (Table 2) settings are identical. Tables 4 and 5 show the adaptation performance on
+the source and class imbalanced target domains, respectively. More results and discussions are
+provided in the appendix B, importantly, including results on ImageNet-C (B.5).
+Robustness to practical settings. In Table 1, 2, and 3, TTN and TTN applied methods show robust
+performance over the test batch size ranges from 200 to 1. Comparing with normalization-based
+baselines, we demonstrate that TTN, which uses channel-wisely optimized combining rate α, shows
+better results than defining α as a constant hyperparameter, which can be considered as a special
+6
+
+Published as a conference paper at ICLR 2023
+
+Table 3: Mixed domain adaptation on corruption benchmark. Error rate (↓) of mixed domain
+with severity level 5 using WideResNet-40-2 as backbone for each test batch size. We used the
+reported results of MixNorm with fixed parameters from the original paper and denoted them as ∗.
+Method
+
+200
+
+64
+
+CIFAR-10-C
+16
+4
+2
+
+1
+
+Avg.
+
+200
+
+CIFAR-100-C
+16
+4
+2
+
+64
+
+1
+
+Avg.
+
+Optim.
+
+Norm
+
+Source (CBN) 18.27 18.27 18.27 18.27 18.27 18.27 18.27 46.75 46.75 46.75 46.75 46.75 46.75 46.75
+TBN
+AdaptiveBN
+α-BN
+MixNorm∗
+Ours (TTN)
+
+14.99 15.29 17.38 26.65 35.59 90.00 33.31
+12.62 12.48 12.97 14.59 15.74 16.02 14.07
+13.78 13.78 13.99 14.61 15.07 15.20 14.41
+18.80 18.80 18.80 18.80 18.80 18.80 18.80
+12.16 12.19 12.34 13.96 15.55 17.83 14.00
+
+39.88 40.48 43.73 59.11 80.30 98.91 60.40
+36.88 36.86 38.49 41.43 43.38 44.31 40.23
+40.25 40.11 40.47 41.64 42.39 43.81 41.45
+36.24 36.23 36.85 41.01 45.85 55.52 41.95
+
+TENT
+14.33 14.97 17.30 26.07 35.37 90.00 33.01 39.36 40.01 43.33 58.98 80.55 98.92 60.19
++Ours (TTN) 12.02 12.04 12.20 13.77 15.42 16.40 13.64 36.29 36.23 36.89 41.38 46.65 57.95 42.57
+SWR
+13.24 13.06 16.57 26.08 38.65 91.03 59.54 37.84 37.93 44.37 59.50 78.66 98.95 33.10
++Ours (TTN) 11.89 11.65 13.37 17.05 23.50 64.10 50.29 36.49 36.51 39.60 46.20 58.20 84.76 23.59
+
+case of TTN; TBN and α-BN corresponds to α = 1 and 0.1, respectively. More comparisons with
+different constant α are provided in the appendix B.2. It is noteworthy that TTN as a stand-alone
+method favorably compares with optimization-based baselines in all three scenarios.
+
+Optim.
+
+Norm
+
+Table 4: Source domain adaptation. Error rate Table 5: Class imbalanced target domain. Error
+(↓) on CIFAR-10 using WideResNet-40-2.
+rate (↓) averaged over 15 corruptions of CIFAR10-C with severity level 5 using WideResNet-40Test batch size
+Method
+Avg.
+2. Details are provided in the appendix A.2.
+200
+64
+16
+4
+2
+1
+Source (CBN)
+
+4.92
+
+4.92
+
+4.92
+
+4.92
+
+4.92
+
+4.92
+
+4.92
+
+TBN
+Ours (TTN)
+
+6.41
+4.88
+
+6.60
+5.11
+
+8.64
+5.35
+
+17.65
+7.27
+
+26.08
+9.45
+
+90.00
+9.96
+
+25.90
+7.00
+
+Method
+
+TENT
++Ours (TTN)
+
+6.15
+4.93
+
+6.45
+5.11
+
+8.61
+5.32
+
+17.61
+7.22
+
+26.20
+9.38
+
+90.00
+10.21
+
+32.2
+7.02
+
+SWR
++Ours (TTN)
+
+5.63
+4.79
+
+6.01
+5.02
+
+8.25
+5.51
+
+17.49
+6.68
+
+26.32
+7.91
+
+90.00
+9.34
+
+25.62
+6.54
+
+Test batch size
+
+Avg.
+
+200
+
+64
+
+16
+
+4
+
+2
+
+1
+
+Source (CBN)
+
+18.27
+
+18.27
+
+18.27
+
+18.27
+
+18.27
+
+18.27
+
+18.27
+
+TBN
+Ours (TTN)
+
+77.60
+35.75
+
+76.66
+35.13
+
+77.72
+34.92
+
+78.59
+32.51
+
+77.84
+28.60
+
+90.00
+17.99
+
+79.74
+30.82
+
+Adopting TTN improves other TTA methods. We compare optimization-based methods with
+and without TTN layers. Since TENT, SWR, and CoTTA optimize model parameters on top of
+using TBN layers, they also suffer from performance drops when the test batch size becomes small.
+Adopting TTN reduces the dependency on large test batch size, i.e., makes robust to small batch
+size, and even improves their performance when using large test batch. Furthermore, in continual
+(Table 2) and mixed domain (Table 3) adaptation scenario, TENT and SWR shows higher error
+rate than in single domain (Table 1) adaptation. We interpret that because they update the model
+parameters based on the current output and predict the next input batch using the updated model, the
+model will not perform well if the consecutive batches have different corruption types (i.e., mixed
+domain adaptation). Moreover, the error from the previous input batch propagates to the future
+input stream, and thus they may fall apart rapidly once they have a strongly wrong signal, which
+can happen in continual adaptation (i.e., long-term adaptation without resetting). Applying TTN
+significantly accelerates their model performance regardless of the evaluation scenarios.
+TTN preserves knowledge on source domain. In practice, data driven from the source domain (or
+a merely different domain) can be re-encountered in test time. We used clean domain test data in
+the single domain adaptation scenario to show how TTN and other TTA methods adapt to the seen
+source domain data (but unseen instance). As shown in Table 4, all baseline methods using TBN
+layers, show performance drops even with large batch sizes. We can conclude that it is still better to
+rely on source statistics collected from the large training data than using only current input statistics,
+even if its batch size is large enough to obtain reliable statistics (i.e., 200). However, since TTN
+utilizes source statistics while leveraging the current input, TTN itself and TTN adopted methods
+well preserve the source knowledge compared to the TBN-based methods. With a batch size of
+200, we observe that combining the source and a current test batch statistics outperforms the source
+model (see 3rd row of Table 4).
+TTN is robust to class imbalanced scenario. Heavily depending on current test batch statistics
+are especially vulnerable when the class labels are imbalanced (Boudiaf et al., 2022; Gong et al.,
+2022). To simulate this situation, we sorted test images in class label order and then sampled test
+batches following the sorted data order. In Table 5, we observe that TTN is more robust to the class
+imbalanced scenario than utilizing only test batch statistics (i.e., TBN). As explained in Section 3.5,
+7
+
+Published as a conference paper at ICLR 2023
+
+Table 6: Adaptation on DG benchmarks in semantic segmentation. mIoU(↑) on four unseen
+domains with test batch size of 2 using ResNet-50 based DeepLabV3+ as a backbone.
+Method (Cityscapes→)
+
+Mapillary
+
+GTAV
+
+SYNTHIA
+
+Cityscapes
+
+43.50
+
+54.37
+
+43.71
+
+22.78
+
+76.15
+
+TBN
+Ours (TTN)
+
+43.12
+47.40
+
+47.61
+56.92
+
+42.51
+44.71
+
+25.71
+26.68
+
+72.94
+75.09
+
+TENT
++ Ours (TTN)
+
+43.30
+47.89
+
+47.80
+57.84
+
+43.57
+46.18
+
+25.92
+27.29
+
+72.93
+75.04
+
+SWR
++ Ours (TTN)
+
+43.40
+48.85
+
+47.95
+59.09
+
+42.88
+46.71
+
+25.97
+29.16
+
+72.93
+74.89
+
+Optim.
+
+Norm
+
+BDD-100K
+
+Source (Chen et al., 2018)
+
+we are putting more importance on CBN than TBN, where semantic information is mainly handled,
+i.e., in deeper layers, so we can understand that TTN is less impacted by skewed label distribution.
+3.3
+
+E XPERIMENTS ON S EMANTIC S EGMENTATION
+
+We additionally conduct experiments on domain generalization (DG) benchmarks (Choi et al.,
+2021; Pan et al., 2018) for semantic segmentation, including natural domain shifts (e.g.,
+Cityscapes→BDD-100K), to demonstrate the broad applicability of TTN. Table 6 shows the results
+of evaluating the ResNet-50-based DeepLabV3+ (Chen et al., 2018) model trained on the Cityscapes
+training set using the validation set of real-world datasets such as Cityscapes, BDD-100K, and Mapillary, and synthetic datasets including GTAV and SYNTHIA. We employ a test batch size of 2 for
+test-time adaptation in semantic segmentation. We observe that even when exploiting test batch
+statistics for standardization in BN layers (TBN) or updating the model parameters on top of TBN
+(TENT, SWR) does not improve the model performance (i.e., perform worse than the source model),
+adopting TTN helps the model make good use of the strength of the test batch statistics. Implementation details and additional results are provided in the appendix A.1 and B.7, respectively.
+3.4
+
+A BLATION S TUDIES
+
+Prior A regularizes α to be robust to overall test batch sizes. We conduct an ablation study on
+the importance of each proposed component, i.e., initializing α with prior A, optimizing α using CE
+and MSE losses, and the results are shown in Table 7. Using A for initialization and MSE loss aims
+to optimize α following our intuition that we discussed in Section 2.3. Optimizing α using CE loss
+improves the overall performance, but without regularizing with MSE loss, α may overfit to large
+batch size (rows 2 & 3). Initialization with A or not does not show a significant difference, but A
+provides a better starting point than random initialization when comparing the left and right of the
+2nd row. We observe that when using MSE loss, regardless of initialization using A, the optimized
+α sufficiently reflects our intuition resulting in a low error rate to overall batch sizes (row 3).
+Table 7: Ablation study on importance of each component
+Method
+
+Test batch size
+
+Init. CE MSE 200
+-
+
+3.5
+
+3
+3
+
+3
+3
+
+64
+
+16
+
+4
+
+Method
+
+Avg.
+2
+
+1
+
+Test batch size
+
+Init. CE MSE 200
+
+13.36 13.43 13.85 15.50 17.43 20.07 15.61
+11.64 11.73 12.26 14.46 16.94 19.88 14.49
+11.64 11.78 12.21 13.97 15.86 18.00 13.91
+
+3
+3
+3
+
+3
+3
+
+3
+
+64
+
+16
+
+4
+
+Avg.
+2
+
+1
+
+13.37 13.43 13.85 15.50 17.44 20.07 15.61
+11.73 11.82 12.23 14.18 16.41 19.27 14.27
+11.67 11.80 12.13 13.93 15.83 17.99 13.89
+
+V ISUALIZATION OF α
+
+Fig. 4 shows the visualization of optimized α for CIFAR-10 using WideResNet-40-2. We observe
+that α decreases from shallow to deep layers (left to right), which means CBN is more active in
+deeper layers, and TBN is vice versa. As shown in Table 4 and 6, CBN employing source statistics
+is superior to TBN when the distribution shift between source and target domains is small. Assuming that the α we obtained is optimal, we can conjecture that CBN is more active (i.e., α closer to
+0) in deeper layers because domain information causing the distribution shift has been diminished.
+In contrast, TBN has a larger weight (i.e., α closer to 1) in shallower layers since the domain information induces a large distribution shift. This interpretation is consistent with the observations
+of previous studies (Pan et al., 2018; Wang et al., 2021; Kim et al., 2022a) that style information
+mainly exists in shallower layers, whereas only content information remains in deeper layers.
+8
+
+Published as a conference paper at ICLR 2023
+
+1
+0.9
+0.8
+0.7
+0.6
+0.5
+0.4
+0.3
+0.2
+0.1
+0
+
+Channel-wise 𝛼
+Channel mean 𝛼 per layer
+
+1
+
+Channels in all layers
+
+𝐶𝑙
+
+2661
+
+Figure 4: Optimized α. x- and y-axes indicate all channels in order from shallow to deep layers and
+the interpolating weight α, respectively. Cl denotes the channel size of layer l.
+
+4
+
+R ELATED W ORK
+
+Test-time adaptation/training (TTA) aims to adapt models towards test data to overcome the performance degradation caused by distribution shifts (Sun et al., 2020; Wang et al., 2020). There are
+other related problems, unsupervised domain adaptation (UDA) (Sun & Saenko, 2016; Ganin et al.,
+2016) and source-free domain adaptation (SFDA) (Liang et al., 2020; Huang et al., 2021; Liu et al.,
+2021). Both UDA and SFDA have access to sufficiently large enough unlabeled target datasets, and
+their objective is to achieve high performance on that particular target domain. Unlike UDA and
+SFDA, TTA utilizes test data in an online manner. There are two key factors of recent approaches:
+adapting standardization statistics in normalization layers and adapting model parameters.
+Normalization in Test Time. Nado et al. (2020) suggested prediction-time BN, which uses test
+batch statistics for standardization and Schneider et al. (2020) introduced to adapt BN statistics by
+combining source and test batch statistics considering the the test batch size to mitigate the intermediate covariate shift. In this paper, we refer to the former method as TBN. Similarly, You et al.
+(2021) and Khurana et al. (2021) mixed the statistics using predefined hyperparameter. Also, Mirza
+et al. (2022) and Hu et al. (2021) adapted the statistics using moving average while augmenting the
+input to form a pseudo test batch when only a single instance is given. The primary difference with
+the existing approaches is that we consider the channel-wise domain-shift sensitivity of BN layers
+to optimize the interpolating weights between CBN and TBN. Concurrently, Zou et al. (2022) proposed to adjust the standardization statistics using a learnable calibration strength and showed its
+effectiveness focusing on the semantic segmentation task.
+Optimization in Test Time. TENT (Wang et al., 2020), SWR (Choi et al., 2022), and CoTTA (Wang
+et al., 2022) updated model parameters while using TBN. TENT optimized affine parameters in
+BN layers using entropy minimization while freezing the others. To maximize the adaptability,
+SWR updated the entire model parameters minimizing the entropy loss based on the domain-shift
+sensitivity. To stabilize the adaptation in continuously changing domains, CoTTA used consistency
+loss between student and teacher models and stochastically restored random parts of the pre-trained
+model. Liu et al. (2021) and Chen et al. (2022) suggested to update the model through contrastive
+learning.
+We focus on correcting the standardization statistics using domain-shift aware interpolating weight
+α. Similar to Choi et al. (2022), we measure the domain-shift sensitivity by comparing gradients.
+The principle difference is that we use channel-wise sensitivity when optimizing α in post-training,
+while SWR used layer-wise sensitivity regularizing the entire model update in test time.
+
+5
+
+C ONCLUSIONS
+
+This paper proposes TTN, a novel domain-shift aware batch normalization layer, which combines
+the benefits of CBN and TBN that have a trade-off relationship. We present a strategy for mixing
+CBN and TBN based on the interpolating weight derived from the optimization procedure utilizing
+the sensitivity to domain shift and show that our method significantly outperforms other normalization techniques in various realistic evaluation settings. Additionally, our method is highly practical
+because it can complement other optimization-based TTA methods. The oracle mixing ratio between
+CBN and TBN can vary depending on the domain gap difference. However, our proposed method
+employs a fixed mixing ratio during test time, where the mixing ratio is optimized before model
+deployment. If we could find the optimal mixing ratio according to the distribution shift during test
+time, we can expect further performance improvement. We consider it as future work. In this regard,
+our efforts encourage this field to become more practical and inspire new lines of research.
+9
+
+Published as a conference paper at ICLR 2023
+
+R EPRODUCIBILITY S TATEMENT
+To ensure the reproducibility of our method, we provide the experimental setup in Section 3.1.
+Moreover, the details on implementation and evaluation settings can be found in the appendix A.1
+and A.2, respectively. The pseudocode for overall training and testing scheme is provided in the
+appendix A.3. Together with related references and publicly available codes, we believe our paper
+contains sufficient information for reimplementation.
+
+ACKNOWLEDGEMENT
+We would like to thank Kyuwoong Hwang, Simyung Chang, and Seunghan Yang of the Qualcomm
+AI Research team for their valuable discussions.
+
+R EFERENCES
+Malik Boudiaf, Romain Mueller, Ismail Ben Ayed, and Luca Bertinetto. Parameter-free online
+test-time adaptation. In IEEE Conference on Computer Vision and Pattern Recognition (CVPR),
+2022.
+John Bronskill, Jonathan Gordon, James Requeima, Sebastian Nowozin, and Richard Turner. Tasknorm: Rethinking batch normalization for meta-learning. In International Conference on Machine Learning (ICML). PMLR, 2020.
+Dian Chen, Dequan Wang, Trevor Darrell, and Sayna Ebrahimi. Contrastive test-time adaptation. In
+IEEE Conference on Computer Vision and Pattern Recognition (CVPR), 2022.
+Liang-Chieh Chen, Yukun Zhu, George Papandreou, Florian Schroff, and Hartwig Adam. Encoderdecoder with atrous separable convolution for semantic image segmentation. In Proceedings of
+the European conference on computer vision (ECCV), 2018.
+Sungha Choi, Sanghun Jung, Huiwon Yun, Joanne T Kim, Seungryong Kim, and Jaegul Choo.
+Robustnet: Improving domain generalization in urban-scene segmentation via instance selective
+whitening. In IEEE Conference on Computer Vision and Pattern Recognition (CVPR), 2021.
+Sungha Choi, Seunghan Yang, Seokeon Choi, and Sungrack Yun. Improving test-time adaptation
+via shift-agnostic weight regularization and nearest source prototypes. In European Conference
+on Computer Vision (ECCV), 2022.
+Marius Cordts, Mohamed Omran, Sebastian Ramos, Timo Rehfeld, Markus Enzweiler, Rodrigo
+Benenson, Uwe Franke, Stefan Roth, and Bernt Schiele. The cityscapes dataset for semantic
+urban scene understanding. In IEEE Conference on Computer Vision and Pattern Recognition
+(CVPR), 2016.
+Yaroslav Ganin, Evgeniya Ustinova, Hana Ajakan, Pascal Germain, Hugo Larochelle, François
+Laviolette, Mario Marchand, and Victor Lempitsky. Domain-adversarial training of neural networks. The journal of machine learning research, 2016.
+Taesik Gong, Jongheon Jeong, Taewon Kim, Yewon Kim, Jinwoo Shin, and Sung-Ju Lee.
+Note:robust continual test-time adaptation against temporal correlation. Advances in Neural Information Processing Systems (NeurIPS), 2022.
+Priya Goyal, Piotr Dollár, Ross Girshick, Pieter Noordhuis, Lukasz Wesolowski, Aapo Kyrola, Andrew Tulloch, Yangqing Jia, and Kaiming He. Accurate, large minibatch sgd: Training imagenet
+in 1 hour. arXiv preprint arXiv:1706.02677, 2017.
+Yves Grandvalet and Yoshua Bengio. Semi-supervised learning by entropy minimization. In Advances in Neural Information Processing Systems (NeurIPS), 2004.
+Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun. Deep residual learning for image recognition. In IEEE Conference on Computer Vision and Pattern Recognition (CVPR), 2016.
+10
+
+Published as a conference paper at ICLR 2023
+
+Dan Hendrycks and Thomas Dietterich. Benchmarking neural network robustness to common corruptions and perturbations. In International Conference on Learning Representations (ICLR),
+2018.
+Dan Hendrycks, Norman Mu, Ekin Dogus Cubuk, Barret Zoph, Justin Gilmer, and Balaji Lakshminarayanan. Augmix: A simple data processing method to improve robustness and uncertainty. In
+International Conference on Learning Representations (ICLR), 2019.
+Xuefeng Hu, Gokhan Uzunbas, Sirius Chen, Rui Wang, Ashish Shah, Ram Nevatia, and Ser-Nam
+Lim. Mixnorm: Test-time adaptation through online normalization estimation. arXiv preprint
+arXiv:2110.11478, 2021.
+Jiaxing Huang, Dayan Guan, Aoran Xiao, and Shijian Lu. Model adaptation: Historical contrastive
+learning for unsupervised domain adaptation without source data. 2021.
+Sergey Ioffe and Christian Szegedy. Batch normalization: Accelerating deep network training by
+reducing internal covariate shift. In International Conference on Machine Learning (ICML), 2015.
+Ansh Khurana, Sujoy Paul, Piyush Rai, Soma Biswas, and Gaurav Aggarwal. Sita: Single image
+test-time adaptation. arXiv preprint arXiv:2112.02355, 2021.
+Byeonggeun Kim, Seunghan Yang, Jangho Kim, Hyunsin Park, Juntae Lee, and Simyung Chang.
+Domain Generalization with Relaxed Instance Frequency-wise Normalization for Multi-device
+Acoustic Scene Classification. In Conference of the International Speech Communication Association (INTERSPEECH), 2022a.
+Jin Kim, Jiyoung Lee, Jungin Park, Dongbo Min, and Kwanghoon Sohn. Pin the memory: Learning to generalize semantic segmentation. In IEEE Conference on Computer Vision and Pattern
+Recognition (CVPR), 2022b.
+Diederik P Kingma and Jimmy Ba. Adam: A method for stochastic optimization. 2015.
+Suhyeon Lee, Hongje Seong, Seongwon Lee, and Euntai Kim. Wildnet: Learning domain generalized semantic segmentation from the wild. In IEEE Conference on Computer Vision and Pattern
+Recognition (CVPR), 2022.
+Jian Liang, Dapeng Hu, and Jiashi Feng. Do we really need to access the source data? source
+hypothesis transfer for unsupervised domain adaptation. In International Conference on Machine
+Learning (ICML). PMLR, 2020.
+Yuejiang Liu, Parth Kothari, Bastien van Delft, Baptiste Bellot-Gurlet, Taylor Mordan, and Alexandre Alahi. Ttt++: When does self-supervised test-time training fail or thrive? Advances in Neural
+Information Processing Systems (NeurIPS), 2021.
+Mingsheng Long, Han Zhu, Jianmin Wang, and Michael I Jordan. Unsupervised domain adaptation with residual transfer networks. In Advances in Neural Information Processing Systems
+(NeurIPS), 2016.
+Ilya Loshchilov and Frank Hutter. Sgdr: Stochastic gradient descent with warm restarts. 2017.
+M Jehanzeb Mirza, Jakub Micorek, Horst Possegger, and Horst Bischof. The norm must go on:
+Dynamic unsupervised domain adaptation by normalization. In IEEE Conference on Computer
+Vision and Pattern Recognition (CVPR), 2022.
+Zachary Nado, Shreyas Padhy, D Sculley, Alexander D’Amour, Balaji Lakshminarayanan, and
+Jasper Snoek. Evaluating prediction-time batch normalization for robustness under covariate
+shift. arXiv preprint arXiv:2006.10963, 2020.
+Gerhard Neuhold, Tobias Ollmann, Samuel Rota Bulo, and Peter Kontschieder. The mapillary vistas
+dataset for semantic understanding of street scenes. In International Conference on Computer
+Vision (ICCV), 2017.
+Xingang Pan, Ping Luo, Jianping Shi, and Xiaoou Tang. Two at once: Enhancing learning and
+generalization capacities via ibn-net. In European Conference on Computer Vision (ECCV), 2018.
+11
+
+Published as a conference paper at ICLR 2023
+
+Joaquin Quinonero-Candela, Masashi Sugiyama, Anton Schwaighofer, and Neil D Lawrence.
+Dataset shift in machine learning. Mit Press, 2008.
+Stephan R. Richter, Vibhav Vineet, Stefan Roth, and Vladlen Koltun. Playing for data: Ground truth
+from computer games. In European Conference on Computer Vision (ECCV), 2016.
+German Ros, Laura Sellart, Joanna Materzynska, David Vazquez, and Antonio M Lopez. The
+synthia dataset: A large collection of synthetic images for semantic segmentation of urban scenes.
+In IEEE Conference on Computer Vision and Pattern Recognition (CVPR), 2016.
+Steffen Schneider, Evgenia Rusak, Luisa Eck, Oliver Bringmann, Wieland Brendel, and Matthias
+Bethge. Improving robustness against common corruptions by covariate shift adaptation. Advances in Neural Information Processing Systems (NeurIPS), 2020.
+Saurabh Singh and Abhinav Shrivastava. Evalnorm: Estimating batch normalization statistics for
+evaluation. In International Conference on Computer Vision (ICCV), 2019.
+Cecilia Summers and Michael J Dinneen. Four things everyone should know to improve batch
+normalization. In International Conference on Learning Representations (ICLR), 2019.
+Baochen Sun and Kate Saenko. Deep coral: Correlation alignment for deep domain adaptation. In
+European Conference on Computer Vision (ECCV), 2016.
+Yu Sun, Xiaolong Wang, Zhuang Liu, John Miller, Alexei Efros, and Moritz Hardt. Test-time training with self-supervision for generalization under distribution shifts. In International Conference
+on Machine Learning (ICML), 2020.
+Tuan-Hung Vu, Himalaya Jain, Maxime Bucher, Matthieu Cord, and Patrick Pérez. Advent: Adversarial entropy minimization for domain adaptation in semantic segmentation. In IEEE Conference
+on Computer Vision and Pattern Recognition (CVPR), 2019.
+Dequan Wang, Evan Shelhamer, Shaoteng Liu, Bruno Olshausen, and Trevor Darrell. Tent: Fully
+test-time adaptation by entropy minimization. In International Conference on Learning Representations (ICLR), 2020.
+Qin Wang, Olga Fink, Luc Van Gool, and Dengxin Dai. Continual test-time domain adaptation. In
+IEEE Conference on Computer Vision and Pattern Recognition (CVPR), 2022.
+Yulin Wang, Zanlin Ni, Shiji Song, Le Yang, and Gao Huang. Revisiting locally supervised learning:
+an alternative to end-to-end training. In International Conference on Learning Representations
+(ICLR), 2021.
+Fuming You, Jingjing Li, and Zhou Zhao. Test-time batch statistics calibration for covariate shift.
+arXiv preprint arXiv:2110.04065, 2021.
+Fisher Yu, Haofeng Chen, Xin Wang, Wenqi Xian, Yingying Chen, Fangchen Liu, Vashisht Madhavan, and Trevor Darrell. Bdd100k: A diverse driving dataset for heterogeneous multitask learning.
+In IEEE Conference on Computer Vision and Pattern Recognition (CVPR), 2020.
+Yuliang Zou, Zizhao Zhang, Chun-Liang Li, Han Zhang, Tomas Pfister, and Jia-Bin Huang. Learning instance-specific adaptation for cross-domain segmentation. European Conference on Computer Vision (ECCV), 2022.
+
+12
+
+Published as a conference paper at ICLR 2023
+
+A
+
+A PPENDIX : F OR R EPRODUCIBILITY
+
+This section provides supplemental material for Section 2 and 3.1.
+A.1
+
+I MPLEMENTATION D ETAILS
+
+Datasets and Models. For CIFAR-10/100-C, we optimized α using augmented CIFAR-10/100
+training set on the pre-trained WideResNet-40-2 (WRN-40) (Hendrycks et al., 2019). For ImageNetC, we used augmented ImageNet training set (randomly sampled 64000 instances per epoch) on the
+pre-trained ResNet-50.
+Augmentation. Following the setting of SWR (Choi et al., 2022), we used color jittering, random
+invert and random grayscale when obtaining the prior A. When optimizing α, we followed the
+augmentation choice of CoTTA (Wang et al., 2022), which are color jittering, padding, random
+affine, gaussian blur, center crop and random horizontal flip. We excluded for gaussian noise to
+avoid any overlap with corruption type of common corruptions (Hendrycks & Dietterich, 2018). For
+ImageNet, we only used the same augmentation both for obtaining A and optimizing α following
+the SWR augmentation choices.
+Post-training. When obtaining prior, we used randomly selected 1024 samples from the training
+set, following the setting of SWR. We used Adam (Kingma & Ba, 2015) optimizer using a learning
+rate (LR) of 1e-3, which is decayed with cosine schedule (Loshchilov & Hutter, 2017) for 30 epochs
+and used 200 training batch for CIFAR-10/100. For ImageNet, we lowered LR to 2.5e-4 and used
+64 batch size. For semantic segmentation task, we trained TTN using Cityscapes training set, and
+training batch size of 2. We resized the image height to 800 while preserving the original aspect
+ratio Cordts et al. (2016). We can terminate the training when MSE loss saturates (We observed
+that α does not show significant difference after the MSE loss is saturated). We used the weighting
+hyperparmeter to MSE loss λ as 1.
+Test time. For AdaptiveBN, which adjusts the interpolating weight using two factors: hyperparameter N and test batch size n, we followed the suggested N , which is empirically obtained best
+hyperparameter from the original paper, for each n (Figure 11, ResNet architecture from Schneider
+et al. (2020)). In detail, we set N as 256, 128, 64, 32, and 16 for test batch size 200, 64, 16, 4, 2,
+and 1, which yields α as 0.44, 0.33, 0.2, 0.11, 0.06, and 0.06, respectively.
+For optimization-based TTA methods, we followed default setting in TENT, SWR, and CoTTA
+for test-time adaptation. We used LR of 1e-3 to test batch size of 200 for CIFAR-10/100-C in
+single domain (TENT, SWR) and continuously changing domain (CoTTA) scenarios. To avoid
+rapid error accumulation, we lowered LR to 1e-4 for TENT and SWR in continual and mixed domain scenarios. Moreover, we updated model parameters after accumulating the gradients for 200
+samples for CIFAR-10/100-C. In other words, we compute gradients per batch, but update, i.e.,
+optimizer.step(), after seeing 200 data samples. Exceptionally, we used LR of 5e-5 for
+SWR and SWR+TTN in mixed domain setting. Additionally, in continuously changing and mixed
+domain scenarios, we used the stable version of SWR, which updates the model parameter based on
+the frozen source parameters instead of previously updated parameters (original SWR).
+For semantic segmentation, we set the test batch size as 2 and learning rate for optimization-based
+methods as 1e-6 for all datasets. For SWR, we set the importance of the regularization term λr as
+500. The other hyperparameters are kept the same as Choi et al. (2022) choices. For all test-time
+adaptation, we used constant learning rate without scheduling.
+A.2
+
+E VALUATION S CENARIO D ETAILS
+
+Class imbalanced setting. In the main paper Table 5, we show the results under class imbalanced
+settings. In the setting, we sorted the test dataset of each corruption in the order of class labels,
+i.e., from class 0 to 9 for CIFAR-10-C. Then, we comprised test batches following the sorted order.
+Therefore, most batches consist of single class input data, which leads to biased test batch statistics.
+For larger batch size, the statistics are more likely to be extremely skewed, and that explains why
+error rates are higher with larger batch sizes than with the small ones.
+13
+
+Published as a conference paper at ICLR 2023
+
+A.3
+
+P SEUDOCODE
+
+Pseudocode for post-training, i.e., obtaining A and optimizing α, is provided in Algorithms 1 and
+2, respectively, and that for test time is in Algorithm 3. Moreover, we provide PyTorch-friendly
+pseudocode for obtaining A in Listing 1. Please see Section 2 for equations and terminologies used
+in the algorithms.
+Algorithm 1 Obtain prior A
+1: Require: Pre-trained model fθ ; source training data DS = (X, Y )
+2: Output: Prior A
+3: for all (x, y) in DS do
+4:
+Augment x: x0
+5:
+Collect gradients (∇γ , ∇γ 0 ) and (∇β , ∇β 0 ) from fθ using clean x and augmented x0
+6: end for
+7: Compute gradient distance score d using Eq. 4
+8: Define prior A using Eq. 5
+
+Algorithm 2 Post-train
+1: Require: Pre-trained model fθ ; source training data DS = (X, Y );
+
+step size hyperparameter η; regularization weight hyperparameter λ
+2: Output: Optimized interpolating weight α
+3: Obtain prior A using Algorithm 1
+4: Initialize α with prior A
+5: Replace all BN layers of fθ to TTN layers using α and Eq. 2
+6: while not done do
+7:
+Sample minibatches B S from DS
+8:
+for all minibatches do
+9:
+Augment all x in B S : x0
+|BS |
+
+Evaluate ∇α L using fθ given {(x0i , yi )}i=1 using Eq. 6 while adapting standardization
+statistics using Eq. 2
+11:
+Update α ← α − η∇α L
+12:
+end for
+13: end while
+
+10:
+
+Algorithm 3 Inference (Test time)
+1: Require: Pre-trained model fθ ; optimized α, target test data DT = (X);
+2: Replace all BN layers of fθ to TTN layers using α and Eq. 2
+3: Sample minibatches B T from DT
+4: for all minibatches do
+5:
+Make prediction using fθ given B T while adapting standardization statistics using Eq. 2
+6: end for
+def obtain_prior(model, train_data):
+# make weight and bias of BN layers requires_grad=True, otherwise False
+3
+params = {n: p for n, p in model.named_parameters() if p.requires_grad}
+1
+2
+4
+5
+6
+7
+8
+9
+
+grad_sim = {}
+for x, y in train_data:
+# collect gradients for clean and augmented input
+grad_org = collect_grad(model, x, y, params)
+grad_aug = collect_grad(model, augment(x), y, params)
+
+10
+11
+12
+13
+
+# compute grad similarity
+for n, p in params.items():
+grad_sim[n].data = cosine_sim(grad_org, grad_aug)
+
+14
+
+14
+
+Published as a conference paper at ICLR 2023
+
+# average over data samples
+for n, p in params.items():
+grad_sim[n].data /= len(train_data)
+
+15
+16
+17
+18
+
+# min max normalization
+max_grad = get_max_value(grad_sim) # scalar
+min_grad = get_min_value(grad_sim) # scalar
+grad_dist = {}
+for n, p in grad_sim.items():
+grad_dist[n] = (p - min_grad) / (max_grad - min_grad)
+
+19
+20
+21
+22
+23
+24
+25
+
+prior = []
+j = 0
+# integrate gradients of weight(gamma) and bias(beta) for each BN layer
+for n, p in grad_dist.items():
+if "weight" in n:
+prior.append(p)
+elif "bias" in n:
+prior[j] += p
+prior[j] /= 2
+prior[j] = (1-prior[j])**2
+j += 1
+
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+
+return prior
+
+38
+39
+
+def collect_grad(model, x, y, params):
+model.zero_grad()
+42
+out = model(x)
+43
+loss = ce_loss(out, y)
+44
+loss.backward()
+40
+41
+
+45
+
+grad = {}
+for n, p in params.items():
+grad[n].data = p.data
+
+46
+47
+48
+49
+
+return grad
+
+50
+
+Listing 1: PyTorch-friendly pseudo code for obtaining prior
+
+B
+
+A PPENDIX : E XPERIMENTAL R ESULTS
+
+B.1
+
+A BLATION S TUDIES
+
+Channel-wise α. In Table 8, we compared different granularity levels of interpolating weight α, i.e.,
+channel-wise, layer-wise, and a constant value with CIFAR-10-C and backbone WRN-40. We observed that channel-wise optimized α shows the best performance. We take average of the channelwisely optimized α (the 1st row) over channels to make a layer-wise α (the 2nd row), and take
+average over all channels and layers to make a constant value (the 3rd row). α of the 1st and 2nd
+rows are visualized in the main paper Figure 4 colored in blue and red, respectively. The constant
+value α (the 3rd row) is 0.3988. We also optimized α layer-wisely (the 4th row).
+Table 8: Ablation study on granularity level of α
+#
+
+Test batch size
+
+Method
+
+Avg.
+
+200
+
+64
+
+16
+
+4
+
+2
+
+1
+
+1
+2
+3
+
+Channel-wise (Optimized)
+Layer-wise (Channel mean)
+Constant (Mean)
+
+11.67
+12.75
+12.07
+
+11.80
+12.84
+12.21
+
+12.13
+13.16
+13.05
+
+13.93
+14.66
+16.72
+
+15.83
+16.40
+20.04
+
+17.99
+18.82
+21.26
+
+13.89
+14.77
+15.89
+
+4
+
+Layer-wise (Optimized)
+
+13.11
+
+13.21
+
+13.51
+
+14.84
+
+16.46
+
+18.62
+
+14.96
+
+15
+
+Published as a conference paper at ICLR 2023
+
+MSE loss strength λ. We empirically set the MSE loss strength λ in Eq. 6 as 1 through the ablation
+study using CIFAR-10-C and WRN-40 (Table 9). Using the MSE regularizer prevents the learnable
+α from moving too far from the prior, thus letting α follow our intuition, i.e., putting smaller importance on the test batch statistics if the layer or channel is invariant to domain shifts. However,
+with too strong regularization (λ=10.0), the overall error rates are high, which means the α needs to
+be sufficiently optimized. On the other hand, with too small regularization, the α may overfit to the
+training batch size (B=200) and lose the generalizability to the smaller batch size.
+Table 9: MSE loss strength λ
+Test batch size
+
+λ
+0.0
+0.1
+1.0
+10.0
+
+B.2
+
+Avg.
+
+200
+
+64
+
+16
+
+4
+
+2
+
+1
+
+11.73
+11.65
+11.67
+12.45
+
+11.82
+11.91
+11.80
+12.63
+
+12.23
+12.09
+12.13
+12.82
+
+14.18
+13.84
+13.93
+14.55
+
+16.41
+15.71
+15.83
+16.32
+
+19.27
+18.24
+17.99
+18.56
+
+14.27
+13.91
+13.89
+14.56
+
+M ORE COMPARISONS ON CIFAR10-C
+
+Constant α. Table 10 shows results of simple baseline for normalization-based methods where the
+α is a constant value ranging from 0 to 1. α = 0 is identical to CBN (Ioffe & Szegedy, 2015), and α
+= 1 is identical to TBN (Nado et al., 2020). We observe that the lower α, i.e., using less test batch
+statistics, shows better performance for small test batch sizes. This observation is analogous to the
+finding of the previous work (Schneider et al., 2020).
+Table 10: Constant α. Error rate (↓) averaged over 15 corruptions of CIFAR-10-C (WRN-40).
+Test batch size
+
+α
+0
+0.1
+0.2
+0.3
+0.4
+0.5
+0.6
+0.7
+0.8
+0.9
+1
+
+B.3
+
+Avg.
+
+200
+
+64
+
+16
+
+4
+
+2
+
+1
+
+18.26
+13.95
+12.46
+12.05
+12.13
+12.42
+12.88
+13.37
+13.82
+14.18
+14.50
+
+18.39
+14.1
+12.66
+12.29
+12.41
+12.78
+13.32
+13.9
+14.37
+14.8
+15.15
+
+18.26
+14.05
+12.89
+12.72
+13.12
+13.73
+14.48
+15.23
+15.94
+16.58
+17.10
+
+18.26
+14.65
+14.30
+15.18
+16.69
+18.32
+20.02
+21.75
+23.44
+24.94
+26.29
+
+18.25
+15.14
+15.53
+17.35
+19.81
+22.52
+25.17
+27.91
+30.59
+33.12
+35.67
+
+18.25
+15.45
+15.64
+17.42
+20.51
+24.88
+31.97
+46.65
+77.15
+89.81
+90.00
+
+18.28
+14.56
+13.91
+14.50
+15.78
+17.44
+19.64
+23.14
+29.22
+32.24
+33.12
+
+VARIANTS OF TTN FOR SMALL TEST BATCH SIZE
+
+Online TTN. TTN interpolating weight α can also be adapted during test time. Table 11 shows the
+results of the TTN online version, which further optimizes the post-trained alpha using the entropy
+minimization and mean-squared error (MSE) loss between the updated alpha and the initial posttrained alpha. We followed entropy minimization loss used in TENT (Wang et al., 2020), and the
+MSE loss can be written as LMSE = kα − α0 k2 , where α0 is the post-trained α. We set the learning
+rate as 1e-2, 2.5e-3, 5e-4, 1e-4, 5e-5, and 2.5e-5 by linearly decreasing according to the test batch
+size of 200, 64, 16, 4, 2, and 1 (Goyal et al., 2017). The online TTN shows improvements compared
+to the offline TTN in all three evaluation scenarios (single, continuously changing, and mixed).
+Scaled TTN. Following the observation from Table 10, we lowered the interpolating weight by multiplying a constant scale value, ranging (0, 1), to the optimized TTN α. In Table 11, we empirically
+set the scale value as 0.4.
+Dynamic training batch size. We observe that using the dynamic batch size in the post-training
+stage also improves the performance for small test batch sizes (2 or 1), while slightly deteriorating
+the performance for large test batch sizes (200 or 64). We randomly sampled training batch size
+from the range of [4, 200] for each iteration. Other hyperparameters are kept as the same.
+16
+
+Published as a conference paper at ICLR 2023
+
+Table 11: TTN variants. Error rate (↓) averaged over 15 corruptions of CIFAR-10-C (WRN-40).
+Test batch size
+
+B.4
+
+Avg.
+
+Method
+
+Eval. setting
+
+200
+
+64
+
+16
+
+4
+
+2
+
+1
+
+TTN (offline, default)
+TTN (offline, default)
+
+Single & Cont.
+Mixed
+
+11.67
+12.16
+
+11.80
+12.19
+
+12.13
+12.34
+
+13.93
+13.96
+
+15.83
+15.55
+
+17.99
+17.83
+
+13.89
+14.00
+
+TTN (online)
+TTN (online)
+TTN (online)
+
+Single
+Cont.
+Mixed
+
+11.39
+11.67
+12.04
+
+11.64
+11.96
+12.04
+
+11.97
+12.15
+12.06
+
+13.70
+13.90
+13.90
+
+15.41
+15.67
+15.46
+
+17.49
+17.72
+17.62
+
+13.60
+13.85
+13.85
+
+TTN (scaled)
+TTN (scaled)
+
+Single & Cont.
+Mixed
+
+13.20
+13.17
+
+13.38
+13.05
+
+13.35
+13.17
+
+13.88
+13.74
+
+14.54
+14.36
+
+15.17
+15.09
+
+13.92
+13.76
+
+TTN (dynamic train batch size)
+TTN (dynamic train batch size)
+
+Single & Cont.
+Mixed
+
+11.82
+12.12
+
+12.04
+12.01
+
+12.17
+11.91
+
+13.60
+13.43
+
+15.13
+14.76
+
+17.22
+17.23
+
+13.66
+13.58
+
+S TUDY ON AUGMENTATION TYPE
+
+TTN is robust to the data augmentation. We used data augmentation in the post-training phase
+to simulate domain shifts. The rationale for the simulation is to expose the model to different input
+domains. Especially when obtaining the prior, we compare the outputs from shifted domains with
+the clean (original) domain in order to analyze which part of the model is affected by the domain
+discrepancy. Therefore, changing the domain itself is what matters, not which domain the input is
+shifted to. We demonstrated this by conducting ablation studies by varying the augmentation type.
+We analyzed various augmentation types when obtaining prior and when optimizing alpha and the
+results are shown in Figure 5 (a) and (b), respectively. We use a true corruption, i.e., one of 15
+corruption types in the corruption benchmark, as an augmentation type in the post-training phase
+to analyze how TTN works if the augmentation type and test corruption type are misaligned or
+perfectly aligned. Specifically, we used the true corruption when obtaining the prior while keeping
+the augmentation choices when optimizing alpha as described in the appendix A.1, and vice versa.
+Expectedly, the diagonal elements, i.e., where the same corruption type is used both for in posttraining and in test time, tend to show the lowest error rate in Figure 5(b). The row-wise standard
+deviation is lower than 1 in most cases and even lower than 0.5 in Figure 5(a), which means the
+prior is invariant to the augmentation choice. Moreover, we observe that the average error rate over
+all elements, 11.74% in ablation for obtaining prior and 11.67% in ablation for optimizing alpha,
+is almost as same as TTN result 11.67% (See Table 14 and Figure 5). Moreover, we conducted an
+ablation study on the choice of the augmentation type using CIFAR-10-C and WRN-40 (Table12).
+We observe that obtaining prior and optimizing alpha steps are robust to the augmentation types.
+Table 12: Ablation study on augmentation choice. From left to right one augmentation type is
+added at a time. Default setting, which we used in all experiments, is colored in gray.
+Prior augmentation type
+Optimizing α augmentation type
+
+B.5
+
+color jitter
+
++ grayscale
+
++ invert
+
++ gaussian blur
+
++ horizontal flip
+
+12.03
+
+11.83
+
+11.67
+
+11.59
+
+11.58
+
+color jitter
+
++ padding
+
++ affine
+
++ gaussian blur
+
++ horizontal flip
+
+11.78
+
+11.78
+
+11.7
+
+11.70
+
+11.67
+
+R ESULTS ON I MAGE N ET-C
+
+Table 13 shows the experimental results using ResNet-50 (He et al., 2016) on ImageNetC (Hendrycks & Dietterich, 2018) dataset. We emphasized the effectiveness of our proposed method
+by showing the significant improvement in large-scale dataset experiment. Similar to the results in
+CIFAR-10/100-C, TTN showed the best performance compared to normalization-based methods
+(TBN (Nado et al., 2020), AdaptiveBN Schneider et al. (2020), and α-BN (You et al., 2021)) and
+improved TTA performance when it is applied to optimization-based methods (TENT (Wang et al.,
+2020) and SWR (Choi et al., 2022)).
+During post-training, we used LR of 2.5e-4 and batch size of 64. In test time, we used the learning
+rate of 2.5e-4 for TENT following the setting from the original paper, and used 5e-6 for TENT+TTN.
+For SWR and SWR+TTN, we used learning rate of 2.5e-4 for B=64, and 2.5e-6 for B=16, 4, 2, and
+1. We had to carefully tune the learning rate especially for SWR, since the method updates the
+17
+
+Published as a conference paper at ICLR 2023
+
+entire model parameters in an unsupervised manner and hence is very sensitive to the learning rate
+when the test batch size becomes small. Other hyperparameters and details are kept same (See the
+appendix A.1 for more details). Moreover, to avoid rapid accumulation, we stored gradients for
+sufficiently large test samples and then updated the model parameters (for example, we conducted
+adaptation in every 64 iterations in the case of batch size of 1) in both TENT and SWR.
+Table 13: Single domain adaptation on ImageNet-C (ResNet-50). Error rate (↓) averaged over 15
+corruption types with severity level 5 is reported for each test batch size.
+Test batch size
+
+Optim.
+
+Norm
+
+Method
+
+B.6
+
+Avg. Error
+
+64
+
+16
+
+4
+
+2
+
+1
+
+Source (CBN)
+
+93.34
+
+93.34
+
+93.34
+
+93.34
+
+93.34
+
+93.34
+
+TBN
+AdaptiveBN
+α-BN
+Ours (TTN)
+
+74.24
+77.86
+86.06
+72.21
+
+76.81
+81.47
+86.32
+73.18
+
+85.74
+86.71
+87.16
+76.98
+
+95.35
+90.15
+88.33
+81.52
+
+99.86
+91.11
+90.45
+88.49
+
+86.40
+85.46
+87.66
+78.48
+
+TENT
++Ours (TTN)
+
+66.56
+71.42
+
+72.61
+72.45
+
+93.37
+76.66
+
+99.46
+81.89
+
+99.90
+91.00
+
+86.41
+78.68
+
+SWR
++Ours (TTN)
+
+64.41
+55.68
+
+74.19
+69.25
+
+84.30
+78.48
+
+93.05
+86.37
+
+99.86
+94.08
+
+83.16
+76.77
+
+E RROR R ATES OF E ACH C ORRUPTION
+
+In Table 14, we show the error rates of TTN for each corruption of CIFAR-10-C using the WRN-40
+backbone. The averaged results over the corruptions are in Table 1.
+Table 14: Results of each corruption (CIFAR-10-C)
+batch size
+
+gauss.
+
+shot
+
+impulse
+
+defocus
+
+glass
+
+motion
+
+zoom
+
+snow
+
+frost
+
+fog
+
+brightness
+
+contrast
+
+elastic
+
+pixel.
+
+jpeg.
+
+Avg.
+
+200
+64
+16
+4
+2
+1
+
+14.81
+14.81
+15.23
+17.03
+19.21
+22.03
+
+12.78
+12.81
+13.00
+15.29
+16.80
+19.97
+
+17.32
+17.42
+17.98
+19.75
+21.86
+25.24
+
+7.37
+7.41
+7.71
+9.26
+10.70
+12.41
+
+17.87
+18.21
+18.46
+20.93
+23.74
+26.99
+
+8.51
+8.66
+8.95
+10.01
+11.39
+12.22
+
+7.23
+7.41
+7.68
+9.62
+11.92
+14.39
+
+10.29
+10.44
+10.85
+12.58
+14.00
+14.73
+
+9.88
+9.93
+10.17
+11.85
+13.39
+14.60
+
+11.29
+11.63
+12.21
+13.65
+15.38
+17.27
+
+6.06
+6.11
+6.25
+7.69
+8.95
+10.16
+
+8.36
+8.35
+8.54
+9.25
+10.13
+9.51
+
+13.42
+13.59
+13.95
+16.21
+18.92
+22.10
+
+14.89
+15.18
+15.67
+18.08
+20.68
+24.12
+
+14.94
+15.02
+15.34
+17.70
+20.40
+24.09
+
+11.67
+11.80
+12.13
+13.93
+15.83
+17.99
+
+B.7
+
+S EGMENTATION R ESULTS
+
+For more comparisons, we add segmentation results for TBN and TTN using test batch size (B)
+of 4 and 8 (Table 15). The results demonstrate that TTN is robust to the test batch sizes. In other
+words, the performance difference across the test batch size is small when using TTN (TTN with
+B=2, 4, and 8). The results are averaged over 3 runs (i.e., using 3 independently optimized α), and
+the standard deviation is denoted with a ± sign. We omitted the standard deviation for TBN, which
+is 0.0 for every result since no optimization is required. Since the backbone network is trained with
+a train batch size of 8, we assume that test batch statistics estimated from the test batch with B=8
+are sufficiently reliable. Accordingly, TBN with B=8 shows compatible results. However, when B
+becomes small (i.e., in a more practical scenario), problematic test batch statistics are estimated, and
+thus TBN suffers from the performance drop while TTN keeps showing robust performance. It is
+worth noting that TTN outperforms TBN by 3.77% in average accuracy when B=2, i.e., in the most
+practical evaluation setting, and by 2.54% and 1.99% for B=4 and 8, respectively.
+Table 15: Adaptation on DG benchmarks in semantic segmentation. mIoU(↑) on four unseen
+domains with test batch size of 2, 4, and 8 using ResNet-50 based DeepLabV3+ as a backbone.
+BDD-100K
+
+Mapillary
+
+GTAV
+
+SYNTHIA
+
+Cityscapes
+
+TBN (B=2)
+Ours (TTN) (B=2)
+TBN (B=4)
+Ours (TTN) (B=4)
+TBN (B=8)
+Ours (TTN) (B=8)
+
+43.12
+47.40(± 0.02)
+45.64
+47.72(± 0.01)
+46.42
+47.25(± 0.02)
+
+47.61
+56.88(± 0.04)
+49.17
+57.11(± 0.01)
+49.38
+57.28(± 0.02)
+
+42.51
+44.69(± 0.03)
+44.26
+45.08(± 0.02)
+44.81
+45.13(± 0.03)
+
+25.71
+26.68(± 0.01)
+25.96
+26.52(± 0.01)
+25.97
+26.45(± 0.01)
+
+72.94
+75.09(± 0.01)
+74.29
+75.56(± 0.01)
+75.42
+75.82(± 0.01)
+
+Norm
+
+Method (Cityscapes→)
+
+18
+
+Published as a conference paper at ICLR 2023
+
+Error rate. Colored by normalized value (across test corruption type) avg.
+
+std.
+
+15.03 0.34
+12.79 0.22
+17.24 0.16
+7.41
+
+0.06
+
+Test corruption type
+
+17.91 0.14
+8.48
+
+0.08
+
+7.26
+
+0.03
+
+10.44 0.14
+9.98
+
+0.14
+
+11.55 0.10
+6.05
+
+0.04
+
+8.57
+
+0.40
+
+13.34 0.07
+15.21 1.59
+14.83 0.11
+11.74
+
+(a) Augmentation type used for obtaining prior
+Error rate. Colored by normalized value (across test corruption type) avg.
+
+std.
+
+14.55 0.86
+12.64 0.61
+16.77 0.92
+7.66
+
+0.31
+
+Test corruption type
+
+17.75 0.73
+8.76
+
+0.29
+
+7.49
+
+0.25
+
+10.33 0.27
+9.71
+
+0.32
+
+12.40 1.46
+6.11
+
+0.09
+
+8.26
+
+0.49
+
+13.35 0.37
+14.58 1.27
+14.73 0.39
+11.67
+
+(b) Augmentation type used for optimizing alpha
+
+Figure 5: True test corruption as augmentation. Each column represents the augmentation type
+used (a) when obtaining prior or (b) when optimizing α. Each row represents the test corruption
+type. The error rate (↓) of CIFAR-10-C with severity level 5 and test batch size 200 using WRN-40 is
+annotated in each element. Element (i, j) represents the error rate when j-th corruption type is used
+for augmenting the clean train data during post-training and tested on i-th corruption test set. The
+heatmap is colored by error rate normalized across the test corruption type (row-wise normalization).
+
+19
+
+

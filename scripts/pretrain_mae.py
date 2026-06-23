@@ -45,21 +45,36 @@ def main() -> None:
     args = parse_args()
     seed_everything(args.seed)
     device = resolve_device(args.device)
+    if args.use_multiscale:
+        print("WARNING: --use-multiscale is ignored by pretrain_mae.py; multi-scale is only used in finetune/evaluate.")
     train_ds, val_ds = make_datasets(args)
     embedder = RFPatchEmbedder(
         window_size=args.window_size,
         patch_size=args.patch_size,
         sample_rate=args.sample_rate,
         lora_bandwidth=args.lora_bandwidth,
-        use_oob=not args.no_oob,
+        spreading_factor=args.spreading_factor,
+        use_oob=not args.no_oob and args.oob_fusion_type != "no_oob",
+        oob_fusion_type=args.oob_fusion_type,
+        use_oob_cross_attention=args.use_oob_cross_attention,
     )
-    model = RFMAE(embedder, dim=args.dim, depth=args.depth, dropout=args.dropout, mask_ratio=args.mask_ratio).to(device)
+    model = RFMAE(
+        embedder,
+        dim=args.dim,
+        depth=args.depth,
+        dropout=args.dropout,
+        mask_ratio=args.mask_ratio,
+        use_chirp_embedding=args.use_chirp_embedding,
+        oob_num_heads=args.oob_num_heads,
+    ).to(device)
     optimizer = AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     train_loader = make_loader(train_ds, args, shuffle=True)
     val_loader = make_loader(val_ds, args, shuffle=False)
 
     best = float("inf")
     for epoch in range(1, args.epochs + 1):
+        if hasattr(train_loader.dataset, "set_epoch"):
+            train_loader.dataset.set_epoch(epoch)
         train_loss = run_epoch(model, train_loader, optimizer, device, train=True)
         val_loss = run_epoch(model, val_loader, optimizer, device, train=False)
         print(f"epoch={epoch} {format_metrics({'train_loss': train_loss, 'val_loss': val_loss})}")
@@ -71,4 +86,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

@@ -1,0 +1,110 @@
+Supervised Contrastive Learning
+
+Prannay Khosla ∗
+Google Research
+Yonglong Tian †
+MIT
+
+Piotr Teterwak ∗ †
+Chen Wang †
+Boston University
+Snap Inc.
+†
+Phillip Isola
+Aaron Maschinot
+MIT
+Google Research
+Dilip Krishnan
+Google Research
+
+Aaron Sarna ‡
+Google Research
+Ce Liu
+Google Research
+
+Abstract
+Contrastive learning applied to self-supervised representation learning has seen
+a resurgence in recent years, leading to state of the art performance in the unsupervised training of deep image models. Modern batch contrastive approaches
+subsume or significantly outperform traditional contrastive losses such as triplet,
+max-margin and the N-pairs loss. In this work, we extend the self-supervised
+batch contrastive approach to the fully-supervised setting, allowing us to effectively leverage label information. Clusters of points belonging to the same class
+are pulled together in embedding space, while simultaneously pushing apart clusters of samples from different classes. We analyze two possible versions of the
+supervised contrastive (SupCon) loss, identifying the best-performing formulation of the loss. On ResNet-200, we achieve top-1 accuracy of 81.4% on the ImageNet dataset, which is 0.8% above the best number reported for this architecture.
+We show consistent outperformance over cross-entropy on other datasets and two
+ResNet variants. The loss shows benefits for robustness to natural corruptions,
+and is more stable to hyperparameter settings such as optimizers and data augmentations. Our loss function is simple to implement and reference TensorFlow
+code is released at https://t.ly/supcon 1 .
+
+1
+
+Introduction
+
+The cross-entropy loss is the most widely used loss
+function for supervised learning of deep classification models. A number of works have explored
+shortcomings of this loss, such as lack of robustness
+to noisy labels [63, 46] and the possibility of poor
+margins [10, 31], leading to reduced generalization
+performance. However, in practice, most proposed
+alternatives have not worked better for large-scale
+datasets, such as ImageNet [7], as evidenced by the
+continued use of cross-entropy to achieve state of the
+art results [5, 6, 55, 25].
+Figure 1: Our SupCon loss consistently outperforms cross-entropy with standard data augmenta-
+
+In recent years, a resurgence of work in contrastive tions. We show top-1 accuracy for the ImageNet
+learning has led to major advances in self-supervised dataset, on ResNet-50, ResNet-101 and ResNet∗
+
+200, and compare against AutoAugment [5], Ran-
+
+Equal contribution.
+dAugment [6] and CutMix [59].
+Work done while at Google Research.
+‡
+Corresponding author: sarna@google.com
+1
+PyTorch implementation: https://github.com/HobbitLong/SupContrast
+†
+
+34th Conference on Neural Information Processing Systems (NeurIPS 2020), Vancouver, Canada.
+
+Figure 2: Supervised vs. self-supervised contrastive losses: The self-supervised contrastive loss (left, Eq. 1)
+contrasts a single positive for each anchor (i.e., an augmented version of the same image) against a set of
+negatives consisting of the entire remainder of the batch. The supervised contrastive loss (right) considered
+in this paper (Eq. 2), however, contrasts the set of all samples from the same class as positives against the
+negatives from the remainder of the batch. As demonstrated by the photo of the black and white puppy, taking
+class label information into account results in an embedding space where elements of the same class are more
+closely aligned than in the self-supervised case.
+
+representation learning [54, 18, 38, 48, 22, 3, 15]. The common idea in these works is the following:
+pull together an anchor and a “positive” sample in embedding space, and push apart the anchor
+from many “negative” samples. Since no labels are available, a positive pair often consists of data
+augmentations of the sample, and negative pairs are formed by the anchor and randomly chosen
+samples from the minibatch. This is depicted in Fig. 2 (left). In [38, 48], connections are made of
+the contrastive loss to maximization of mutual information between different views of the data.
+In this work, we propose a loss for supervised learning that builds on the contrastive self-supervised
+literature by leveraging label information. Normalized embeddings from the same class are pulled
+closer together than embeddings from different classes. Our technical novelty in this work is to
+consider many positives per anchor in addition to many negatives (as opposed to self-supervised
+contrastive learning which uses only a single positive). These positives are drawn from samples
+of the same class as the anchor, rather than being data augmentations of the anchor, as done in
+self-supervised learning. While this is a simple extension to the self-supervised setup, it is nonobvious how to setup the loss function correctly, and we analyze two alternatives. Fig. 2 (right) and
+Fig. 1 (Supplementary) provide a visual explanation of our proposed loss. Our loss can be seen as
+a generalization of both the triplet [52] and N-pair losses [45]; the former uses only one positive
+and one negative sample per anchor, and the latter uses one positive and many negatives. The use of
+many positives and many negatives for each anchor allows us to achieve state of the art performance
+without the need for hard negative mining, which can be difficult to tune properly. To the best of
+our knowledge, this is the first contrastive loss to consistently perform better than cross-entropy on
+large-scale classification problems. Furthermore, it provides a unifying loss function that can be
+used for either self-supervised or supervised learning.
+Our resulting loss, SupCon, is simple to implement and stable to train, as our empirical results show.
+It achieves excellent top-1 accuracy on the ImageNet dataset on the ResNet-50 and ResNet-200
+architectures [17]. On ResNet-200 [5], we achieve a top-1 accuracy of 81.4%, which is a 0.8%
+improvement over the state of the art [30] cross-entropy loss on the same architecture (see Fig. 1).
+The gain in top-1 accuracy is accompanied by increased robustness as measured on the ImageNet-C
+dataset [19]. Our main contributions are summarized below:
+1. We propose a novel extension to the contrastive loss function that allows for multiple positives
+per anchor, thus adapting contrastive learning to the fully supervised setting. Analytically and
+empirically, we show that a naı̈ve extension performs much worse than our proposed version.
+2
+
+

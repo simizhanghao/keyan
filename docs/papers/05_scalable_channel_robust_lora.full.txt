@@ -1,0 +1,2197 @@
+1
+
+Towards Scalable and Channel-Robust Radio
+Frequency Fingerprint Identification for LoRa
+
+arXiv:2107.02867v1 [eess.SP] 6 Jul 2021
+
+Guanxiong Shen, Junqing Zhang, Alan Marshall, Senior Member, IEEE, and Joseph Cavallaro, Fellow, IEEE
+
+Abstract—Radio frequency fingerprint identification (RFFI)
+is a promising device authentication technique based on the
+transmitter hardware impairments. In this paper, we propose a
+scalable and robust RFFI framework achieved by deep learning
+powered radio frequency fingerprint (RFF) extractor. Specifically,
+we leverage the deep metric learning to train an RFF extractor,
+which has excellent generalization ability and can extract RFFs
+from previously unseen devices. Any devices can be enrolled
+via the pre-trained RFF extractor and the RFF database can
+be maintained efficiently for allowing devices to join and leave.
+Wireless channel impacts the RFF extraction and is tackled by
+exploiting channel independent feature and data augmentation.
+We carried out extensive experimental evaluation involving 60
+commercial off-the-shelf LoRa devices and a USRP N210 software defined radio platform. The results have successfully demonstrated that our framework can achieve excellent generalization
+abilities for device classification and rogue device detection as
+well as effective channel mitigation.
+Index Terms—Internet of things, device authentication, radio
+frequency fingerprint identification, deep learning, LoRa
+
+I. I NTRODUCTION
+With the rapid growth in the population of the Internet of
+things (IoT) devices, their security is becoming increasingly
+important. Device authentication is required to prevent the
+intrusion of rogue devices that may execute harmful processes
+or access to private data [1]. It is usually achieved by cryptographic schemes such as the common challenge-responsebased protocols. These schemes require a common key preshared which may be difficult for IoT devices because they are
+usually low-cost and power constrained [2]. They also rely on
+software addresses such as MAC address, which can however
+be tampered with easily.
+Lightweight and reliable device authentication is thus urgently required for ensuring IoT security. Radio frequency fingerprint identification (RFFI) is a promising non-cryptographic
+technique that relies on the device intrinsic hardware impairments of radio frequency (RF) components generated during
+Manuscript received xxx; revised xxx; accepted xxx. Date of publication
+xxx; date of current version xxx. The work was in part supported by
+UK Royal Society Research Grants under grant ID RGS/R1/191241 and
+National Key Research and Development Program of China under grant
+ID 2020YFE0200600. The review of this paper was coordinated by xxx.
+(Corresponding author: Junqing Zhang.)
+G. Shen, J. Zhang and A. Marshall are with the Department of Electrical Engineering and Electronics, University of Liverpool, Liverpool,
+L69 3GJ, United Kingdom. (email: Guanxiong.Shen@liverpool.ac.uk; junqing.zhang@liverpool.ac.uk; alan.marshall@liverpool.ac.uk)
+J. Cavallaro is with the Department of Electrical and Computer Engineering,
+Rice University, Houston, USA. (email: cavallar@rice.edu)
+Color versions of one or more of the figures in this paper are available
+online at http://ieeexplore.ieee.org.
+Digital Object Identifier xxx
+
+the manufacturing process. The hardware characteristics of
+these components slightly deviate from their nominal values
+but the deviation is so small that the normal communication
+functionality is not affected. These hardware features are
+unique and difficult to be tampered with, thus they can be
+treated as the fingerprint of IoT devices, in a similar manner as
+the biometrics of human beings. The transmitter hardware impairments will distort the transmission waveform, from which
+the receiver can infer the transmitter identity by extracting
+the device-specific radio frequency fingerprints (RFFs). RFFI
+can thus identify transmitters on a per-packet basis. All the
+RFFI operations are completed at the receiver and there is
+no modification of the transmitter. Hence, it is particularly
+suitable for power-constrained and low-cost IoT devices.
+The existing RFFI work can be categorized into traditional
+RFF extractor-based and deep learning-based approaches. The
+former relies on the manually designed RFF extractor to obtain
+hardware features such as IQ imbalance [3], [4], CFO [4]–[9],
+signal transient part [10], [11], power spectral density [12],
+[13], power amplifier non-linearity [14], beam pattern [15], etc.
+However, such schemes are highly dependent on the quality
+of the designed feature extraction algorithms and require a
+deep understanding on the adopted communication protocol.
+Some hardware characteristics are interrelated with each other,
+making it challenging to extract each feature individually.
+On the other hand, deep learning-based approaches usually
+rely on a classification neural network to process raw signals
+and directly infer device identity without the need of feature
+engineering, which has attracted wide attention in recent
+years [16]–[35].
+While deep learning-based RFFI has excellent classification
+accuracy, it suffers from the limited scalability and channel
+robustness issues, as shown in Fig. 1. The number of neurons
+of the softmax layer in deep learning-based RFFI systems
+is unchangeable after training, which restricts the RFFI to a
+close-set problem. Hence, the scalability of such design is limited as only a fixed number of devices can be identified [36],
+[37], which raises two concerns:
+The deep learning model needs to be re-trained whenever
+legitimate devices join and leave the IoT network, which
+is time-consuming.
+• Rogue devices cannot be predicted and their data is usually not available for training. During the classification,
+they will be classified as the legitimate devices with the
+most similar characteristics in the training categories [20],
+[22], [29], which is not acceptable.
+•
+
+Moreover, all the RFFI systems are subject to channel effects
+
+2
+
+Training devices
+
+Rogue device
+
+This packet is
+sent from Dev 1
+
+……
+
+Data
+Augmentation
+Preprocessing
+
+Training
+
+Train RFF
+Extractor
+Channel independent
+spectrogram
+
+Legitimate devices
+
+Dev 1
+
+RFFI system
+
+Dev 2
+Device moving
+Dev 3
+
+(channel changes)
+
+Preprocessing
+
+……
+Devices to be
+identified
+
+Preprocessing
+
+……
+
+Fig. 1: IoT networks secured by RFFI. Deep learning-based
+RFFI systems suffer from limited scalability and channel
+robustness.
+
+as the received signal is not only distorted by hardware
+impairments but also the wireless channel.
+In our prior work, we explored the selection of signal representation (IQ samples, FFT coeefficients and spectrogram),
+stability, and deep learning models for RFFI systems [38].
+However, the above mentioned challenges, i.e., the scalability
+and channel robustness, are not well addressed. This paper
+aims to design a scalable and channel-agnostic RFFI system.
+To achieve this, our approach introduces an enrollment stage
+and uses k-nearest neighbor (k-NN) to replace the softmax
+layer for recognition. The channel independent spectrogram
+is also constructed to mitigate channel effects. Extensive
+experiments were carried out with 60 commercial off-the-shelf
+LoRa devices of four models at various channel conditions to
+demonstrate the excellent performance of the proposed RFFI
+system. Our contributions are highlighted as follows.
+We design a scalable RFFI framework based on a deep
+metric learning-powered RFF extractor, which enables
+device joining and leaving without the need for retraining. It maintains an RFF database by enrolling a new
+device using the pre-trained RFF extractor or deleting the
+record of a leaving device.
+• We propose a channel robust RFFI protocol by constructing the channel independent spectrogram and exploiting
+data augmentation. The channel independent spectrogram
+can mitigate the channel effect in the time-frequency
+domain while reserving the RFF of the LoRa signal. The
+data augmentation is carefully designed to represent real
+channel conditions with both multipath and Doppler shift.
+• We conduct extensive experiments involving different
+LoRa devices, various channel conditions and antenna
+polarization. We experimentally demonstrate that the RFF
+extractor is able to extract features from devices that
+are not present during training, even they are from
+other manufacturers. The proposed channel independent
+spectrogram is shown to be effective in mitigating the
+channel effect and data augmentation can further increase
+the system robustness. Antenna polarization is found to
+affect the classification performance.
+
+•
+
+This paper provides a general RFFI framework and studies
+LoRa as an example. LoRa devices are manufactured with
+
+Enrollment
+
+Identification
+
+RFF Extractor
+
+RFF Database
+
+Channel independent
+spectrogram
+
+RFF Extractor
+Channel independent
+spectrogram
+
+Rogue Device
+Detection
+Device
+Classification
+
+Fig. 2: System diagram of the proposed RFFI system.
+low-cost components therefore have abundant hardware impairments, which are suitable for RFFI. Moreover, the commercial LoRaWAN specification defines cryptography-based
+device authentication schemes. The root keys are assigned
+to the end-nodes during fabrication and secure storage of
+them is a huge challenge. The proposed RFFI can provide an
+alternative method to identify and authenticate LoRa devices.
+The rest of the paper is organized as follows. Section II
+shows the system overview. Section III introduces the LoRa
+signal processing. Section IV presents the procedure of constructing the channel independent spectrogram. The training of
+RFF extractor is introduced in Section V while the enrollment
+and identification of RFFI systems is introduced in Section VI.
+Section VII provides extensive evaluation results to show the
+system performance. Section VIII and Section IX introduces
+related work and concludes the paper, respectively.
+II. S YSTEM OVERVIEW
+The proposed system is based the deep learning-powered
+RFF extractor. As shown in Fig. 2, it involves training,
+enrollment and identification stages.
+Training: The training stage will leverage the outstanding
+feature extraction capability of deep learning to generate an
+RFF extractor rather than a classification neural network.
+Specifically, a large number of training packets are collected
+from numerous training devices. The data augmentation is
+used to increase channel diversity. The training samples are
+then transformed to channel independent spectrograms to
+mitigate channel effects. Finally, we leverage the triplet loss
+in deep metric learning to train the extractor. The input of the
+RFF extractor is a 2-D channel independent spectrogram, and
+the output is a vector consists of 512 elements, which is the
+unique RFF of that device.
+The training only needs to be done once as the trained RFF
+extractor is able to extract unique RFFs from out-of-library
+(unseen) devices. The training devices are not necessarily the
+same as the ones for enrollment and identification. The training
+can be done by a third party that owns massive data collected
+from a huge number of devices to train an RFF extractor with
+excellent generalization capability.
+Enrollment: The enrollment will obtain the RFFs of legitimate devices using the RFF extractor. These are the actual
+working devices in an IoT network, which are probably
+
+3
+
+different from the training devices. These legitimate devices
+are required to send several packets to the RFFI system. Then
+RFFs can be obtained from the received packets using the
+trained RFF extractor and stored in a database. The RFFs of
+the newly joined devices will be added to the database and the
+RFFs of devices that leave the system will be deleted, which
+makes the system easily updated. The enrollment should be
+carried out in a controlled environment to ensure the RFFs of
+rogue devices are not enrolled.
+Identification: A complete identification system should
+consist of two parts, namely rogue device detection and
+device classification. Rogue device detection first determines
+whether the transmitter is legitimate (previously enrolled), and
+device classification further infers its label. Both of them are
+implemented by the k-NN algorithm.
+
+IV. C HANNEL I NDEPENDENT S PECTROGRAM
+
+III. L O R A S IGNAL P ROCESSING
+A. LoRa Signal
+LoRa is based on the chirp spread spectrum (CSS) technology which uses chirps for communication. The instantaneous
+frequency of the LoRa signal changes continuously over time,
+and a basic LoRa symbol (up-chirp) can be written as
+bw
+
+bw
+
+u(t) = Aej2π(− 2 + 2T t)t
+
+(0 ≤ t ≤ T ),
+
+(1)
+
+where A and bw denote amplitude and bandwidth, respectively. T is the LoRa symbol duration. There are repeating upchirps at the beginning of a LoRa packet called the preamble.
+The preamble is identical in every LoRa packet regardless of
+the device type.
+B. Signal Acquisition
+The baseband transmitted signal, x(t), will undergo signal
+modulation and up-conversion via hardware components such
+as oscillator and power amplifier, etc. These components will
+have their specific impairments and their overall effect is
+denoted as f (·). The signal then travels via the wireless
+channel and is captured by the receiver. The baseband received
+signal is given as
+y(t) = h(τ, t) ∗ f (x(t)) + n(t),
+
+segment of channel noise, which will affect the RFFI performance.
+Preamble Extraction: The deep learning model can learn
+the identity-related information such as the MAC address if
+the entire packet is used for RFFI. To prevent this, only the
+preamble part, s0 [n], is employed in the proposed system.
+CFO Compensation: CFO compensation is essentially
+required in RFFI for system stability. It has been proved
+that crystal oscillators are particularly sensitive to temperature
+changes [39], and the drift of oscillator frequency can seriously
+degrade the system performance [18], [20].
+Normalization: Normalization prevents the system from
+learning the received power that is not device-specific. The
+preamble part is normalized by dividing the root mean square
+(RMS) of it. The preprocessed signal is denoted as s[n].
+
+(2)
+
+where h(τ, t) is the time-varying channel impulse response,
+n(t) is the additive white Gaussian noise and ∗ denotes
+convolution operation. The received signal, y(t), is further
+converted to digital samples by an analog-digital-converter
+(ADC) with a sampling interval of Ts , denoted as y[nTs ]. It
+is simplified to y[n] for easy notation.
+C. Preprocessing
+The received signal needs to be pre-processed to meet the
+basic requirements of RFFI, including synchronization, carrier frequency offset (CFO) compensation and normalization.
+These algorithms are briefly described below and detailed
+descriptions can be found in our prior work [38].
+Synchronization: Synchronization locates the starting point
+of the transmission. Inaccurate synchronization introduces a
+
+The received signal is not only distorted by the hardware
+impairments but also by the wireless channel. It is impossible
+to ensure the devices experience the same channel during
+enrollment and identification. We propose the channel independent spectrogram to mitigate the channel effect in the
+time-frequency domain while preserving the device-specific
+characteristics.
+A. Observation of Channel Effect
+LoRa supports three bandwidth options, namely 125 kHz,
+250 kHz and 500 kHz. LoRa transmissions are sometimes
+assumed to experience flat fading where the wireless channel
+causes the same magnitude and phase changes to all the
+frequency components.
+However, we experimentally found that the wireless channel
+significantly distorts the LoRa signal whose effect is evident
+from the received waveform. We collected LoRa packets in
+line-of-sight (LOS) stationary and non-line-of-sight (NLOS)
+stationary scenarios as well as LOS mobile and NLOS mobile scenarios. Detailed experimental setting can be found
+in Section VII. The preamble part (I-branch) is shown in
+Fig. 3. It can be observed that the waveforms collected under
+various scenarios are different. We will later in Section V-A
+demonstrate that the sawtooth shapes are caused by the time
+dispersion (multipath effect) and the amplitude variation is due
+to channel changes (Doppler effect).
+B. Short-time Fourier Transform
+The LoRa signal is usually analyzed in the time-frequency
+domain because of its non-stationary property. Short-time
+Fourier transform (STFT) is an efficient time-frequency analysis algorithm which can reveal the time-frequency features
+of the signal. The discrete STFT is mathematically written as
+Sk,m =
+
+N
+−1
+X
+
+k
+
+s[n]w[n − mR]e−j2π N n
+
+n=0
+
+(3)
+
+for k = 1, 2, ..., N and m = 1, 2, ..., M,
+where Sk,m is the element of the STFT complex matrix S.
+M is number of columns, N is the length of window function
+
+4
+
+0
+-0.5
+-1
+
+0.5
+0
+-0.5
+-1
+
+0
+
+2
+
+4
+
+6
+
+8
+
+0
+
+2
+
+4
+
+Time (ms)
+
+Time (ms)
+
+(a)
+
+(b)
+
+6
+
+S = [H1
+
+8
+
+1
+
+Amplitude
+
+1
+
+Amplitude
+
+where [X1,m , X2,m · · · XN,m ]T denotes the ideal frequency
+spectrum of the m-th signal segment. Correspondingly, the
+column vector [H1,m , H2,m · · · HN,m ]T represents the channel
+frequency response experienced by the m-th signal segment.
+Therefore, (5) can be simplified as
+
+1
+
+0.5
+
+Amplitude
+
+Amplitude
+
+1
+
+0.5
+0
+-0.5
+
+0.5
+0
+-0.5
+-1
+
+-1
+0
+
+2
+
+4
+
+6
+
+8
+
+0
+
+2
+
+4
+
+Time (ms)
+
+Time (ms)
+
+(c)
+
+(d)
+
+6
+
+8
+
+Fig. 3: Normalized received LoRa waveform. (a) LOS stationary scenario. (b) NLOS stationary scenario. (c) LOS mobile
+scenario. (d) NLOS mobile scenario.
+
+F (X1 ) H2
+
+F (X2 ) · · · HM
+
+F (XM )], (6)
+
+where
+denotes element-wise product. Xm represents the
+ideal frequency spectrum of the m-th signal segment and Hm
+represents corresponding channel frequency response.
+In our experimental settings, the time gap between two
+adjacent signal segments is only 128 µs. It is reasonable to
+assume Hm ≈ Hm+1 since the wireless channel will not
+change dramatically in such a short period. Based on this
+assumption, we can divide the m-th column by the (m+1)-th
+one so that the channel-related information can be eliminated.
+The matrix after division is given as
+h F (X ) F (X )
+F (XM ) i
+3
+2
+.
+···
+Q=
+(7)
+F (X1 ) F (X2 )
+F (XM −1 )
+Compared to (6), the channel information is eliminated but
+device-specific hardware distortion F (·) are preserved. Similar
+to (4), the magnitude of Q is expressed in dB scale
+e = 10 log10 (|Q|2 ).
+Q
+
+(a)
+
+e is the proposed channel independent spectrogram which is
+Q
+used as the input of RFF extractor. The channel independent
+spectrogram of LoRa preamble part is shown in Fig. 4b.
+
+(b)
+
+Fig. 4: (a) Spectrogram of LoRa preambles. (b) Channel
+independent spectrogram of LoRa preambles.
+
+w[n], which is also the number of fast Fourier transform (FFT)
+points and rows, R is the hop size. In our implementations, N
+is 256, R is 128, and M is calculated as 63. The spectrogram
+e is given as
+in dB scale, S,
+e = 10 log10 (|S|2 ),
+S
+
+(4)
+
+where |·| returns the amplitude. The spectrogram of the LoRa
+preamble part is shown in Fig. 4a.
+
+C. Constructing Channel Independent Spectrogram
+The spectrogram is affected by the wireless channel, which
+can be mitigated by dividing the adjacent columns. STFT can
+be considered as spliting s[n] into M segments of N samples,
+then performing FFT on each segment. The overall effect of
+hardware distortion to the transmitted signal in the frequency
+domain is denoted as F (·). Therefore, the STFT complex
+matrix S can be arranged as
+
+
+H1,1 F (X1,1 )
+H1,2 F (X1,2 ) · · ·
+H1,M F (X1,M )
+ H2,1 F (X2,1 )
+H2,2 F (X2,2 ) · · · H2,M F (X2,M ) 
+
+
+
+
+..
+..
+..
+
+
+.
+.
+···
+.
+HN,1 F (XN,1 ) HN,2 F (XN,2 ) · · ·
+
+(8)
+
+HN,M F (XN,M ).
+(5)
+
+V. RFF E XTRACTOR T RAINING
+The RFF extractor is the core module in the proposed RFFI
+system. It should extract channel independent and discriminative RFFs from the received signal and generalize well on
+previously unseen devices.
+A. Data Augmentation
+Data augmentation is an efficient approach in deep learning
+to improve performance and has been recently applied in
+the area of RFFI to increase its robustness to the wireless
+channel [18], [40], [41]. Data augmentation can generate more
+training data to increase the performance of the RFF extractor
+and reduce the overhead for data collection. It can also mitigate
+the channel effect by injecting various channel distortions into
+the training data so that the RFF extractor automatically learns
+how to deal with them.
+In this paper, the channel effect for data augmentation
+includes both multipath and Doppler shift. The multipath is
+described by the power delay profile (PDP). The exponential
+PDP is selected and the discrete model is given as
+P (p) =
+
+1 −pTs /τd
+e
+,
+τd
+
+p = 0, 1, · · · , pmax ,
+
+(9)
+
+where τd is the RMS delay spread and pmax is the index of
+the last path. The PDP is further normalized.
+This paper also considers Doppler shift, which is overlooked
+in previous work as the channel is assumed to be constant in a
+packet time [18], [40], [41]. However, this assumption might
+
+5
+
+TABLE I: Parameter of the Channel Simulator
+
+[0,10]
+
+Rician K-factor
+
+[0,10]
+[20,80]
+
+1
+πfd
+
+p
+
+1 − (f /fd )2
+
+,
+
+(10)
+
+where fd is the maximum Doppler shift.
+The data augmentation is carried out as follows.
+1) The training data should be collected in a short-distance
+LOS stationary scenario so that it can be assumed as
+experiencing frequency-flat slow fading.
+2) The number of training samples is increased by replication. It is doubled in our implementation.
+3) The channel effect with multipath and Doppler effect is
+generated with the parameters randomly selected within
+specific ranges given in Table I.
+4) The packet generated in step 1) passes through the
+channel from step 3). The artificial white Gaussian noise
+is added to the signal.
+The augmentation is completed by repeating the above process
+for all the training packets.
+We show the waveform of three cases, namely strong
+multipath no Doppler effect, strong Doppler effect with weak
+multipath and both strong multipath and Doppler effects in
+Fig. 5b, Fig. 5c and Fig. 5d, respectively. It can be observed that the augmented waveforms match well with the
+real collected ones shown in Fig. 3. We can also conclude
+that the wireless channel distorts the received LoRa signal
+significantly. The sawtooth shapes are caused by multipath
+and amplitude variation is caused by the Doppler effect.
+
+0.5
+0
+-0.5
+-1
+
+0
+
+not hold for some LoRa transmissions. Each LoRa preamble
+typically lasts about 1 ms and the channel effect may not
+remain constant in mobile scenarios. Actually, the Doppler
+effect is observed from the received waveform such as Fig. 3c
+and Fig. 3d. The Doppler effect can be characterized by the
+Doppler spectrum. This paper adopts the popular Jakes model
+whose spectrum is defined as
+S(f ) =
+
+0
+-0.5
+-1
+2
+
+4
+
+6
+
+0
+
+8
+
+2
+
+4
+
+Time (ms)
+
+Time (ms)
+
+(a)
+
+(b)
+
+6
+
+8
+
+6
+
+8
+
+1
+
+1
+
+Amplitude
+
+SNR (dB)
+
+Amplitude
+
+[5,300]
+
+Maximum Doppler frequency fd (Hz)
+
+0.5
+
+Amplitude
+
+RMS delay spread τd (ns)
+
+1
+
+1
+
+Range
+Amplitude
+
+Paramter
+
+0.5
+0
+-0.5
+
+0.5
+0
+-0.5
+-1
+
+-1
+0
+
+2
+
+4
+
+6
+
+8
+
+0
+
+2
+
+4
+
+Time (ms)
+
+Time (ms)
+
+(c)
+
+(d)
+
+Fig. 5: Augmented LoRa preambles. (a) Original waveform.
+(b) Strong multipath no Doppler effect (τd = 300 ns, fd =
+0 Hz). (c) Strong Doppler effect with weak multipath (τd =
+5 ns, fd = 10 Hz). (d) Both multipath and Doppler effects are
+strong (τd = 300 ns, fd = 10 Hz).
+
+7x7 conv, 32, /2
+3x3 conv, 32
+3x3 conv, 32
+
+3x3 conv, 32
+3x3 conv, 32
+
+3x3 conv, 64
+3x3 conv, 64
+3x3 conv, 64
+3x3 conv, 64
+avg pool
+512 dense
+L2 normalization
+
+RFF
+Extractor
+
+RFF
+
+Fig. 6: Architecture of the RFF extractor, revised from ResNet.
+
+B. Model Architecture
+The channel independent spectrogram can be regarded as a
+2-D image so the efficient image classification model convolutional neural network (CNN) is used to extract RFFs from
+it. The CNN in this paper is designed with reference to the
+well-known ResNet [42]. It is further optimized to be more
+lightweight and suitable for the size of channel independent
+spectrograms.
+The architecture of the RFF extractor is shown in Fig. 6,
+where /2 denotes strides two. It consists of nine convolutional
+layers, one average pooling layer and one dense layer of
+512 neurons, residual structure is also adopted. The first
+convolution layer uses 32 7×7 filters with stride 2, the second
+
+to the fifth layers use 32 3×3 filters, and the sixth to the ninth
+layers employ 64 3×3 filters. All the convolutional layers are
+activated by rectified linear unit (ReLU) and padding is used.
+The L2 normalized model output is a vector consists of 512
+elements which can be considered as the RFF extracted from
+the received packet.
+C. Deep Metric Learning
+Deep metric learning aims to project the input data into
+a space where similar samples are close to each other and
+dissimilar samples are far away. Triplet loss is a well-known
+embedding loss used in deep metric learning and has been
+
+6
+
+Positive
+
+RFF Extractor
+
+Anchor
+
+RFF Extractor
+
+Negative
+
+B. Identification
+
+RFF Extractor
+
+Triplet Loss
+
+Fig. 7: Triplet loss.
+
+successfully adopted in face recognition [43], [44]. During the
+training process, a triplet consisting of anchor, positive and
+negative samples is selected from the training set at each step.
+Specific to RFFI, anchor and positive samples are packets from
+the same device and the negative sample is from a different
+one. As shown in Fig. 7, their RFFs are extracted so that
+the triplet loss can be calculated. The goal of triplet loss is
+to minimize the Euclidean distance between the anchor and
+positive sample while maximizing the distance between the
+anchor and negative sample, which can be written as
+Loss = max(D(Anc, P os) − D(Anc, N eg) + α, 0)
+
+(11)
+
+where Anc, P os, N eg denote features extracted from anchor,
+positive and negative samples, respectively. D(·, ·) denotes the
+Euclidean distance between two vectors. α is a predefined
+hyperparameter which denotes the margin between positive
+and negative pairs. It is set to 0.1 in our implementation.
+
+D. Training Details
+The RFF extractors in this paper are all trained with
+the same settings, including validation set ratio, optimizer,
+learning rate schedule, batch size and stop condition. 10% of
+the training data are randomly separated for validation. The
+model is optimized using RMSprop with an initial learning rate
+of 0.001. The learning rate drops every time the validation loss
+does not decrease for 10 epochs and the drop factor is 0.2. The
+batch size is set to 32. The training stops when validation loss
+does not decrease for 30 epochs. The model is implemented
+using Keras and trained with NVIDIA GeForce GTX 1660.
+VI. E NROLLMENT AND I DENTIFICATION
+A. Enrollment
+The legitimate devices are required to send several packets
+for enrollment before joining the system. These enrollment
+packets are first preprocessed and transformed to channel
+independent spectrograms. Then the RFF extractor is used to
+extract the RFF templates and store them in a database. The
+enrollment can be regarded as the training phase of a k-NN
+classifier, which simply memorizes all the training samples.
+We collect 100 packets from each device for enrollment, which
+is sufficient since k-NN is not a data-hungry model like deep
+learning. This is very desirable as it can significantly decrease
+the overhead of data collection.
+
+A complete identification system should include two parts,
+namely rogue device detection and device classification. In
+our implementation, both of them are based on the k-NN
+algorithm with simple distance measures. The RFF extractor
+is trained with triplet loss which is defined by the Euclidean
+distance. The k-NN algorithm also relies on Euclidean distance
+measures thus their principles match well.
+1) Rogue Device Detection: Rogue device detection is to
+determine whether the received packet is from an enrolled
+legitimate device, which is an anomaly detection problem. It
+is necessary before device classification, otherwise, the RFFI
+system will assign legitimate labels even to rogue devices.
+The rogue device detection is implemented by the distancebased k-NN anomaly detection algorithm. The RFF of the
+received packet is extracted and the average distance to its
+K nearest neighbors in the RFF database is calculated as the
+detection score, which can be mathematically expressed as
+K
+
+Davg =
+
+1 X
+Di ,
+K i=1
+
+(12)
+
+where Di is the Euclidean distance to the i-th neighbor. Then
+a predefined threshold λ is used to determine whether the
+received packet is from an enrolled device. When the detection
+score Davg is above λ, the packet is considered to be sent from
+a rogue device and the authentication is failed. In contrast, the
+packet is considered to come from an enrolled device when
+Davg is below the threshold λ and will be further classified.
+This can be formulated as
+(
+enrolled device, when Davg ≤ λ
+Decision =
+(13)
+rogue device, when Davg > λ
+The evaluation metric of rogue device detection is the
+receiver operating characteristic (ROC) curve. It reveals the
+trade-off between false-positive rate (FPR) and true-positive
+rate (TPR) at various threshold settings. The area under
+the curve (AUC) calculated from the ROC curve is another
+important evaluation metric. The closer it is to one, the better
+the detection performance is.
+2) Device Classification: Device classification is to infer
+the specific label of the transmitter from which the received
+packet is sent, which is a classification problem. It outputs a
+previously enrolled label according to the templates stored in
+the RFF database.
+The proposed device classification system is implemented
+with the majority voting k-NN algorithm. The RFF of the
+received packet is first extracted and its K nearest neighbors
+are selected from the database according to the Euclidean
+distance. This packet is then assigned to the label that is most
+frequent among the K neighbors.
+The evaluation metrics for a device classification system are
+the confusion matrix and overall accuracy that is defined as
+the correctly classified samples divided by the total number
+of test samples. The number of neighbors K is set to 15 for
+both rogue device detection and device classification.
+
+7
+
+Enrollment: We collect 100 packets from each DUT for
+enrollment. Unless otherwise specified, the enrollment
+sets are collected in a residential room with LOS and
+vertical antenna placement.
+• Identification: 100 packets are collected from each DUT.
+The experimental setup varies according to the tests.
+The RFF extractors only need to be trained once. Enrollment
+and identification are carried out multiple times for evaluating
+system performance in various configurations.
+•
+
+(a)
+
+(b)
+
+(c)
+
+Fig. 8: Experimental devices. (a) DUTs 1-45: LoPy4. (b)
+DUTs 46-60: mbed SX1261 shields, FiPy and Dragino
+SX1276 shields. (c) USRP N210 SDR.
+
+B. System Scalability
+
+TABLE II: LoRa DUTs.
+DUT index
+
+Model
+
+Chipset
+
+1 - 45
+
+Pycom LoPy4
+
+SX1276
+
+46 - 50
+
+mbed SX1261 shield
+
+SX1261
+
+51 - 55
+
+Pycom FiPy
+
+SX1272
+
+56 - 60
+
+Dragino SX1276 shield
+
+SX1276
+
+TABLE III: Extractor information.
+
+Extractor 1
+Extractor 2
+Extractor 3
+Extractor 4
+Extractor 5
+Extractor 6
+
+Extractor
+input
+Channel ind
+Spectrogram
+Channel ind.
+Spectrogram
+Channel ind.
+Spectrogram
+Channel ind.
+Spectrogram
+Spectrogram
+Channel ind.
+Spectrogram
+
+Training
+DUTs
+DUT 1-30
+
+Data
+augmentation
+Yes
+
+DUT 1-20
+
+Yes
+
+DUT 1-10
+
+Yes
+
+DUT 1-30
+
+No
+
+DUT 1-30
+
+No
+
+DUT 1-30
+
+Yes, fd =0 Hz
+
+VII. E XPERIMENTAL E VALUATION
+A. Experimental Settings
+We employed 60 commercial off-the-shelf LoRa devices as
+devices under test (DUTs), and a USRP N210 software defined
+radio (SDR) platform as the receiver, as shown in Fig. 8.
+Detailed DUTs information can be found in Table II. The
+carrier frequency is 868.1 MHz and the transmission interval
+is set to 0.3 s.
+Table IV summarizes our experimental studies and their
+configurations.
+• Training and RFF extractors: We first collect 500 packets
+from each of DUT 1-30 in a residential room with
+LOS between the transmitter and receiver. The distance
+is about half a meter and DUT antennas are vertical
+to the ground. Extractor 1 is trained as a baseline
+model involving channel independent spectrogram and
+data augmentation. Extractors 2-6 are trained for comparison to show the effects of different procedures during
+training. The detailed extractor information can be found
+in Table III. Extractor 1-3 are trained with the dataset
+augmented by both multipath and Doppler effects, while
+during the training of Extractor 6 only the multipath
+effect is emulated.
+
+RFFI system should be scalable to allow devices to join
+and leave. Previous deep learning-based RFFI systems use a
+single classification neural network therefore the model output
+can only be device labels that are present during training. For
+example, if we train with the packets collected from DUTs 110, the model can only output label 1-10. Therefore, the deep
+learning model must be retrained when a new DUT 11 joins
+the system, which is time-consuming and not practical.
+In this paper, we train the deep learning model as an RFF
+extractor rather than for classification. The training only needs
+to be done once. We then introduce an enrollment stage to
+obtain RFFs of any devices in the IoT network via the pretrained RFF extractor. The enrollment is training-free and
+can be done very quickly when new devices join. The RFF
+database can also be managed efficiently by only recording the
+RFF of devices that are active and present in the IoT network.
+In summary, our protocol has excellent scalability in terms of
+maintaining an up-to-date device list.
+C. Generalization Ability for Device Classification
+To achieve good scalability, the RFF extractor must be
+able to extract RFFs from the newly added devices that are
+out-of-library during the training stage. In other words, the
+RFF extractor should have an excellent generalization ability
+on previously unseen devices. The rule of thumb in deep
+metric learning is that the more training data, the better
+the generalization ability. We select Extractor 1, 2, 3 for
+comparison since they are trained with different numbers of
+DUTs.
+We specially select three groups of DUTs for evaluation,
+namely DUTs 1-10, DUTs 31-40 and DUTs 46-60.
+• DUTs 1-10 are present during the training of Extractor
+1, 2, 3 therefore they are used to evaluate the extractor
+performance on seen devices.
+• DUTs 31-40 are disjoint with the training devices but with
+the same model (LoPy4). They can be used to validate
+the extractor performance on unseen devices.
+• DUTs 45-60 are produced by other manufacturers whose
+hardware characteristics are much more different from
+the training devices. These DUTs require a higher generalization ability of the RFF extractor.
+The classification results on these three groups are shown
+in Fig. 9. It can be observed that Extractor 1, 2, 3 perform
+excellently on DUTs 1-10 and DUTs 31-40. The overall accuracies are always above 95%. The highest accuracy is reached
+
+8
+
+TABLE IV: Summary of Experimental Evaluation.
+Section
+Section 7.3
+
+Extractor
+1,2,3
+
+Enrollment Set
+Seen, unseen, and different model
+DUTs (residential room)
+
+Identification Set
+Seen, unseen, and different
+model DUTs (residential room)
+
+Section 7.4
+
+1,2,3
+
+Legitimate DUTs (residential room)
+
+Legitimate and rogue DUTs
+(residential room)
+
+Section 7.5
+
+1,4,5
+
+Stationary dataset (residential room)
+
+Ten datasets with different channel conditions (office building)
+
+Section 7.6
+
+1,6
+
+Stationary dataset (residential room)
+
+Section 7.7
+
+1
+
+Datasets with different antenna directions (office)
+
+Emulated datasets with various
+moving speeds
+Datasets with different antenna
+directions (office)
+
+85
+80
+75
+70
+
+Extractor 1, trained with DUT 1-30
+Extractor 2, trained with DUT 1-20
+Extractor 3, trained with DUT 1-10
+DUT 1-10
+
+DUT 31-40
+
+DUT 46-60
+
+Test devices
+
+Fig. 9: Performance of RFF extractors.
+Mbed SX1261
+
+Pycom FiPy
+
+Dragino SX1276
+
+�� �� �� �� �� �� �� �� �� �� �� �� �� �� ��
+����������
+
+��� � � � � � � � � � � � � � �
+� �� � � � � � � � � � � � � �
+� � �� � � � � � � � � � � � �
+� � � ��� � � � � � � � � � � �
+� � � � ��� � � � � � � � � � �
+� � � � � �� � � � � � � � � �
+� � � � � � �� � � � � � � � �
+� � � � � �� � �� � � � � � � �
+� � � � � � � � �� � � � � � �
+� � � � � � � � � �� � � � � �
+� � � � � � � � � � �� � �� � �
+� � � � � � � � � � � �� � � �
+� � � � � � � � � � �� � �� � �
+� � � � � � � � � � � � � �� �
+� � � � � � � �� � � � �� � � ��
+�� �� �� �� �� �� �� �� �� �� �� �� �� �� ��
+���������������
+
+Fig. 10: Classification result on other LoRa types, overall
+accuracy 88.67%.
+
+by Extractor 1 with 98.50% on DUTs 1-10. The accuracy is
+98.40% on classifying DUTs 31-40 which demonstrates the
+trained RFF extractor can efficiently extract RFFs from the
+devices that are not present during training.
+We can see that there is a significant performance gap
+between Extractor 1, 2, 3 on DUT 46-60. Extractor 3, trained
+with only 10 DUTs, has the worst classification result, i.e.,
+75.80%. Training with 30 devices (Extractor 1) can increase
+it to 88.67% and the confusion matrix is shown in Fig. 10.
+It is found that the DUTs of the same type have similar
+hardware characteristics as almost all the misclassified packets
+fall into the three red boxes. The classification performance on
+DUT 46-50 is quite excellent but that on DUT 56-60 is not
+satisfying. This may because the hardware characteristics of
+DUT 56-60 (Dragino SX1276) are more different from the
+
+True positive rate
+
+Accuracy (%)
+
+1.0
+
+90
+
+Evaluate data augmentation (Doppler effect)
+Effect of antenna polarization
+
+ROC curve
+
+100
+95
+
+Purpose
+Generalization ability of device classification versus the number of training DUTs
+Generalization ability of rogue device detection versus the number of training DUTs
+Evaluate data augmentation and channel independent spectrogram
+
+0.8
+0.6
+0.4
+
+Extractor 1, AUC = 0.9905
+Extractor 2, AUC = 0.9830
+Extractor 3, AUC = 0.9479
+
+0.2
+0.0
+
+0.0
+
+0.2
+
+0.4
+0.6
+False positive rate
+
+0.8
+
+1.0
+
+Fig. 11: ROC curve of rogue device detection.
+training DUTs (LoPy4). In summary, more devices should be
+included for training to achieve good generalization ability on
+out-of-library devices.
+D. Generalization Ability for Rogue Device Detection
+Rogue devices are also out-of-library devices that are inaccessible during training. Whether the number of training DUTs
+affects the performance of rogue device detection should be
+evaluated. The hardest case for rogue device detection is
+the rogue device has similar hardware characteristics to the
+legitimate ones. Therefore, we specially select DUT 31-40 as
+legitimate devices and DUT 41-45 as rogue ones, which are
+are all LoPy4 devices. Then we collect 100 packets from each
+of DUT 31-45 for evaluation.
+As discussed in Section VI-B, the evaluation metric of rogue
+device detection is the ROC curve and corresponding AUC.
+The results are shown in Fig. 11. It can be observed that the
+AUC of Extractor 1 is 0.9905, indicating excellent detection
+performance. The AUC of Extractor 3 is the worst, which
+is 0.9479. This demonstrates the more DUTs involved in the
+training stage, the better the rogue device detection is.
+E. Effect of Data Augmentation and Channel Independent
+Spectrogram
+The RFFI system should be robust to locations and channel variations. We mitigate the channel effect in the timefrequency domain and propose the channel independent spectrogram as the model input. Then we use data augmentation
+to further increase its robustness to the wireless channel. To
+
+9
+
+(a)
+
+(b)
+
+B
+
+F
+E
+
+A
+
+Office
+Rx
+
+C
+
+D
+Corridor
+
+Meeting Room
+
+(c)
+
+Fig. 12: Experimental environments. (a) Meeting room. (b)
+Office. (c) Floor plan.
+verify that they are effective, we collect identification datasets
+in an office building whose environment is completely different from the enrollment residential room. The experiments
+are conducted in an office and a meeting room. The photos
+and floor plan of them can be found in Fig. 12. We collect
+10 identification datasets, D1-10, in total and they can be
+categorized into three scenarios, namely stationary, object
+moving and mobile scenarios.
+1) Stationary Scenario: Six datasets, D1-6, are collected at
+Location A-F. During the data collection, DUTs and USRP
+N210 are stationary and there is no object moving around.
+Locations A-F lead to multipath effects of varying severity.
+For instance, the waveform of DUT 6 at Location F (D6) is
+similar to that shown in Fig. 3b, showing a distinct sawtooth
+shape. While the waveform at Location A is almost the same
+as Fig. 3a, which is nearly flat. As discussed in Section III-A,
+the sawtooth is caused by the multipath effect therefore the
+channels at Locations A and F are different.
+2) Object Moving Scenario: Two datasets, D7 & D8, are
+collected at location B and F, respectively. The DUTs and
+USRP are kept stationary while a person randomly walks
+around the office at a speed of 2 m/s.
+In this scenario, the collected LoRa packets show different
+waveforms since the channel changes as a result of people
+walking. However, the Doppler effect is not quite serious due
+to the low walking speed.
+3) Mobile Scenario: Two datasets, D9 & D10, are collected
+in the office and meeting room, respectively. The USRP is kept
+stationary and a person takes the DUTs walking around at a
+speed of 2 m/s.
+Both multipath and Doppler effects are serious in this
+scenario since the sawtooth shapes and amplitude variations
+can be frequently observed. Many packets show waveforms
+similar to those shown in Fig. 3c and Fig. 3d.
+
+4) Discussion: Extractor 1, 4, 5 are selected for comparison to demonstrate the effectiveness of channel independent
+spectrogram and data augmentation. Their training details
+can be found in Table III and the classification results are
+summarized in Fig. 13.
+It can be observed that Extractor 1 performs well on all
+datasets, which indicates the proposed RFFI system is robust
+to locations and channel variations. It performs slightly worse
+on D9 and D10 that are collected in mobile scenarios (lower
+than 90%). This is possibly due to the inevitable shaking of the
+DUT antenna during moving, which will result in the change
+of antenna polarization. The effect of antenna polarization is
+discussed in Section VII-G.
+Compared with Extractor 1, the training of Extractor 4
+does not employ data augmentation. As can be seen, its
+performance on D6 is significantly worse with only 78.80%
+accuracy. D6 is collected at Location E which is the farthest
+from the receiver. This indicates the channel independent spectrogram is affected by the noise in lower SNR scenarios. Data
+augmentation must be used to further improve its robustness.
+As for Extractor 5, it employs neither channel independent
+spectrogram nor the data augmentation. It can be observed
+that Extractor 5 only performs well on D1 which is a shortdistance LOS stationary scenario. It is presumed that the
+channel condition at Location A is similar to the enrollment
+residential room. Once the channel is changed, the classification performance will degrade significantly. The worst results
+occur on D9 and D10 (mobile scenario) whose accuracies are
+55.90% and 49.40%, respectively, which are 30% lower than
+Extractor 1.
+We also try to explore whether data augmentation can
+solve the channel problem without the employment of channel
+independent feature. However, we found out the deep learning
+model cannot converge as the training loss does not decrease at
+all. In other words, the RFF extractor is not capable to extract
+channel independent RFFs from the spectrogram when training
+data is distorted by wireless channels. In contrast, when we use
+channel independent spectrogram instead of the spectrogram
+as model input (Extractor 1), the channel effects are mitigated
+and device-specific features can be learned so that the model
+converges.
+F. Effect of Doppler Shift in Data Augmentation
+Doppler effect must be considered during data augmentation, especially in high-speed scenarios. Due to the experimental constraints, we emulate the communication scenarios
+at various moving speeds by filtering the real collected D1 to
+a channel simulator to generate identification sets. The process
+is almost the same with data augmentation introduced in
+Section V-A. The maximum Doppler frequency, fd , is fixed to
+0, 10, 30, 50, 100 Hz, respectively. These Doppler frequencies
+are equivalent to moving speeds of 0, 12.46, 37.33, 62.21
+and 124.4 km/h for a LoRa system operating at 868 MHz.
+We select Extractor 1 and Extractor 6 for comparison to
+demonstrate the Doppler effect must be considered during data
+augmentation.
+The results are summarized in Fig. 14. Compared with
+Extractor 1, Extractor 6 does not consider the Doppler effect
+
+Accuracy (%)
+
+10
+
+100
+90
+80
+70
+60
+50
+40
+30
+20
+
+Extractor 1, channel independent spectrogram + data augmentation
+Extractor 4, channel independent spectrogram
+Extractor 5, spectrogram
+D1
+
+D2
+
+D3
+
+D4
+
+D5
+
+D6
+
+D7
+
+D8
+
+D9
+
+D10
+
+Evaluation dataset
+
+Fig. 13: Classification results in various channel conditions.
+
+80
+
+Extractor 1
+Extractor 6, trained with fd = 0 Hz
+
+70
+60
+
+0 Hz
+
+10 Hz
+
+30 Hz
+
+50 Hz
+
+100 Hz
+
+87
+0
+0
+0
+0
+0
+0
+0
+0
+0
+31
+
+0
+100
+0
+0
+1
+0
+0
+0
+0
+0
+32
+
+0
+0
+86
+0
+0
+88
+0
+0
+0
+0
+33
+
+0
+0
+0
+96
+0
+0
+13
+0
+0
+0
+34
+
+Maximum Doppler frequency
+
+during data augmentation. Its maximum Doppler frequency
+fd is fixed to 0 Hz. It can be seen that these two extractors
+perform nearly the same in stationary scenarios (fd = 0 Hz).
+However, as the fd increases, their performance gap becomes
+wider. In the scenario of fd = 100 Hz, the performance
+of Extractor 6 is only 68.60% while Extractor 1 is still
+above 80%. The performance gap between them indicates
+the Doppler effect must be included in data augmentation to
+support the excellent performance in high-speed scenarios.
+
+0
+0
+0
+0
+0
+0
+0
+88
+0
+0
+38
+
+0 13
+0
+0
+0
+0
+4
+0
+0
+0
+0
+0
+0
+0
+0
+7
+100 0
+0 100
+39 40
+
+58
+0
+0
+0
+0
+0
+0
+0
+0
+0
+31
+
+0
+100
+0
+0
+20
+0
+0
+0
+0
+2
+32
+
+0
+0
+81
+1
+0
+89
+2
+0
+0
+0
+33
+
+0
+0
+0
+87
+0
+4
+85
+0
+10
+0
+34
+
+(a)
+True label
+40 39 38 37 36 35 34 33 32 31
+
+Fig. 14: Classification results under various Doppler frequencies of the identification sets.
+
+0
+0
+0
+0
+0
+0
+0 14 0
+0
+0
+0
+99 0
+0
+0 12 0
+0
+0 87
+5
+0
+0
+0
+0
+0
+0
+0
+0
+35 36 37
+Predicted label
+
+100
+0
+0
+0
+0
+0
+0
+0
+0
+1
+31
+
+0
+93
+0
+2
+2
+0
+0
+0
+0
+1
+32
+
+0
+0
+89
+1
+0
+7
+0
+0
+0
+0
+33
+
+0
+0
+1
+85
+0
+0
+1
+0
+10
+0
+34
+
+0
+0
+0
+0
+0
+0
+0 19 0
+0
+1
+3
+79 0
+0
+0
+7
+0
+0
+0 13
+0
+0
+0
+0
+0
+2
+0
+0
+0
+35 36 37
+Predicted label
+
+0
+0
+0
+0
+1
+0
+0
+100
+0
+0
+38
+
+0
+0
+0
+8
+0
+0
+0
+0
+88
+0
+39
+
+42
+0
+0
+0
+0
+0
+0
+0
+0
+98
+40
+
+0
+0
+0
+0
+0
+0
+0
+88
+0
+0
+38
+
+0
+0
+0
+5
+0
+0
+5
+0
+99
+0
+39
+
+0
+0
+0
+0
+0
+0
+0
+1
+0
+100
+40
+
+(b)
+
+0
+0
+0
+5
+0
+0
+0 10 0
+0
+1
+5
+93 0
+0
+0 93 0
+0
+0 99
+0
+0
+0
+0
+0
+6
+0
+0
+0
+35 36 37
+Predicted label
+
+0
+0
+0
+0
+5
+0
+0
+100
+0
+0
+38
+
+0
+0
+0
+6
+0
+0
+0
+0
+84
+0
+39
+
+0
+2
+0
+0
+0
+0
+0
+0
+0
+98
+40
+
+True label
+40 39 38 37 36 35 34 33 32 31
+
+90
+
+True label
+40 39 38 37 36 35 34 33 32 31
+
+True label
+40 39 38 37 36 35 34 33 32 31
+
+Accuracy (%)
+
+100
+
+100 0
+0 100
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+31 32
+
+0
+0
+94
+0
+0
+6
+0
+0
+0
+0
+33
+
+0
+0
+0
+95
+0
+0
+1
+0
+1
+0
+34
+
+(c)
+
+0
+0
+0
+0
+0
+0
+0
+6
+0
+0
+0
+0
+100 0
+0
+0 94 0
+0
+0 94
+11 0
+0
+0
+0
+0
+0
+0
+0
+35 36 37
+Predicted label
+
+(d)
+
+Fig. 15: Classification results of antenna polarization. (a)
+Enrollment D2, evaluation D11, overall accuracy 85.50%. (b)
+Enrollment D6, evaluation D12, overall accuracy 71.10%. (c)
+Enrollment D11, evaluation D12, overall accuracy 93.40%. (d)
+Enrollment D12, evaluation D11, overall accuracy 96.40%.
+
+G. Effect of Antenna Polarization
+Antenna polarization refers to the direction of the electric
+field produced by an antenna. It was found to affect the
+transient-based RFFI system [10]. To the best knowledge
+of the authors, there is no study on antenna polarization
+in deep learning-based approaches that use the entire signal
+for identification. To explore this, we additionally collect
+two datasets, D11 & D12, at Location B and Location F,
+respectively. The DUT antenna is parallel to the ground and
+points towards the USRP. Both DUTs and USRP are kept
+stationary. Extractor 1 is used to extract RFFs.
+Dual polarization refers to the antennas of transmitter and
+receiver have the orthogonal polarization directions. We use
+D2 for enrollment and D11 for evaluation, which are collected
+at Location B and the only difference is the antenna direction.
+The classification result is shown in Fig. 15a. It can be seen
+that nearly all the packets from DUT 36 are misclassified
+as DUT 33. A similar result is obtained when D6 is used
+for enrollment and D12 for identification, both of which are
+collected at Location F.
+Linear polarization refers to the antennas of transmitter and
+receiver have the same polarization direction. We use D11
+and D12 for enrollment and evaluation, which are collected at
+
+different locations but with the same antenna direction. The
+results are given in Fig. 15c and Fig. 15d. Their accuracies
+are both above 90% and there are no seriously misclassified
+DUTs. This shows the classification is not affected by the
+location but the antenna polarization. The enrollment and
+identification data should have the same antenna polarization
+for good performance.
+VIII. R ELATED WORK
+Deep learning-based RFFI usually utilizes a classification
+neural network to directly identify devices. It eliminates the
+need for feature engineering and usually leads to better performance. However, deep learning-based RFFI still has some
+obstacles, two of which are system scalability and the impact
+of the wireless channel.
+Many previous deep learning-based RFFI schemes lack
+scalability [20], [23], [29], [38], [45]. More specifically, it
+neither supports efficient device joining and leaving nor rogue
+device detection ability. This is because previous methods
+usually rely on the softmax layer for classification, and once
+the training was completed, the number of neurons in this
+
+11
+
+layer cannot be changed. When a new device joins and an old
+device leaves, the neural network should be updated by retraining, which is not practical and time-consuming. Chen et
+al.use transfer learning to speed up the re-training process,
+but it still requires the RFFI system to have an expensive
+GPU. More seriously, such design makes the system can only
+identify devices that present in the training set, but rogue
+devices are never available during training. The rogue devices
+will be classified as one of the legitimate devices which is
+unacceptable. To this end, the authors in [17], [26], [36],
+[46] have proposed several rogue device detection schemes.
+However, some require more than one neural networks to be
+deployed, and none of them is scalable when a new legitimate
+device joins the system.
+Last but not least, deep learning-based RFFI is not robust
+to wireless channels [16]. Sankhe et al. propose the ORACLE
+system to combat channel effects [45], [47]. However, it
+needs to intentionally introduce impairments to the transmitter,
+which is costly and not suitable for IoT applications. Data augmentation is used to combat the channel problem [18], [34],
+[35], [40], [41], but designing an accurate channel simulator
+that matches the real application scenarios is challenging. This
+paper for the first time involves Doppler shift to emulate the
+real channel and evaluate its performance.
+IX. C ONCLUSION
+In this paper, we propose a scalable and channel-robust
+RFFI framework that exploits the device-intrinsic hardware
+impairments for device authentication. Specifically, we leverage the deep metric learning to train an RFF extractor that
+has excellent generalization ability. When a new device joins
+the system, it only needs to send several packets for enrollment and the RFF extractor does not need to be retrained. The k-NN algorithm is used for rogue device detection
+and device classification. To overcome the channel effect,
+we design the channel independent spectrogram and further
+use data augmentation to improve the system robustness to
+channel variations. We conduct extensive experiments using
+60 commercial off-the-shelf LoRa devices. We demonstrate
+our framework has an excellent generalization performance
+for both device classification and rogue device detection.
+The channel independent spectrogram and data augmentation
+are shown to be effective under extensive tests with various
+channel conditions. We also find the antenna polarization
+affects the classification performance.
+R EFERENCES
+[1] Y. Yang, L. Wu, G. Yin, L. Li, and H. Zhao, “A survey on security and
+privacy issues in Internet-of-Things,” IEEE Internet Things J., vol. 4,
+no. 5, pp. 1250–1258, 2017.
+[2] J. Zhang, G. Li, A. Marshall, A. Hu, and L. Hanzo, “A new frontier for
+IoT security emerging from three decades of key generation relying on
+wireless channels,” IEEE Access, vol. 8, pp. 138 406–138 446, 2020.
+[3] V. Brik, S. Banerjee, M. Gruteser, and S. Oh, “Wireless device identification with radiometric signatures,” in Proc. Int. Conf. Mobile Comput.
+Netw. (MobiCom), San Francisco, CA, USA, Sep. 2008, pp. 116–127.
+[4] Y. Shi and M. A. Jensen, “Improved radiometric identification of
+wireless devices using MIMO transmission,” IEEE Trans. Inf. Forensics
+Security, vol. 6, no. 4, pp. 1346–1354, 2011.
+
+[5] P. Liu, P. Yang, W.-Z. Song, Y. Yan, and X.-Y. Li, “Real-time identification of rogue WiFi connections using environment-independent physical
+features,” in Proc. IEEE Int. Conf. Comput. Commun. (INFOCOM),
+Paris, France, Apr. 2019, pp. 190–198.
+[6] K. Joo, W. Choi, and D. H. Lee, “Hold the door! fingerprinting your
+car key to prevent keyless entry car theft,” in Proc. Netw. Distrib. Syst.
+Security Symposium (NDSS), Virtual Conference, Feb. 2020.
+[7] J. Hua, H. Sun, Z. Shen, Z. Qian, and S. Zhong, “Accurate and efficient
+wireless device fingerprinting using channel state information,” in Proc.
+IEEE Int. Conf. Comput. Commun. (INFOCOM), Honolulu, HI, USA,
+Apr. 2018, pp. 1700–1708.
+[8] A. C. Polak and D. L. Goeckel, “Wireless device identification based
+on RF oscillator imperfections,” IEEE Trans. Inf. Forensics Security,
+vol. 10, no. 12, pp. 2492–2501, 2015.
+[9] L. Peng, A. Hu, J. Zhang, Y. Jiang, J. Yu, and Y. Yan, “Design of a
+hybrid RF fingerprint extraction and device classification scheme,” IEEE
+Internet Things J., vol. 6, no. 1, pp. 349–360, 2018.
+[10] B. Danev and S. Capkun, “Transient-based identification of wireless
+sensor nodes,” in Proc. ACM/IEEE Int. Conf. Inf. Process. Sensor Netw.
+(IPSN), NW Washington, DC, USA, 2009, pp. 25–36.
+[11] Y. Xing, A. Hu, J. Zhang, J. Yu, G. Li, and T. Wang, “Design of a
+robust radio-frequency fingerprint identification scheme for multimode
+LFM radar,” IEEE Internet Things J., vol. 7, no. 10, pp. 10 581–10 593,
+2020.
+[12] W. Wang, Z. Sun, S. Piao, B. Zhu, and K. Ren, “Wireless physicallayer identification: Modeling and validation,” IEEE Trans. Inf. Forensics
+Security, vol. 11, no. 9, pp. 2091–2106, 2016.
+[13] B. Danev, T. S. Heydt-Benjamin, and S. Capkun, “Physical-layer identification of RFID devices.” in Proc. USENIX Security Symposium, 2009,
+pp. 199–214.
+[14] A. C. Polak, S. Dolatshahi, and D. L. Goeckel, “Identifying wireless
+users via transmitter imperfections,” IEEE J. Sel. Areas Commun.,
+vol. 29, no. 7, pp. 1469–1479, 2011.
+[15] S. Balakrishnan, S. Gupta, A. Bhuyan, P. Wang, D. Koutsonikolas,
+and Z. Sun, “Physical layer identification based on spatial–temporal
+beam features for millimeter-wave wireless networks,” IEEE Trans. Inf.
+Forensics Security, vol. 15, pp. 1831–1845, 2019.
+[16] A. Al-Shawabka, F. Restuccia, S. D’Oro, T. Jian, B. C. Rendon,
+N. Soltani, J. Dy, K. Chowdhury, S. Ioannidis, and T. Melodia, “Exposing the fingerprint: Dissecting the impact of the wireless channel
+on radio fingerprinting,” in Proc. IEEE Int. Conf. Comput. Commun.
+(INFOCOM), Jul. 2020, pp. 646–655.
+[17] D. Roy, T. Mukherjee, M. Chatterjee, E. Blasch, and E. Pasiliao, “RFAL:
+Adversarial learning for RF transmitter identification and classification,”
+IEEE Trans. on Cogn. Commun. Netw., vol. 6, no. 2, pp. 783–801, 2019.
+[18] M. Cekic, S. Gopalakrishnan, and U. Madhow, “Robust wireless
+fingerprinting: Generalizing across space and time,” arXiv preprint
+arXiv:2002.10791, 2020.
+[19] I. Agadakos, N. Agadakos, J. Polakis, and M. R. Amer, “Chameleons’
+oblivion: Complex-valued deep neural networks for protocol-agnostic
+RF device fingerprinting,” in Proc. IEEE European Symposium Security
+Privacy (EuroS&P), Virtual Conference, 2020, pp. 322–338.
+[20] G. Shen, J. Zhang, A. Marshall, L. Peng, and X. Wang, “Radio frequency
+fingerprint identification for LoRa using spectrogram and CNN,” in Proc.
+IEEE Int. Conf. Comput. Commun. (INFOCOM), Virtual Conference,
+May 2021.
+[21] P. Robyns, E. Marin, W. Lamotte, P. Quax, D. Singelée, and B. Preneel,
+“Physical-layer fingerprinting of LoRa devices using supervised and
+zero-shot learning,” in Proc. ACM Conf. Security Privacy Wireless
+Mobile Netw. (WiSec), 2017, pp. 58–63.
+[22] R. Das, A. Gadre, S. Zhang, S. Kumar, and J. M. Moura, “A deep
+learning approach to IoT authentication,” in Proc. IEEE Int. Conf.
+Commun. (ICC), 2018, pp. 1–6.
+[23] J. Yu, A. Hu, G. Li, and L. Peng, “A robust RF fingerprinting
+approach using multisampling convolutional neural network,” IEEE
+Internet Things J., vol. 6, no. 4, pp. 6786–6799, 2019.
+[24] G. Reus-Muns and K. Chowdhury, “Classifying UAVs with proprietary
+waveforms via preamble feature extraction and federated learning,” IEEE
+Trans. Veh. Technol., 2021.
+[25] T. Jian, Y. Gong, Z. Zhan, R. Shi, N. Soltani, Z. Wang, J. G. Dy, K. R.
+Chowdhury, Y. Wang, and S. Ioannidis, “Radio frequency fingerprinting
+on the edge,” IEEE Trans. Mobile Comput., 2021.
+[26] N. Soltani, G. Reus-Muns, B. Salehihikouei, J. Dy, S. Ioannidis, and
+K. Chowdhury, “RF fingerprinting unmanned aerial vehicles with nonstandard transmitter waveforms,” IEEE Trans. Veh. Technol., vol. 69,
+no. 12, pp. 15 518–15 531, 2020.
+
+12
+
+[27] L. Peng, J. Zhang, M. Liu, and A. Hu, “Deep learning based RF
+fingerprint identification using differential constellation trace figure,”
+IEEE Trans. Veh. Technol., vol. 69, no. 1, pp. 1091–1095, 2019.
+[28] B. He and F. Wang, “Cooperative specific emitter identification via multiple distorted receivers,” IEEE Trans. Inf. Forensics Security, vol. 15,
+pp. 3791–3806, 2020.
+[29] J. Zhang, R. Woods, M. Sandell, M. Valkama, A. Marshall, and J. Cavallaro, “Radio frequency fingerprint identification for narrowband systems,
+modelling and classification,” IEEE Trans. Inf. Forensics Security, 2021.
+[30] R.-F. Liao, H. Wen, S. Chen, F. Xie, F. Pan, J. Tang, and H. Song,
+“Multiuser physical layer authentication in Internet of Things with data
+augmentation,” IEEE Internet Things J., vol. 7, no. 3, pp. 2077–2088,
+2019.
+[31] Y. Qian, J. Qi, X. Kuai, G. Han, H. Sun, and S. Hong, “Specific emitter
+identification based on multi-level sparse representation in automatic
+identification system,” IEEE Trans. Inf. Forensics Security, vol. 16, pp.
+2872–2884, 2021.
+[32] J. Gong, X. Xu, and Y. Lei, “Unsupervised specific emitter identification
+method using radio-frequency fingerprint embedded InfoGAN,” IEEE
+Trans. Inf. Forensics Security, vol. 15, pp. 2898–2913, 2020.
+[33] S. Rajendran, Z. Sun, F. Lin, and K. Ren, “Injecting reliable radio
+frequency fingerprints using metasurface for the Internet of Things,”
+IEEE Trans. Inf. Forensics Security, vol. 16, pp. 1896–1911, 2020.
+[34] A. Al-Shawabka, P. Pietraski, S. B Pattar, F. Restuccia, and T. Melodia,
+“Deeplora: Fingerprinting LoRa devices at scale through deep learning
+and data augmentation,” in Proc. ACM Int. Symposium Mob. Ad Hoc
+Netw. Comput. (MobiHoc), Shanghai, China, Jul. 2021.
+[35] M. Piva, G. Maselli, and F. Restuccia, “The tags are alright: Robust
+large-scale rfid clone detection through federated data-augmented radio
+fingerprinting,” in Proc. ACM Int. Symposium Mob. Ad Hoc Netw.
+Comput. (MobiHoc), Shanghai, China, Jul. 2021.
+[36] S. Hanna, S. Karunaratne, and D. Cabric, “Open set wireless transmitter
+authorization: Deep learning approaches and dataset considerations,”
+IEEE Trans. on Cogn. Commun. Netw., vol. 7, no. 1, pp. 59–72, 2020.
+[37] X. Zhou, A. Hu, G. Li, L. Peng, Y. Xing, and J. Yu, “A robust radio
+frequency fingerprint extraction scheme for practical device recognition,”
+IEEE Internet Things J., 2021.
+[38] G. Shen, J. Zhang, A. Marshall, L. Peng, and X. Wang, “Radio frequency
+fingerprint identification for LoRa using deep learning,” IEEE J. Sel.
+Areas Commun., 2021.
+[39] S. D. Andrews, “Extensions to radio frequency fingerprinting,” Ph.D.
+dissertation, Virginia Tech, 2019.
+[40] N. Soltani, K. Sankhe, J. Dy, S. Ioannidis, and K. Chowdhury, “More is
+better: Data augmentation for channel-resilient RF fingerprinting,” IEEE
+Commun. Mag., vol. 58, no. 10, pp. 66–72, 2020.
+[41] K. Merchant and B. Nousain, “Enhanced RF fingerprinting for IoT
+devices with recurrent neural networks,” in Proc. IEEE Mil. Commun.
+Conf. (MILCOM), 2019, pp. 590–597.
+[42] K. He, X. Zhang, S. Ren, and J. Sun, “Deep residual learning for image
+recognition,” in Proc. IEEE Conf. Comput. Vision Pattern Recognition
+(CVPR), 2016, pp. 770–778.
+[43] F. Schroff, D. Kalenichenko, and J. Philbin, “Facenet: A unified embedding for face recognition and clustering,” in Proc. IEEE Conf. Comput.
+Vision Pattern Recognition (CVPR), 2015, pp. 815–823.
+[44] K. Musgrave, S. Belongie, and S.-N. Lim, “A metric learning reality
+check,” in Proc. European Conf. Computer Vision (ECCV), 2020, pp.
+681–699.
+[45] K. Sankhe, M. Belgiovine, F. Zhou, L. Angioloni, F. Restuccia,
+S. D’Oro, T. Melodia, S. Ioannidis, and K. Chowdhury, “No radio left
+behind: Radio fingerprinting through deep learning of physical-layer
+hardware impairments,” IEEE Trans. on Cogn. Commun. Netw., vol. 6,
+no. 1, pp. 165–178, 2019.
+[46] A. Gritsenko, Z. Wang, T. Jian, J. Dy, K. Chowdhury, and S. Ioannidis,
+“Finding a ‘new’ needle in the haystack: Unseen radio detection in
+large populations using deep learning,” in Proc. IEEE Int. Symposium
+Dynamic Spectr. Access Netw. (DySPAN), Newark, NJ, USA, 2019, pp.
+1–10.
+[47] K. Sankhe, M. Belgiovine, F. Zhou, S. Riyaz, S. Ioannidis, and
+K. Chowdhury, “ORACLE: Optimized radio classification through convolutional neural networks,” in Proc. IEEE Int. Conf. Comput. Commun.
+(INFOCOM), Paris, France, 2019, pp. 370–378.
+
+

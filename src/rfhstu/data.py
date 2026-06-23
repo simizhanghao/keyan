@@ -104,14 +104,19 @@ class SigMFIQDataset(Dataset):
         samples_per_file: int = 128,
         random_windows: bool = True,
         seed: int = 1234,
+        input_norm: str = "iq_rms",
     ) -> None:
         if not rows:
             raise ValueError("No usable manifest rows found.")
+        if input_norm not in ("none", "iq_rms"):
+            raise ValueError(f"Unknown input_norm={input_norm!r}; expected 'none' or 'iq_rms'")
         self.rows = rows
         self.window_size = window_size
         self.samples_per_file = samples_per_file
         self.random_windows = random_windows
         self.seed = seed
+        self.input_norm = input_norm
+        self.epoch = 0
         self._memmaps: dict[Path, np.memmap] = {}
         self._lengths = {row.path: row.path.stat().st_size // np.dtype(np.complex64).itemsize for row in rows}
 
@@ -126,6 +131,9 @@ class SigMFIQDataset(Dataset):
     def domain_sizes(self) -> dict[str, int]:
         return infer_domain_sizes(self.rows)
 
+    def set_epoch(self, epoch: int) -> None:
+        self.epoch = epoch
+
     def _open(self, path: Path) -> np.memmap:
         mm = self._memmaps.get(path)
         if mm is None:
@@ -138,7 +146,7 @@ class SigMFIQDataset(Dataset):
         if max_offset == 0:
             return 0
         if self.random_windows:
-            rng = np.random.default_rng(self.seed + row_index * 1_000_003 + sample_index)
+            rng = np.random.default_rng(self.seed + self.epoch * 10_000_019 + row_index * 1_000_003 + sample_index)
             return int(rng.integers(0, max_offset + 1))
         stride = max(1, max_offset // max(1, self.samples_per_file - 1))
         return min(sample_index * stride, max_offset)
@@ -152,11 +160,20 @@ class SigMFIQDataset(Dataset):
             raise ValueError(f"{row.path} has {length} samples, shorter than window_size {self.window_size}")
         offset = self._offset(row_index, sample_index, length)
         iq = np.asarray(self._open(row.path)[offset : offset + self.window_size])
-        channels = normalize_iq(complex_iq_to_channels(iq))
+        channels = complex_iq_to_channels(iq)
+        if self.input_norm == "iq_rms":
+            channels = normalize_iq(channels)
+        else:  # "none": raw IQ, no per-window RMS normalization
+            channels = channels.astype(np.float32, copy=False)
         domains = torch.tensor([row.domains[field] for field in DOMAIN_FIELDS], dtype=torch.long)
         return {
             "iq": torch.from_numpy(channels.copy()),
             "label": torch.tensor(row.label, dtype=torch.long),
             "device": torch.tensor(row.device, dtype=torch.long),
             "domains": domains,
+            "file_path": str(row.path),
+            "window_index": torch.tensor(sample_index, dtype=torch.long),
+            "sample_offset": torch.tensor(offset, dtype=torch.long),
+            "split": row.split,
+            "setup": row.setup,
         }

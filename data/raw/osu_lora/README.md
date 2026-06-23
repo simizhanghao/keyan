@@ -39,6 +39,37 @@ Expected content:
 
 Approximate scale: about 7.7GB for IQ `.dat` files plus metadata.
 
+### 1b. Remaining indoor days (Day3-Day5)
+
+Purpose: expand cross-day experiments beyond Day1/Day2.
+
+On Linux:
+
+```bash
+bash scripts/download_osu_lora_days345.sh
+```
+
+Expected content:
+
+- Setup 1, Different Days Indoor
+- Day3/Day4/Day5
+- all 25 devices
+- first IQ recording per device (`IQ_1.dat` + `IQ_1.sigmf-meta`)
+- also retries missing `Day2/Device9/IQ_1` if absent
+
+Approximate scale: about 12GB for IQ `.dat` files plus metadata.
+
+Generate a Day1-Day5 manifest after download:
+
+```bash
+python3 scripts/generate_manifest_days.py --days 3,4,5 --split extra
+```
+
+Official download base URL:
+
+- https://research.engr.oregonstate.edu/hamdaoui/datasets
+- https://research.engr.oregonstate.edu/hamdaoui/RFFP-dataset/LoRa-Dataset/Diff_Days_Indoor_Setup/
+
 ### 2. Cross-receiver batch
 
 Purpose: RF-HSTU main robustness experiment, Receiver1 train to Receiver2 test.

@@ -1,0 +1,104 @@
+A Discriminative Feature Learning Approach
+for Deep Face Recognition
+Yandong Wen1 , Kaipeng Zhang1 , Zhifeng Li1? and Yu Qiao1,2
+1
+
+Shenzhen Key Lab of Comp. Vis. & Pat. Rec.,
+Shenzhen Institutes of Advanced Technology, CAS, China
+2
+The Chinese University of Hong Kong, Hong Kong
+yandongw@andrew.cmu.edu, {kp.zhang, zhifeng.li, yu.qiao}@siat.ac.cn
+
+Abstract. Convolutional neural networks (CNNs) have been widely
+used in computer vision community, significantly improving the stateof-the-art. In most of the available CNNs, the softmax loss function is
+used as the supervision signal to train the deep model. In order to enhance the discriminative power of the deeply learned features, this paper
+proposes a new supervision signal, called center loss, for face recognition
+task. Specifically, the center loss simultaneously learns a center for deep
+features of each class and penalizes the distances between the deep features and their corresponding class centers. More importantly, we prove
+that the proposed center loss function is trainable and easy to optimize
+in the CNNs. With the joint supervision of softmax loss and center loss,
+we can train a robust CNNs to obtain the deep features with the two key
+learning objectives, inter-class dispension and intra-class compactness as
+much as possible, which are very essential to face recognition. It is encouraging to see that our CNNs (with such joint supervision) achieve the
+state-of-the-art accuracy on several important face recognition benchmarks, Labeled Faces in the Wild (LFW), YouTube Faces (YTF), and
+MegaFace Challenge. Especially, our new approach achieves the best results on MegaFace (the largest public domain face benchmark) under the
+protocol of small training set (contains under 500000 images and under
+20000 persons), significantly improving the previous results and setting
+new state-of-the-art for both face recognition and face verification tasks.
+Keywords: Convolutional neural networks, face recognition, discriminative feature learning, center loss
+
+1
+
+Introduction
+
+Convolutional neural networks (CNNs) have achieved great success on vision
+community, significantly improving the state of the art in classification problems,
+such as object [18, 28, 33, 12, 11], scene [42, 41], action [3, 36, 16] and so on. It
+mainly benefits from the large scale training data [8, 26] and the end-to-end
+learning framework. The most commonly used CNNs perform feature learning
+?
+
+Corresponding author.
+
+2
+
+Yandong Wen, Kaipeng Zhang, Zhifeng Li and Yu Qiao
+
+Input
+
+Convolutional
+Feature Learning
+
+Deeply learned
+Features
+
+Predicted
+Labels
+
+Label
+Prediction
+
+Loss
+Function
+
+Classify
+
+Face Images
+
+Separable
+Features
+
+Discriminative
+Features
+
+Predicted Labels
+
+Fig. 1. The typical framework of convolutional neural networks.
+
+and label prediction, mapping the input data to deep features (the output of the
+last hidden layer), then to the predicted labels, as shown in Figure 1.
+In generic object, scene or action recognition, the classes of the possible
+testing samples are within the training set, which is also referred to close-set
+identification. Therefore, the predicted labels dominate the performance and
+softmax loss is able to directly address the classification problems. In this way,
+the label prediction (the last fully connected layer) acts like a linear classifier
+and the deeply learned features are prone to be separable.
+For face recognition task, the deeply learned features need to be not only
+separable but also discriminative. Since it is impractical to pre-collect all the
+possible testing identities for training, the label prediction in CNNs is not always applicable. The deeply learned features are required to be discriminative
+and generalized enough for identifying new unseen classes without label prediction. Discriminative power characterizes features in both the compact intra-class
+variations and separable inter-class differences, as shown in Figure 1. Discriminative features can be well-classified by nearest neighbor (NN) [7] or k-nearest
+neighbor (k-NN) [9] algorithms, which do not necessarily depend on the label
+prediction. However, the softmax loss only encourage the separability of features.
+The resulting features are not sufficiently effective for face recognition.
+Constructing highly efficient loss function for discriminative feature learning in CNNs is non-trivial. Because the stochastic gradient descent (SGD) [19]
+optimizes the CNNs based on mini-batch, which can not reflect the global distribution of deep features very well. Due to the huge scale of training set, it is
+impractical to input all the training samples in every iteration. As alternative
+approaches, contrastive loss [10, 29] and triplet loss [27] respectively construct
+loss functions for image pairs and triplet. However, compared to the image samples, the number of training pairs or triplets dramatically grows. It inevitably
+results in slow convergence and instability. By carefully selecting the image pairs
+or triplets, the problem may be partially alleviated. But it significantly increases
+the computational complexity and the training procedure becomes inconvenient.
+In this paper, we propose a new loss function, namely center loss, to efficiently enhance the discriminative power of the deeply learned features in neural
+
+

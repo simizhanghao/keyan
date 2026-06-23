@@ -42,6 +42,43 @@ def supervised_contrastive_loss(
     return -mean_log_prob[valid].mean()
 
 
+class SupConLoss(nn.Module):
+    """Supervised contrastive loss over one embedding per sample."""
+
+    def __init__(self, temperature: float = 0.1, eps: float = 1e-8) -> None:
+        super().__init__()
+        self.temperature = temperature
+        self.eps = eps
+
+    def forward(self, features: torch.Tensor, labels: torch.Tensor) -> torch.Tensor:
+        features = F.normalize(features, dim=-1)
+        logits = features @ features.T / self.temperature
+        logits = logits - logits.max(dim=1, keepdim=True).values.detach()
+        batch = labels.shape[0]
+        eye = torch.eye(batch, device=features.device, dtype=torch.bool)
+        positive = labels[:, None].eq(labels[None, :]) & ~eye
+        valid = positive.any(dim=1)
+        if not valid.any():
+            return features.new_zeros(())
+        exp_logits = torch.exp(logits) * (~eye).to(logits.dtype)
+        log_prob = logits - torch.log(exp_logits.sum(dim=1, keepdim=True).clamp_min(self.eps))
+        mean_log_prob = (positive.to(log_prob.dtype) * log_prob).sum(dim=1) / positive.sum(dim=1).clamp_min(1)
+        return -mean_log_prob[valid].mean()
+
+
+class CenterLoss(nn.Module):
+    """Class-center compactness loss over classifier embeddings."""
+
+    def __init__(self, num_classes: int, feat_dim: int) -> None:
+        super().__init__()
+        self.centers = nn.Parameter(torch.zeros(num_classes, feat_dim))
+        nn.init.normal_(self.centers, std=0.02)
+
+    def forward(self, features: torch.Tensor, labels: torch.Tensor) -> torch.Tensor:
+        centers = self.centers[labels]
+        return (features - centers).square().sum(dim=-1).mean()
+
+
 def reconstruction_loss(
     pred: dict[str, torch.Tensor],
     target: dict[str, torch.Tensor],
@@ -92,3 +129,27 @@ class DomainAdversarialHead(nn.Module):
             return domains.new_zeros((), dtype=torch.float32)
         return torch.stack(losses).mean()
 
+
+def coral_loss(source: torch.Tensor, target: torch.Tensor, eps: float = 1e-5) -> torch.Tensor:
+    """Deep CORAL: align second-order statistics between source and target embeddings."""
+    if source.ndim != 2 or target.ndim != 2:
+        raise ValueError("coral_loss expects 2-D feature tensors [B, D].")
+    d = source.shape[1]
+    ns, nt = source.shape[0], target.shape[0]
+    if ns < 2 or nt < 2:
+        return source.new_zeros(())
+    source_c = source - source.mean(dim=0, keepdim=True)
+    target_c = target - target.mean(dim=0, keepdim=True)
+    cov_s = (source_c.T @ source_c) / max(1, ns - 1)
+    cov_t = (target_c.T @ target_c) / max(1, nt - 1)
+    diff = cov_s - cov_t
+    return diff.square().sum() / max(eps, 4.0 * d * d)
+
+
+def information_maximization_loss(logits: torch.Tensor, eps: float = 1e-8) -> torch.Tensor:
+    """IM loss on unlabeled target: minimize conditional entropy, maximize marginal entropy."""
+    probs = torch.softmax(logits, dim=-1)
+    cond_entropy = -(probs * torch.log(probs.clamp_min(eps))).sum(dim=-1).mean()
+    mean_prob = probs.mean(dim=0)
+    marginal_entropy = -(mean_prob * torch.log(mean_prob.clamp_min(eps))).sum()
+    return cond_entropy - marginal_entropy

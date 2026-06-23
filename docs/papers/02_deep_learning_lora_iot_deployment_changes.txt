@@ -1,0 +1,194 @@
+Deep-Learning-Based Device Fingerprinting for
+Increased LoRa-IoT Security: Sensitivity to
+Network Deployment Changes
+Bechir Hamdaoui and Abdurrahman Elmaghbub
+
+arXiv:2208.14964v1 [cs.LG] 31 Aug 2022
+
+School of Electrical Engineering and Computer Science, Oregon State University, Corvallis, Oregon, USA
+{hamdaoui,elmaghba}@oregonstate.edu
+Abstract—Deep-learning-based device fingerprinting has recently
+been recognized as a key enabler for automated network access
+authentication. Its robustness to impersonation attacks due to the
+inherent difficulty of replicating physical features is what distinguishes it from conventional cryptographic solutions. Although
+device fingerprinting has shown promising performances, its
+sensitivity to changes in the network operating environment still
+poses a major limitation. This paper presents an experimental
+framework that aims to study and overcome the sensitivity
+of LoRa-enabled device fingerprinting to such changes. We
+first begin by describing RF datasets we collected using our
+LoRa-enabled wireless device testbed. We then propose a new
+fingerprinting technique that exploits out-of-band distortion
+information caused by hardware impairments to increase the
+fingerprinting accuracy. Finally, we experimentally study and
+analyze the sensitivity of LoRa RF fingerprinting to various
+network setting changes. Our results show that fingerprinting
+does relatively well when the learning models are trained and
+tested under the same settings. However, when trained and tested
+under different settings, these models exhibit moderate sensitivity
+to channel condition changes and severe sensitivity to protocol
+configuration and receiver hardware changes when IQ data is
+used as input. However, with FFT data is used as input, they
+perform poorly under any change.
+Index Terms—Device fingerprinting, LoRa datasets, deep learning, experimental study, hardware impairments.
+
+I. I NTRODUCTION
+LoRa (short for Long Range) wireless technology has become
+the de facto physical platform for a wide range of Internet of
+Things (IoT) networks and applications. In recent years, hundreds of IoT application developers have adopted LoRaWAN
+protocol, a wide-area network (WAN) protocol built on top of
+the LoRa physical layer as the solution for enabling long-range
+connectivity between IoT devices. Recent studies estimate that
+the global number of connected IoT devices, currently at 12.3
+Billion, is projected to reach 27 Billion globally by 2025 [1].
+With the increased adoption of LoRa technology coupled
+with the growing numbers of connected IoT devices, there is
+undoubtedly an urgent need for efficient security mechanisms
+to protect such emerging LoRa-enabled devices and networks.
+An IEEE-formatted version of this article is published in IEEE Network.
+Personal use of this material is permitted. Permission from IEEE must
+be obtained for all other uses, in any current or future media, including
+reprinting/republishing this material for advertising or promotional purposes,
+creating new collective works, for resale or redistribution to servers or lists,
+or reuse of any copyrighted component of this work in other works.
+
+Physical-layer security approaches that are based on wireless
+RF (radio frequency) fingerprints have recently emerged as
+potential device identification solutions for automated monitoring of authorized IoT network access [2]. What distinguishes these fingerprinting solutions from higher-layer ones
+is the inability of attackers to replicate the fingerprints. As
+a result, they are foreseen to complement to conventional
+cryptographic security approaches to further protect networks
+against unauthorized access.
+RF fingerprinting consists of extracting features from the
+received RF signals and using them to uniquely identify
+the transmitting devices [3]. However, the feature selection
+process has, until recently, been performed manually, thus
+requiring RF signal domain expertise and many trial-anderror iterations to find the best feature set. Driven by the
+recent success of applying deep learning to image recognition
+and natural language processing [4], attempts in using deep
+learning to solve wireless networking problems [5], including
+device fingerprinting [6], have also yielded promising results.
+Deep-learning-driven RF fingerprinting techniques can automatically process raw RF signals and extract the features
+without needing domain knowledge [7]. For instance, they
+can exploit the random distortions in the received RF signals
+that are caused by the device hardware impairments to extract
+signatures that are unique to the devices [8]. However, as
+the radio technology continues to advance, the variation in
+the impairments across different devices also continues to
+decrease, thereby resulting in a decrease in the distances
+between devices in the feature space. This decrease makes the
+task of device fingerprinting more challenging, as it becomes
+more sensitive even to the slightest changes in the wireless
+channel condition and/or the network deployment setting. For
+instance, in [9], the authors attributed the sensitivity of deep
+learning models to channel overfitting, and concluded that
+equalizing I/Q (in-phase/quadrature) data can mitigate this
+problem. An artificial noise adding approach was proposed in
+[10] to increase the robustness of ZigBee device identification
+against channel variability. In [11], the authors studied the
+location sensitivity and proposed augmentation and estimation
+strategies to promote generalization across time and location.
+These studies are critical to the deployment of RF fingerprinting techniques in real-world. However, they were limited
+to WiFi, ADS-B (automatic dependent surveillance-broadcast)
+
+and ZigBee data and focused on changes along the time and
+location dimensions only.
+In this paper, we experimentally study the sensitivity of LoRa
+device fingerprinting to such changes, assess its ability to
+classify different LoRa IoT devices with identical hardware
+components, and propose an approach to improve its identification accuracy. More specifically, we:
+• Released massive RF datasets collected from 25 LoRa
+devices that cover a number of indoor and outdoor
+scenarios, with varying deployment settings, including
+the experiment location and time, the LoRa protocol
+configuration, and the receiver hardware.
+• Presented a new technique that exploits out-of-band
+distortion information caused by hardware impairments
+to provide unique, device-specific signatures that are then
+leveraged to increase the fingerprinting accuracy.
+• Conducted an experimental study that discloses the
+sensitivity of deep-learning-based LoRa RF fingerprinting to various network deployment changes while considering two different data input representations of the
+sampled RF signals: time-domain IQ and frequencydomain FFT (fast Fourier transform).
+Our results reveal that the fingerprinting techniques do relatively well when trained and tested under the same deployment
+settings, with FFT representation as input outperforming the
+IQ representation. However, if trained and tested under different settings, when IQ data is used as input to the learning
+models, these techniques show moderate sensitivity to channel
+condition variations and deep sensitivity to system setting
+variations such as changes in the LoRa protocol configuration
+and receiver hardware. However, when FFT data is used as
+input, they perform exceptionally poorly, regardless of the type
+of change.
+The rest of the paper is organized as follows. Section II
+describes the testbed and the collected datasets. Section III
+explains the hardware impairments and highlights their impact
+on the out-of-band (OOB) spectrum emissions, and Section IV
+presents the proposed technique leveraging OOB emissions
+to increase fingerprinting accuracy. Section V presents result findings showing the vulnerability of RF fingerprinting
+to various changes in the network operating environment.
+Section VI discusses open challenges and future research
+directions. Lastly, Section VII concludes the article.
+II. T ESTBED AND DATASET C OLLECTION
+A. LoRa Device Experimental Testbed
+Fig. 1 depicts our testbed, consisting of 25 Pycom LoRaenabled devices and Ettus USRP B210 receivers. USRP receivers used for signal sampling were configured at a center
+frequency of 915MHz and a sampling rate of 1MS/s. Each
+device was connected to a dedicated antenna and configured
+for Raw-LoRa mode transmissions with: 125KHz bandwidth,
+a spreading factor (SF) of 7, a preamble of 8, a TX power
+of 20dBm, and a coding rate of 4/5. We used MicroPython
+to program and configure the Pycom transmitter boards, and
+GNURadio software to configure the USRP B210 receivers
+
+hp laptop
+SuperSpeed USB 3.0
+
+LoRa
+Whip, Tilt RF
+Antennas
+
+VERT900
+
+USRP B210
+
+Pycom devices
+
+Fig. 1. Experimental LoRa device testbed.
+
+to capture and preprocess LoRa transmissions and to store
+sampled data into files. PyCom devices were configured to
+transmit their data using the LoRa protocol. LoRa uses a
+tunable parameter, termed spreading factor (SF), to adjust the
+data rates and energy usage so at to compensate for signal
+strength degradation or power capacity limitation. SF ranges
+from 7 to 12, with higher values yielding longer ranges and
+lower data rates.
+B. Experimental Scenarios and RF Datasets
+Our RF datasets, collected using the testbed described in
+Section II-A, provide both time-domain IQ samples and
+their corresponding FFT representations for multiple different
+scenarios, specifically designed to enable thorough assessment
+of fingerprinting approaches. In all scenarios, we consider a
+total bandwidth of 1MHz that covers in-band as well as an
+adjacent out-of-band spectrum of LoRa transmissions. The
+reason for choosing this bandwidth is explained in Section IV
+when we present our proposed technique. Recorded IQ and
+FTT data samples are stored into binary files in compliance
+with the Signal Metadata Format (SigMF), where a metadata
+file written in plaintext JSON (JavaScript object notation) is
+created for each binary file to include recording information
+such as sampling rate, recording time/day, carrier frequency,
+and other parameters. In this work, we use the following
+experimental scenarios (The complete RF datasets—with a
+more comprehensive scenario set, detailed description and
+downloading links—can found at [12]).
+• Different Days (Indoor and Outdoor) Scenario, with
+data collected over multiple consecutive days using the same
+receiver. For each day, each device generated ten 20s-long
+transmissions, separated one minute apart from each other.
+This multi-day scenario allows us to study the robustness of
+deep learning models when trained on data collected on one
+day but tested on data captured on a different day.
+• Different Locations (Indoor and Outdoor) Scenario, to
+study of how well the deep learning models perform when
+trained and tested on data captured in different locations. For
+
+

@@ -1,0 +1,161 @@
+Published as a conference paper at ICLR 2021
+
+T ENT: F ULLY T EST-T IME A DAPTATION
+BY E NTROPY M INIMIZATION
+Dequan Wang1∗, Evan Shelhamer2∗† , Shaoteng Liu1 , Bruno Olshausen1 , Trevor Darrell1
+dqwang@cs.berkeley.edu, shelhamer@google.com
+UC Berkeley1
+Adobe Research2
+
+A BSTRACT
+A model must adapt itself to generalize to new and different data during testing.
+In this setting of fully test-time adaptation the model has only the test data and its
+own parameters. We propose to adapt by test entropy minimization (tent1 ): we
+optimize the model for confidence as measured by the entropy of its predictions.
+Our method estimates normalization statistics and optimizes channel-wise affine
+transformations to update online on each batch. Tent reduces generalization error
+for image classification on corrupted ImageNet and CIFAR-10/100 and reaches a
+new state-of-the-art error on ImageNet-C. Tent handles source-free domain adaptation on digit recognition from SVHN to MNIST/MNIST-M/USPS, on semantic
+segmentation from GTA to Cityscapes, and on the VisDA-C benchmark. These
+results are achieved in one epoch of test-time optimization without altering training.
+
+1
+
+I NTRODUCTION
+
+Deep networks can achieve high accuracy on training and testing data from the same distribution,
+as evidenced by tremendous benchmark progress (Krizhevsky et al., 2012; Simonyan & Zisserman,
+2015; He et al., 2016). However, generalization to new and different data is limited (Hendrycks &
+Dietterich, 2019; Recht et al., 2019; Geirhos et al., 2018). Accuracy suffers when the training (source)
+data differ from the testing (target) data, a condition known as dataset shift (Quionero-Candela et al.,
+2009). Models can be sensitive to shifts during testing that were not known during training, whether
+natural variations or corruptions, such as unexpected weather or sensor degradation. Nevertheless, it
+can be necessary to deploy a model on different data distributions, so adaptation is needed.
+During testing, the model must adapt given only its parameters and the target data. This fully test-time
+adaptation setting cannot rely on source data or supervision. Neither is practical when the model
+first encounters new testing data, before it can be collected and annotated, as inference must go on.
+Real-world usage motivates fully test-time adaptation by data, computation, and task needs:
+1. Availability. A model might be distributed without source data for bandwidth, privacy, or profit.
+2. Efficiency. It might not be computationally practical to (re-)process source data during testing.
+3. Accuracy. A model might be too inaccurate without adaptation to serve its purpose.
+To adapt during testing we minimize the entropy of model predictions. We call this objective the
+test entropy and name our method tent after it. We choose entropy for its connections to error and
+shift. Entropy is related to error, as more confident predictions are all-in-all more correct (Figure 1).
+Entropy is related to shifts due to corruption, as more corruption results in more entropy, with a strong
+rank correlation to the loss for image classification as the level of corruption increases (Figure 2).
+To minimize entropy, tent normalizes and transforms inference on target data by estimating statistics
+and optimizing affine parameters batch-by-batch. This choice of low-dimensional, channel-wise
+feature modulation is efficient to adapt during testing, even for online updates. Tent does not restrict
+or alter model training: it is independent of the source data given the model parameters. If the model
+can be run, it can be adapted. Most importantly, tent effectively reduces not just entropy but error.
+∗
+1
+
+Equal contribution. † Work done at Adobe Research; the author is now at DeepMind.
+Please see the project page at https://github.com/DequanWang/tent for the code and more.
+
+1
+
+Published as a conference paper at ICLR 2021
+
+80
+
+1.0
+
+60
+
+0.8
+
+Loss
+
+Error (%)
+
+1.2
+
+40
+
+0.6
+
+original
+noise
+blur
+digital
+weather
+level
+
+0.4
+
+20
+
+= 0.61
+
+0.2
+
+0
+0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0
+
+0.2
+
+Entropy
+
+Figure 1: Predictions with lower entropy have
+lower error rates on corrupted CIFAR-100-C.
+Certainty can serve as supervision during testing.
+
+0.3
+
+0.4
+
+Entropy
+
+0.5
+
+0.6
+
+Figure 2: More corruption causes more loss and
+entropy on CIFAR-100-C. Entropy can estimate
+the degree of shift without training data or labels.
+
+Our results evaluate generalization to corruptions for image classification, to domain shift for digit
+recognition, and to simulation-to-real shift for semantic segmentation. For context with more data
+and optimization, we evaluate methods for robust training, domain adaptation, and self-supervised
+learning given the labeled source data. Tent can achieve less error given only the target data, and it
+improves on the state-of-the-art for the ImageNet-C benchmark. Analysis experiments support our
+entropy objective, check sensitivity to the amount of data and the choice of parameters for adaptation,
+and back the generality of tent across architectures.
+Our contributions
+• We highlight the setting of fully test-time adaptation with only target data and no source data. To
+emphasize practical adaptation during inference we benchmark with offline and online updates.
+• We examine entropy as an adaptation objective and propose tent: a test-time entropy minimization
+scheme to reduce generalization error by reducing the entropy of model predictions on test data.
+• For robustness to corruptions, tent reaches 44.0% error on ImageNet-C, better than the state-ofthe-art for robust training (50.2%) and the strong baseline of test-time normalization (49.9%).
+• For domain adaptation, tent is capable of online and source-free adaptation for digit classification
+and semantic segmentation, and can even rival methods that use source data and more optimization.
+
+2
+
+S ETTING : F ULLY T EST-T IME A DAPTATION
+
+Adaptation addresses generalization from source to target. A model fθ (x) with parameters θ trained
+on source data and labels xs , y s may not generalize when tested on shifted target data xt . Table 1
+summarizes adaptation settings, their required data, and types of losses. Our fully test-time adaptation
+setting uniquely requires only the model fθ and unlabeled target data xt for adaptation during
+inference.
+Existing adaptation settings extend training given more data and supervision. Transfer learning
+by fine-tuning (Donahue et al., 2014; Yosinski et al., 2014) needs target labels to (re-)train with a
+supervised loss L(xt , y t ). Without target labels, our setting denies this supervised training. Domain
+adaptation (DA) (Quionero-Candela et al., 2009; Saenko et al., 2010; Ganin & Lempitsky, 2015;
+Tzeng et al., 2015) needs both the source and target data to train with a cross-domain loss L(xs , xt ).
+Test-time training (TTT) (Sun et al., 2019b) adapts during testing but first alters training to jointly
+optimize its supervised loss L(xs , y s ) and self-supervised loss L(xs ). Without source, our setting
+denies joint training across domains (DA) or losses (TTT). Existing settings have their purposes, but
+do not cover all practical cases when source, target, or supervision are not simultaneously available.
+Unexpected target data during testing requires test-time adaptation. TTT and our setting adapt
+the model by optimizing an unsupervised loss during testing L(xt ). During training, TTT jointly
+optimizes this same loss on source data L(xs ) with a supervised loss L(xs , y s ), to ensure the
+parameters θ are shared across losses for compatibility with adaptation by L(xt ). Fully test-time
+adaptation is independent of the training data and training loss given the parameters θ. By not
+changing training, our setting has the potential to require less data and computation for adaptation.
+2
+
+
