@@ -1,16 +1,20 @@
 \begin{table}[!t]
-\caption{Edge Deployment Benchmark (Phase6)}
-\label{tab:edge_deployment}
 \centering
-\renewcommand{\arraystretch}{1.1}
-\begin{tabular}{lcc}
+\caption{Edge deployment benchmark (Phase6).}
+\label{tab:edge_deployment}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.05}
+\resizebox{0.90\columnwidth}{!}{%
+\begin{tabular}{@{}lcc@{}}
 \toprule
-Metric & CNN-IQ & Hybrid \\
+Metric & CNN-IQ & F \\
 \midrule
 Parameters & 47.7K & 1.16M \\
 Latency @ bs=1 (ms) & 1.12 & 2.45 \\
 Latency @ bs=32 (ms) & 1.10 & 2.53 \\
-Peak GPU mem @ bs=32 (MB) & 66.4 & 123.6 \\
+Peak GPU mem (MB) & 66.4 & 123.6 \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table}

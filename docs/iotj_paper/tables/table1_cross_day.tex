@@ -1,19 +1,19 @@
-\begin{table}[t]
+\begin{table}[!t]
 \centering
 \caption{Cross-day main results on Day5 test (mean $\pm$ std over seeds, \%).}
 \label{tab:cross_day_main}
 \footnotesize
 \setlength{\tabcolsep}{2.5pt}
 \renewcommand{\arraystretch}{1.05}
-\resizebox{\columnwidth}{!}{%
+\resizebox{0.98\columnwidth}{!}{%
 \begin{tabular}{@{}lcccc@{}}
-\hline
+\toprule
 Model & F-Acc & F-F1 & W-Acc & W-F1 \\
-\hline
+\midrule
 CNN-IQ & $54.2{\pm}14.2$ & $45.6{\pm}14.8$ & $43.5{\pm}5.2$ & $38.7{\pm}5.7$ \\
 RF-HSTU no OOB & $66.7{\pm}3.4$ & $59.1{\pm}4.5$ & $39.4{\pm}13.7$ & $36.8{\pm}14.3$ \\
 \textbf{F cross-attn + chirp} & $\mathbf{75.0{\pm}5.3}$ & $\mathbf{67.9{\pm}6.8}$ & $41.5{\pm}2.4$ & $39.4{\pm}2.1$ \\
-\hline
+\bottomrule
 \end{tabular}%
 }
 \end{table}

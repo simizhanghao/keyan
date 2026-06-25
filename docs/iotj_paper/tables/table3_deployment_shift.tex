@@ -1,24 +1,27 @@
 \begin{table*}[!t]
-\caption{Deployment-Shift LOCO Results (File-Level Accuracy, \%)}
+\caption{Deployment-shift LOCO results (file-level accuracy, \%).}
 \label{tab:deployment_shift}
 \centering
-\renewcommand{\arraystretch}{1.08}
-\small
-\begin{tabular}{llccccc}
+\scriptsize
+\setlength{\tabcolsep}{2pt}
+\renewcommand{\arraystretch}{1.03}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}llccccc@{}}
 \toprule
-Shift & Held-out condition & CNN & Hybrid & Winner & Note \\
+Shift & Held-out & CNN & F & Win & Note \\
 \midrule
-Config LOCO & Config1 (SF7 BW125) & 0.0 & 4.2 & Hybrid & both weak \\
-Config LOCO & Config2 (SF8) & 4.2 & 8.3 & Hybrid & \\
-Config LOCO & Config3 (SF11) & 8.3 & 16.7 & Hybrid & \\
+Config LOCO & Config1 (SF7 BW125) & 0.0 & 4.2 & F & both weak \\
+Config LOCO & Config2 (SF8) & 4.2 & 8.3 & F & \\
+Config LOCO & Config3 (SF11) & 8.3 & 16.7 & F & \\
 Config LOCO & Config4 & 4.2 & 0.0 & CNN & \\
-Location LOCO & room (indoor) & 29.2 & 54.2 & Hybrid & \\
-Location LOCO & office & 37.5 & 54.2 & Hybrid & \\
+Location LOCO & room (indoor) & 29.2 & 54.2 & F & \\
+Location LOCO & office & 37.5 & 54.2 & F & \\
 Location LOCO & outdoor & 25.0 & 16.7 & CNN & outdoor difficult \\
 Distance LOCO & 5\,m & 8.3 & 8.3 & tie & \\
-Distance LOCO & 10\,m & 4.2 & 20.8 & Hybrid & \\
-Distance LOCO & 15\,m & 4.2 & 33.3 & Hybrid & \\
-Distance LOCO & 20\,m & 8.3 & 37.5 & Hybrid & \\
+Distance LOCO & 10\,m & 4.2 & 20.8 & F & \\
+Distance LOCO & 15\,m & 4.2 & 33.3 & F & \\
+Distance LOCO & 20\,m & 8.3 & 37.5 & F & \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table*}
