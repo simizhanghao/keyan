@@ -1,31 +1,81 @@
 \section{Experimental Setup}
 \label{sec:experiments}
 
-\subsection{Implementation Details}
-Table~\ref{tab:hyper} summarizes the primary cross-day configuration.
-We use AdamW with learning rate $3\times10^{-3}$, batch size 128, weight decay $5\times10^{-4}$, and 80 epochs.
-Hybrid models use cross-attention OOB fusion, chirp embeddings, hidden dimension 64, RF-HSTU depth 2, and four OOB attention heads unless otherwise noted.
-Checkpoints are selected by source-domain validation accuracy.
+This section describes the dataset, evaluation protocols, model variants, training settings, and statistical analysis used in this paper. Since LoRa RFFI performance is highly sensitive to data splits and deployment conditions, we explicitly separate the primary cross-day protocol, deployment-shift evaluation, and cross-receiver stress test. All main results use source-domain validation for checkpoint selection and never use target-domain test labels for model selection.
 
-\input{tables/table_hyperparams.tex}
+\subsection{Dataset}
 
-\subsection{Baselines and Ablations}
-\textbf{CNN-IQ:} reproduced OSU-style IQ baseline~\cite{jian2020deeplearning_rf_fingerprinting}.
-\textbf{RF-HSTU linear no OOB:} diagnostic sequence baseline without CNN stem or OOB branch.
-\textbf{Proposed F hybrid:} \texttt{F\_cross\_attn\_chirp\_plain}.
-\textbf{Fusion/chirp ablations:} concat vs cross-attention, with/without chirp embeddings (Table~\ref{tab:fusion_chirp}).
-Gated fusion and full domain-robust stacks are excluded from main claims due to instability under the clean protocol.
+We evaluate on the public OSU LoRa RFFI dataset, which contains LoRa captures from $C=24$ commodity transmitters collected under multiple days, configurations, distances, locations, and receiver settings~\cite{elmaghbub2021lora_wild,hamdaoui2022deeplearning}. The dataset is suitable for studying deployment variability because it includes both relatively mild temporal drift and more severe shifts induced by propagation, device configuration, and receiver front-end changes.
 
-\subsection{Protocols}
-\textbf{Cross-day (primary):} Day1--3 train, Day4 validation, Day5 test; five random seeds; OOB z-score normalization.
-\textbf{Deployment shift:} Phase4 LOCO over configuration, location, and distance manifests; OOB ratio normalization and batch size 256 (footnote differences from primary protocol).
-\textbf{Cross-receiver stress test:} strict source-only manifests with source-RX validation and target-RX testing; three seeds; OOB ratio for hybrid models.
-\textbf{Edge benchmark:} parameter count and GPU inference latency at batch sizes 1/32/64.
+Each capture file is segmented into deterministic IQ windows of length $L=8192$ samples. Unless otherwise specified, each test file is evaluated using $K=256$ deterministic windows and file-level prediction is obtained by mean-logits voting. We report both window-level and file-level metrics, but file-level accuracy and file-level macro-F1 are emphasized because device authentication decisions are usually made over a capture file rather than over a single window.
 
-\subsection{Metrics and Statistics}
-We report window/file accuracy and macro-F1.
-Cross-day gains use paired seed-level comparisons and pooled bootstrap confidence intervals on file-level accuracy differences.
-McNemar tests are reserved for appendix material due to small file counts.
+\subsection{Evaluation Protocols}
 
-\input{tables/table1_cross_day.tex}
-\input{tables/table2_fusion_chirp.tex}
+We use three groups of evaluation protocols.
+
+\subsubsection{Primary cross-day protocol}
+
+The primary protocol evaluates cross-day generalization on the same receiver. We train on Day1--Day3, select checkpoints using labeled Day4 source-domain validation, and test on Day5. This protocol is denoted as the clean cross-day protocol throughout the paper. It is strict in the sense that Day5 test labels are never used for checkpoint selection. It is not a blind-transfer setting, because labeled source-domain validation is used for early stopping.
+
+\subsubsection{Deployment-shift protocols}
+
+To evaluate robustness under practical deployment changes, we further report leave-one-domain-out deployment-shift results over configuration, location, and distance factors. In each fold, the held-out domain is used only for testing, while training and validation are constructed from the remaining source domains. These experiments are used as deployment extensions rather than as the primary model-selection protocol.
+
+\subsubsection{Cross-receiver stress test}
+
+We also include a strict source-only cross-receiver stress test. For RX1$\rightarrow$RX2, training and validation are performed only on RX1 captures, and RX2 is used only for testing. RX2$\rightarrow$RX1 is defined symmetrically. This protocol is substantially harder than cross-day evaluation because receiver front-end gain, filtering, and calibration can change both in-band and OOB statistics. The cross-receiver experiments are therefore interpreted as a limitation analysis rather than as evidence of receiver-invariant RFFI.
+
+Table~\ref{tab:protocol_variants} summarizes the protocol variants used in the paper.
+
+\begin{table}[!t]
+\centering
+\caption{Protocol variants used in this paper.}
+\label{tab:protocol_variants}
+\begin{tabular}{lcccc}
+\hline
+Protocol & Purpose & OOB norm & Batch & Label smoothing \\
+\hline
+Cross-day clean & Main result & z-score & 128 & 0 \\
+Deployment LOCO & Extended shift & ratio & 256 & 0.05 \\
+Cross-receiver clean & Stress test & ratio & 128 & 0 \\
+\hline
+\end{tabular}
+\end{table}
+
+The use of different OOB normalization in different protocols reflects the type of shift being evaluated. For cross-day experiments, z-score normalization is used to preserve relative spectral variation under the same receiver. For receiver-shift experiments, ratio normalization is used to reduce sensitivity to receiver-dependent gain and energy scaling, following prior observations that OOB and energy-related features are affected by deployment and receiver conditions~\cite{hamdaoui2022deeplearning}.
+
+\subsection{Model Variants}
+
+We compare the proposed model with CNN and hybrid ablation baselines. The main variants are as follows.
+
+\textbf{CNN-IQ.} This is the reproduced convolutional baseline using IQ input. It serves as the primary baseline for all main comparisons.
+
+\textbf{Linear RF-HSTU without OOB.} This diagnostic baseline uses RF-HSTU sequence modeling without the OOB branch. It evaluates whether RF patch sequence modeling alone contributes to cross-day generalization.
+
+\textbf{Concat OOB hybrid.} This variant fuses main-path and OOB tokens by direct concatenation followed by projection. It tests whether simple OOB fusion is sufficient.
+
+\textbf{Gated OOB hybrid.} This variant uses a learned gate to combine main-path and OOB features. It is included as a fusion baseline but not used as the final method.
+
+\textbf{Cross-attentive OOB hybrid.} This is the proposed final architecture. It uses CNN-stem tokenization, OOB-guided cross-attention with gated residual injection, an RF-HSTU sequence encoder, and chirp-aware positional embeddings. This model corresponds to \texttt{F\_cross\_attn\_chirp\_plain} in the experimental logs.
+
+For the fusion/chirp ablation, we further evaluate two controlled variants: cross-attention without chirp embedding and concat fusion with chirp embedding. These variants isolate whether the main gain comes from the cross-attention fusion mechanism or from chirp embedding.
+
+\subsection{Training Details}
+
+All cross-day clean experiments are trained for 80 epochs using cross-entropy loss and source-domain validation accuracy for checkpoint selection. The learning rate is $3\times10^{-3}$, the batch size is 128, the model dimension is $D=64$, and the RF-HSTU depth is 2. Weight decay is set to $5\times10^{-4}$ and label smoothing is disabled in the clean cross-day protocol. The test protocol uses 256 deterministic windows per file and mean-logits file-level voting.
+
+The deployment-shift experiments follow the earlier Phase4 protocol, using batch size 256, ratio OOB normalization, and label smoothing 0.05. These settings are reported explicitly in Table~\ref{tab:protocol_variants} because the deployment experiments serve as extended robustness evidence rather than as the clean cross-day ablation protocol.
+
+The cross-receiver clean experiments use the same training recipe as the clean cross-day protocol, except that OOB ratio normalization is used for the hybrid model. This makes the cross-receiver stress test closer to the final cross-day model while accounting for receiver-dependent energy scaling.
+
+\subsection{Metrics and Statistical Analysis}
+
+We report window-level accuracy, window-level macro-F1, file-level accuracy, and file-level macro-F1. File-level metrics are the primary metrics because they reflect authentication decisions over complete capture files.
+
+For the main cross-day comparison, we run five random seeds and report mean and standard deviation. We also compute paired performance differences between the proposed model and CNN-IQ at the seed level. To account for the small number of test files, we report a pooled paired bootstrap 95\% confidence interval for the file-level accuracy gain. McNemar tests are computed as a supplementary paired test, but we do not rely solely on $p$-values because each seed contains only 24 test files.
+
+For cross-receiver experiments, we report three-seed mean and standard deviation for each transfer direction. These results are used to characterize receiver-domain mismatch and are not interpreted as evidence of receiver-invariant performance.
+
+\subsection{Edge Deployment Benchmark}
+
+In addition to accuracy and macro-F1, we report model size and inference latency. Edge deployment is important for LoRa gateways, where multiple devices may need to be authenticated without cloud-side processing. We benchmark parameter count, batch-1 latency, batch-32 latency, and peak GPU memory for CNN-IQ and the proposed hybrid model. These measurements are reported as deployment feasibility evidence rather than as a hardware-specific optimization claim.

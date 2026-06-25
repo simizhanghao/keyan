@@ -7,6 +7,8 @@ The proposed hybrid achieves \textbf{75.0$\pm$5.3\%} file-level accuracy versus 
 Across five seeds the hybrid wins four times, ties once, and never loses.
 CNN-IQ exhibits higher seed variance, indicating less stable cross-day behavior.
 
+\input{tables/table1_cross_day.tex}
+
 \begin{figure}[!t]
   \centering
   \includegraphics[width=\linewidth]{fig2_cross_day_seed_bars.pdf}
@@ -19,6 +21,8 @@ Table~\ref{tab:fusion_chirp} and Fig.~\ref{fig:fusion_ablation} confirm \textbf{
 Cross-attention with or without chirp embeddings both reach about 75\% file accuracy, whereas concat fusion remains near chance for multiple seeds (9.7--18.3\%).
 Adding chirp to concat fusion does not rescue performance.
 We therefore attribute the main gain to \emph{cross-attentive OOB fusion}, not chirp embedding alone.
+
+\input{tables/table2_fusion_chirp.tex}
 
 \begin{figure}[!t]
   \centering

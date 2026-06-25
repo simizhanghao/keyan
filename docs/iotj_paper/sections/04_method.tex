@@ -1,7 +1,22 @@
 \section{Proposed Method}
 \label{sec:method}
 
-Fig.~\ref{fig:architecture} illustrates the proposed \model{} architecture. The design follows three principles. First, local RF distortions should be preserved because device-specific impairments often appear as subtle time-domain and spectral variations. Second, LoRa captures should be modeled as structured RF token sequences rather than as a single global vector. Third, OOB spectral evidence should be injected selectively, since prior LoRa RFFI studies have shown that OOB distortion can be informative, but our ablations indicate that naive OOB concatenation can be unstable. Accordingly, \model{} combines a CNN stem, an RF-HSTU sequence encoder, an auxiliary OOB branch, and an OOB-guided cross-attention fusion module.
+\subsection{Overview}
+
+The proposed \model{} architecture follows three design principles.
+First, local RF distortions should be preserved because device-specific impairments often appear as subtle time-domain and spectral variations.
+Second, LoRa captures should be modeled as structured RF token sequences rather than as a single global vector.
+Third, OOB spectral evidence should be injected selectively, since prior LoRa RFFI studies have shown that OOB distortion can be informative, but our ablations indicate that naive OOB concatenation can be unstable.
+Accordingly, the pipeline is:
+CNN-stem main tokens $\rightarrow$ position/chirp embedding $\rightarrow$ OOB-guided cross-attention with gated residual injection $\rightarrow$ RF-HSTU sequence encoding $\rightarrow$ file-level classification.
+Fig.~\ref{fig:architecture} summarizes the overall design.
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=\linewidth]{fig1_model_architecture.pdf}
+    \caption{Proposed OOB-guided cross-attentive RF-HSTU hybrid architecture. A CNN stem extracts local RF tokens from multi-view LoRa windows. Position and chirp embeddings are added to main-path tokens. An auxiliary OOB branch supplies spectral-distortion tokens for gated cross-attention fusion. The fused sequence is processed by an RF-HSTU encoder, and file-level mean-logits voting yields authentication-style device decisions.}
+    \label{fig:architecture}
+\end{figure}
 
 \subsection{Input Window and Multi-View RF Representation}
 
@@ -55,70 +70,77 @@ A direct concatenation baseline can be written as
     =
     [\mathbf{T}_{\mathrm{main}};\mathbf{T}_{\mathrm{oob}}],
 \end{equation}
-followed by a projection back to the model dimension. However, our controlled ablations show that this naive fusion is unstable in the small-sample cross-day setting. We therefore use cross-attention to inject OOB information adaptively.
+followed by a projection back to the model dimension. However, our controlled ablations show that this naive fusion is unstable in the small-sample cross-day setting. We therefore use OOB-guided cross-attention with gated residual injection.
 
-\subsection{OOB-Guided Cross-Attention Fusion}
+\subsection{Chirp-Aware Positional Embedding}
 
-The core module of \model{} is OOB-guided cross-attention. Main-path RF tokens serve as queries, while OOB tokens provide keys and values:
-\begin{align}
-    \mathbf{Q} &= \mathbf{T}_{\mathrm{main}}\mathbf{W}_{Q},\\
-    \mathbf{K} &= \mathbf{T}_{\mathrm{oob}}\mathbf{W}_{K},\\
-    \mathbf{V} &= \mathbf{T}_{\mathrm{oob}}\mathbf{W}_{V},
-\end{align}
-where $\mathbf{W}_{Q}$, $\mathbf{W}_{K}$, and $\mathbf{W}_{V}$ are learnable projections. The cross-attention output is
+LoRa uses chirp spread spectrum modulation, and the relative location of a patch within a chirp-like structure can provide useful inductive bias. Before OOB fusion, we add patch position and chirp-aware embeddings to the main-path tokens:
+\begin{equation}
+    \widetilde{\mathbf{T}}_{\mathrm{main}}[p]
+    =
+    \mathbf{T}_{\mathrm{main}}[p]
+    +
+    \mathbf{e}_{\mathrm{pos}}(p)
+    +
+    \mathbf{e}_{\mathrm{chirp}}(c_p)
+    +
+    \mathbf{e}_{\mathrm{in}}(r_p),
+\end{equation}
+where $c_p$ denotes the estimated chirp group index of patch $p$, and $r_p$ denotes its relative intra-chirp position. The embeddings are learned lookup tables.
+
+This module should be interpreted as an auxiliary LoRa-structure prior rather than the sole source of improvement. As shown later in the fusion/chirp ablation, removing chirp embeddings from the cross-attentive model does not degrade cross-day accuracy, while adding chirp embeddings to naive concatenation does not restore stability. Therefore, the primary mechanism is cross-attentive OOB fusion, with chirp embedding retained as a compatible structural prior.
+
+\subsection{OOB-Guided Cross-Attention with Gated Residual Injection}
+
+The core module of \model{} is OOB-guided cross-attention with gated residual injection. Enhanced main-path tokens serve as queries, while OOB tokens provide keys and values. Let $\mathrm{MHA}(\cdot)$ denote multi-head cross-attention:
 \begin{equation}
     \mathbf{A}_{\mathrm{oob}}
     =
-    \mathrm{softmax}
+    \mathrm{MHA}
     \left(
-    \frac{\mathbf{Q}\mathbf{K}^{\top}}{\sqrt{d}}
-    \right)
-    \mathbf{V},
+    \widetilde{\mathbf{T}}_{\mathrm{main}},
+    \mathbf{T}_{\mathrm{oob}},
+    \mathbf{T}_{\mathrm{oob}}
+    \right).
 \end{equation}
-where $d$ is the attention head dimension. The fused token sequence is obtained through a residual update:
+A sigmoid gate modulates how much OOB evidence is injected into each token:
+\begin{equation}
+    \mathbf{G}
+    =
+    \sigma
+    \left(
+    [\widetilde{\mathbf{T}}_{\mathrm{main}};\mathbf{A}_{\mathrm{oob}}]\mathbf{W}_{g}
+    +\mathbf{b}_{g}
+    \right),
+\end{equation}
+where $\sigma(\cdot)$ is the element-wise sigmoid function, $[\cdot;\cdot]$ denotes concatenation along the feature dimension, and $\mathbf{W}_{g}$ and $\mathbf{b}_{g}$ are learnable parameters. The fused token sequence is
 \begin{equation}
     \mathbf{T}_{\mathrm{fuse}}
     =
     \mathrm{LN}
     \left(
-    \mathbf{T}_{\mathrm{main}}
+    \widetilde{\mathbf{T}}_{\mathrm{main}}
     +
-    \mathbf{A}_{\mathrm{oob}}\mathbf{W}_{O}
+    \mathbf{G}\odot \mathbf{A}_{\mathrm{oob}}\mathbf{W}_{O}
     \right),
 \end{equation}
-where $\mathbf{W}_{O}$ is an output projection and $\mathrm{LN}(\cdot)$ denotes layer normalization.
+where $\mathbf{W}_{O}$ is an output projection, $\odot$ denotes element-wise multiplication, and $\mathrm{LN}(\cdot)$ denotes layer normalization.
 
-This formulation lets each RF token selectively attend to the OOB evidence that is most relevant to that local patch. Compared with early concatenation, cross-attention avoids forcing the classifier to interpret OOB and main-path features as a single undifferentiated vector. Compared with a fixed gate, it produces a patch-dependent alignment between in-band RF structure and OOB spectral distortion. The fusion design builds on the general attention mechanism~\cite{vaswani2017attention}, but is specialized here for OOB-guided LoRa RFFI.
-
-\subsection{Chirp-Aware Positional Embedding}
-
-LoRa uses chirp spread spectrum modulation, and the relative location of a patch within a chirp-like structure can provide useful inductive bias. We therefore add a lightweight chirp-aware positional embedding to the fused tokens:
-\begin{equation}
-    \widetilde{\mathbf{T}}_{\mathrm{fuse}}[p]
-    =
-    \mathbf{T}_{\mathrm{fuse}}[p]
-    +
-    \mathbf{e}_{\mathrm{chirp}}(c_p)
-    +
-    \mathbf{e}_{\mathrm{pos}}(r_p),
-\end{equation}
-where $c_p$ denotes the estimated chirp group index of patch $p$, and $r_p$ denotes its relative intra-chirp position. The embeddings $\mathbf{e}_{\mathrm{chirp}}(\cdot)$ and $\mathbf{e}_{\mathrm{pos}}(\cdot)$ are learned.
-
-This module should be interpreted as an auxiliary LoRa-structure prior rather than the sole source of improvement. As shown later in the fusion/chirp ablation, removing chirp embeddings from the cross-attentive model does not degrade cross-day accuracy, while adding chirp embeddings to naive concatenation does not restore stability. Therefore, the primary mechanism is cross-attentive OOB fusion, with chirp embedding retained as a compatible structural prior.
+This formulation lets each RF token selectively attend to the OOB evidence most relevant to that local patch, while the gate suppresses irrelevant or noisy OOB responses on a per-token basis. Compared with early concatenation, cross-attention avoids forcing the classifier to interpret OOB and main-path features as a single undifferentiated vector. Compared with a fixed global gate, it produces patch-dependent alignment between in-band RF structure and OOB spectral distortion. The fusion design builds on the general attention mechanism~\cite{vaswani2017attention}, but is specialized here for OOB-guided LoRa RFFI.
 
 \subsection{RF-HSTU Sequence Encoder}
 
-The fused and position-enhanced token sequence is passed into an RF-HSTU encoder:
+The fused token sequence is passed into an RF-HSTU encoder:
 \begin{equation}
     \mathbf{H}
     =
     f_{\mathrm{RF\text{-}HSTU}}
     \left(
-    \widetilde{\mathbf{T}}_{\mathrm{fuse}}
+    \mathbf{T}_{\mathrm{fuse}}
     \right)
     \in \mathbb{R}^{P \times D}.
 \end{equation}
-We use ``RF-HSTU'' to refer to our lightweight RF sequence encoder implemented for patch-level LoRa RFFI. The encoder is designed to model interactions across RF patches while preserving efficient inference. Each block contains token mixing, normalization, and pointwise gating operations over the patch sequence. In contrast to a pure CNN classifier, this encoder allows the model to aggregate local impairment evidence across the full LoRa window before classification.
+We use ``RF-HSTU'' to refer to our lightweight RF sequence encoder implemented for patch-level LoRa RFFI. Unlike a standard Transformer block with softmax self-attention, the RF-HSTU block uses sigmoid-based token mixing and pointwise gating, which provides a lightweight sequence encoder for short RF patch sequences. Each block contains token mixing, normalization, and pointwise gating operations over the patch sequence. In contrast to a pure CNN classifier, this encoder allows the model to aggregate local impairment evidence across the full LoRa window before classification.
 
 We do not claim that the sequence encoder alone solves all deployment shifts. In fact, our diagnostic baseline without OOB cross-attention performs below the final model. The purpose of the RF-HSTU encoder is to provide a sequence modeling backbone into which OOB evidence can be injected through cross-attention.
 
@@ -168,10 +190,3 @@ and predict
     \bar{s}_{c}.
 \end{equation}
 This mean-logits voting protocol reduces window-level randomness and matches the file-level authentication setting used in our main experiments.
-
-\begin{figure}[!t]
-    \centering
-    \includegraphics[width=\linewidth]{fig1_model_architecture.pdf}
-    \caption{Proposed OOB-guided cross-attentive RF-HSTU hybrid architecture. A CNN stem extracts local RF tokens from multi-view LoRa windows. An auxiliary OOB branch produces spectral-distortion tokens. Main-path tokens query OOB tokens through cross-attention, and the fused sequence is processed by an RF-HSTU encoder with chirp-aware positional embeddings. File-level mean-logits voting yields authentication-style device decisions.}
-    \label{fig:architecture}
-\end{figure}
