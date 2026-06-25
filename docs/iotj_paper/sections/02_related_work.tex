@@ -2,15 +2,17 @@
 \label{sec:related}
 
 \subsection{LoRa RFFI and Deployment Variability}
-LoRa uses chirp spread spectrum modulation, so received captures contain structured time--frequency patterns that can be exploited for device discrimination~\cite{shen2021lora_spectrogram_cnn}.
+Recent surveys summarize LoRa RFFI datasets, signal representations, and open challenges~\cite{ahmed2024lora_rffi_survey,xie2024rffi_iot_survey}.
+LoRa uses chirp spread spectrum modulation, so received captures contain structured time--frequency patterns that can be exploited for device discrimination~\cite{shen2021lora_spectrogram_cnn,alshawabka2021deeplora}.
 The OSU LoRa RFFI dataset and associated studies provide a systematic view of deployment variability, including cross-day, cross-location, cross-configuration, and cross-receiver shifts~\cite{elmaghbub2021lora_wild,hamdaoui2022deeplearning,elmaghbub2021dataset_release}.
 These works consistently show that models trained and tested under the same collection setting can perform well, whereas cross-setting evaluation exposes substantial degradation, especially under configuration and receiver changes.
 Our work adopts this strict source-domain validation framing rather than random splits that mix days or receivers within training and testing.
 
 \subsection{CNN-IQ and Spectrogram RFFI Baselines}
 Deep learning has become the dominant approach for RF device fingerprinting.
-Large-scale experimental studies demonstrate that convolutional models can learn discriminative patterns from IQ snapshots and related RF views~\cite{jian2020deeplearning_rf_fingerprinting}.
-For LoRa specifically, spectrogram-based CNN classifiers leverage chirp structure and often outperform raw-IQ or FFT-only inputs under their own device collections and evaluation protocols~\cite{shen2021lora_spectrogram_cnn}.
+Large-scale experimental studies demonstrate that convolutional models can learn discriminative patterns from IQ snapshots and related RF views~\cite{jian2020deeplearning_rf_fingerprinting,sankhe2019oracle}.
+Prior RF-specific DNN feature designs further motivate multi-view and spectral representations for device classification~\cite{hamdaoui2020deep_nn_features}.
+For LoRa specifically, spectrogram-based CNN classifiers leverage chirp structure and often outperform raw-IQ or FFT-only inputs under their own device collections and evaluation protocols~\cite{shen2021lora_spectrogram_cnn,alshawabka2021deeplora}.
 These methods motivate our use of a CNN stem to retain local impairment sensitivity, but they also highlight an important evaluation caveat: prior papers frequently assume different datasets, enrollment rules, or adaptation settings.
 Accordingly, we do not claim direct leaderboard comparison against high-accuracy LoRa RFFI systems reported elsewhere.
 Instead, we reproduce a CNN-IQ baseline under our unified Day1--3/Day4/Day5 protocol and use it as the primary reference point.
@@ -18,6 +20,7 @@ Instead, we reproduce a CNN-IQ baseline under our unified Day1--3/Day4/Day5 prot
 \subsection{OOB Hardware Impairments and Prior OOB Usage}
 Transmitter hardware imperfections can appear not only in the in-band LoRa chirp but also in out-of-band spectral leakage and distortion.
 WideScan~\cite{elmaghbub2020widescan} and subsequent OSU LoRa work show that OOB views can strengthen device signatures caused by power-amplifier nonlinearity, filter roll-off, and related analog effects~\cite{hamdaoui2022deeplearning}.
+IoTJ RFFI studies further demonstrate that robust fingerprint extraction remains important for practical device recognition under noisy or variable conditions~\cite{zhou2021robust_rffi_iotj,xie2018coherent_rff_iotj}.
 Because OOB evidence is already established in the LoRa RFFI literature, our contribution is not the first use of OOB information.
 Rather, we study \emph{how} OOB evidence should enter the model.
 Naive concatenation or static gating can expose the main RF pathway to noisy OOB shortcuts, whereas token-level cross-attention allows main-path RF tokens to selectively query OOB hardware evidence on a per-sample basis.
@@ -30,6 +33,7 @@ This ordering preserves local distortion features before global sequence mixing 
 
 \subsection{Domain Shift, Metric Learning, and Adaptation}
 Cross-day and cross-receiver LoRa RFFI are domain-shift problems.
+Confounding factors such as channel, time, and receiver changes can dominate learned fingerprints if not controlled~\cite{cekic2020robust_wireless_fingerprinting,alshawabka2020exposing_fingerprint,shen2022scalable_lora_rffi}.
 Recent LoRa RFFI studies explore metric learning, contrastive learning, and channel-independent representations to improve robustness~\cite{shen2022scalable_lora_rffi,ma2025contrastive_lora_rffi,ma2025receiver_independent_rffi}.
 Center loss and supervised contrastive learning provide general tools for embedding compactness and class separation~\cite{wen2016center_loss,khosla2020supcon}.
 Test-time adaptation methods such as TENT and TTN further examine whether target-domain normalization statistics can recover performance without labels~\cite{wang2021tent,lim2023ttn}.
@@ -38,6 +42,7 @@ We therefore cite these works to contextualize alternative robustness strategies
 Prior channel-robust or receiver-oriented LoRa RFFI papers often report high accuracy under different splits and signal views; we explicitly avoid claiming direct comparison with those numbers.
 
 \subsection{IoT Physical-Layer Security}
+Physical-layer authentication has been surveyed as a complementary security mechanism for wireless networks~\cite{xie2021physical_layer_auth_survey}.
 Physical-layer authentication can complement LoRaWAN cryptographic protections by verifying that the transmitting hardware matches an enrolled device identity~\cite{lorawan_spec,hamdaoui2022deeplearning}.
 This is especially relevant for long-lived IoT deployments where credential compromise, device cloning, or unauthorized hardware substitution must be detected at the gateway.
 However, physical-layer authentication is useful only if fingerprint models remain stable under realistic deployment shifts~\cite{elmaghbub2021lora_wild}.

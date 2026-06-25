@@ -141,7 +141,9 @@ The fused token sequence is passed into an RF-HSTU encoder:
     \right)
     \in \mathbb{R}^{P \times D}.
 \end{equation}
-We use ``RF-HSTU'' to refer to our lightweight RF sequence encoder implemented for patch-level LoRa RFFI. Unlike a standard Transformer block with softmax self-attention, the RF-HSTU block uses sigmoid-based token mixing and pointwise gating, which provides a lightweight sequence encoder for short RF patch sequences. Each block contains token mixing, normalization, and pointwise gating operations over the patch sequence. In contrast to a pure CNN classifier, this encoder allows the model to aggregate local impairment evidence across the full LoRa window before classification.
+We use ``RF-HSTU'' to refer to our lightweight RF sequence encoder implemented for patch-level LoRa RFFI.
+Here, RF-HSTU denotes the proposed lightweight RF token sequence unit rather than a direct reuse of a standard Transformer block.
+Unlike a standard Transformer block with softmax self-attention, the RF-HSTU block uses sigmoid-based token mixing and pointwise gating, which provides a lightweight sequence encoder for short RF patch sequences. Each block contains token mixing, normalization, and pointwise gating operations over the patch sequence. In contrast to a pure CNN classifier, this encoder allows the model to aggregate local impairment evidence across the full LoRa window before classification.
 
 We do not claim that the sequence encoder alone solves all deployment shifts. In fact, our diagnostic baseline without OOB cross-attention performs below the final model. The purpose of the RF-HSTU encoder is to provide a sequence modeling backbone into which OOB evidence can be injected through cross-attention.
 
