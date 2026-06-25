@@ -6,4 +6,4 @@ Ziyang Wang received the Ph.D. degree in electromagnetic field and microwave tec
 
 ## Chengcheng Han
 
-Chengcheng Han is currently pursuing the M.S. degree in engineering at Beihang University, Beijing, China. His research interests include high-temperature electromagnetic environments and electromagnetic compatibility. He is the corresponding author of this paper and can be contacted at HAN106124@163.com.
+Chengcheng Han is currently pursuing the M.S. degree in engineering with the School of Electronic and Information Engineering, Beihang University, Beijing, China. His research interests include high-temperature electromagnetic environments and electromagnetic compatibility. He is the corresponding author of this paper and can be contacted at HAN106124@163.com.

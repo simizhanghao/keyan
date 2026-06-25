@@ -165,7 +165,7 @@ def fig1_model_architecture() -> None:
         ax.add_patch(FancyArrowPatch(p0, p1, arrowstyle="-|>", mutation_scale=10,
                                      linewidth=0.9, color="#444444"))
 
-    ax.text(0.5, 0.92, "OOB-Guided Cross-Attentive RF-HSTU Hybrid (draft block diagram)",
+    ax.text(0.5, 0.92, "OOB-Guided Cross-Attentive RF-HSTU Hybrid",
             ha="center", va="center", fontsize=10, fontweight="bold")
     save(fig, "fig1_model_architecture")
 
