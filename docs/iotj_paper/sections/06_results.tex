@@ -1,67 +1,80 @@
 \section{Results and Analysis}
 \label{sec:results}
 
+This section reports the main cross-day results, controlled ablations, deployment-shift evaluation, edge-deployment benchmark, and cross-receiver stress test. We emphasize file-level accuracy and file-level macro-F1 because they directly correspond to capture-file-level device authentication decisions.
+
 \subsection{Cross-Day Main Results}
-Table~\ref{tab:cross_day_main} and Fig.~\ref{fig:cross_day_seeds} summarize the primary cross-day comparison.
-The proposed hybrid achieves \textbf{75.0$\pm$5.3\%} file-level accuracy versus \textbf{54.2$\pm$14.2\%} for CNN-IQ, with mean paired gain \textbf{+20.8} percentage points and pooled bootstrap 95\% CI \textbf{[+9.2, +32.5]} pp.
-Across five seeds the hybrid wins four times, ties once, and never loses.
-CNN-IQ exhibits higher seed variance, indicating less stable cross-day behavior.
+
+Table~\ref{tab:cross_day_main} summarizes the clean cross-day results under the Day1--3/Day4/Day5 protocol. The reproduced CNN-IQ baseline achieves 54.2$\pm$14.2\% file-level accuracy and 45.6$\pm$14.8\% file-level macro-F1. The proposed cross-attentive OOB hybrid reaches 75.0$\pm$5.3\% file-level accuracy and 67.9$\pm$6.8\% file-level macro-F1, improving CNN-IQ by 20.8 percentage points in file-level accuracy.
 
 \input{tables/table1_cross_day.tex}
 
+The improvement is not only reflected in the mean value but also in seed-level stability. As shown in Fig.~\ref{fig:cross_day_seed_bars}, the proposed model outperforms CNN-IQ in four out of five random seeds and ties in the remaining seed. A pooled paired bootstrap analysis over file-level predictions yields a 95\% confidence interval of [+9.2, +32.5] percentage points for the accuracy gain over CNN-IQ. This interval is entirely above zero, indicating that the improvement is unlikely to be explained by seed selection alone.
+
 \begin{figure}[!t]
-  \centering
-  \includegraphics[width=\linewidth]{fig2_cross_day_seed_bars.pdf}
-  \caption{Cross-day file-level accuracy by random seed (Day5 test). Hybrid model shows higher mean and lower variance than CNN-IQ.}
-  \label{fig:cross_day_seeds}
+    \centering
+    \includegraphics[width=\linewidth]{fig2_cross_day_seed_bars.pdf}
+    \caption{Cross-day file-level accuracy across five random seeds. The proposed cross-attentive OOB hybrid improves over CNN-IQ in four seeds and ties in one seed.}
+    \label{fig:cross_day_seed_bars}
 \end{figure}
 
-\subsection{Fusion and Chirp Ablations}
-Table~\ref{tab:fusion_chirp} and Fig.~\ref{fig:fusion_ablation} confirm \textbf{Case A}: cross-attention dominates fusion choice.
-Cross-attention with or without chirp embeddings both reach about 75\% file accuracy, whereas concat fusion remains near chance for multiple seeds (9.7--18.3\%).
-Adding chirp to concat fusion does not rescue performance.
-We therefore attribute the main gain to \emph{cross-attentive OOB fusion}, not chirp embedding alone.
+The diagnostic RF-HSTU variant without OOB evidence also improves over CNN-IQ in file-level accuracy, reaching 66.7$\pm$3.4\%. This suggests that RF patch sequence modeling itself is useful for cross-day generalization. However, the final OOB-guided cross-attentive model further improves accuracy and macro-F1, showing that OOB spectral evidence provides additional discriminative information when fused appropriately.
+
+\subsection{Fusion and Chirp Ablation}
+
+Table~\ref{tab:fusion_chirp} reports the controlled fusion/chirp ablation. The goal is to separate the effect of the OOB fusion mechanism from the effect of chirp-aware embeddings. The results show a clear pattern: cross-attentive OOB fusion is the key factor behind stable cross-day performance, while chirp embedding alone does not explain the improvement.
 
 \input{tables/table2_fusion_chirp.tex}
 
+The cross-attentive model without chirp embedding achieves 75.0$\pm$3.4\% file-level accuracy, essentially matching the full model with chirp embedding at 75.0$\pm$5.3\%. In contrast, the concat OOB model remains unstable. Without chirp embedding, concat OOB reaches only 18.3$\pm$18.6\%, and adding chirp embedding further results in 9.7$\pm$2.0\%. Therefore, chirp embedding does not rescue naive concatenation.
+
 \begin{figure}[!t]
-  \centering
-  \includegraphics[width=\linewidth]{fig3_fusion_chirp_ablation.pdf}
-  \caption{Fusion/chirp ablation (file-level accuracy, cross-day protocol). Cross-attention variants are stable; concat variants collapse.}
-  \label{fig:fusion_ablation}
+    \centering
+    \includegraphics[width=\linewidth]{fig3_fusion_chirp_ablation.pdf}
+    \caption{Fusion/chirp ablation. Cross-attentive OOB fusion remains stable with or without chirp embedding, while concat-based OOB fusion remains weak and unstable.}
+    \label{fig:fusion_chirp_ablation}
 \end{figure}
 
-\subsection{Deployment-Shift Results}
-Table~\ref{tab:deployment_shift} reports LOCO deployment-shift results.
-Hybrid models outperform CNN-IQ on held-out distance bins at 10/15/20\,m and on indoor room/office locations.
-Outdoor location shift remains difficult and CNN-IQ can exceed the hybrid model.
-Configuration shifts are challenging for both models.
-These results support \emph{partial} deployment robustness rather than universal invariance.
+Prediction-distribution diagnostics further support this interpretation. The cross-attentive variants produce predictions over many device classes, while concat-based variants often collapse to a small number of dominant classes. This indicates that the failure of concat OOB fusion is not simply a lack of chirp prior, but a more fundamental instability in how OOB evidence is injected into the RF representation. We therefore treat cross-attentive OOB fusion as the primary mechanism of the proposed model, and chirp embedding as a compatible auxiliary LoRa-structure prior.
+
+\subsection{Deployment-Shift Evaluation}
+
+Table~\ref{tab:deployment_shift} reports deployment-shift evaluation under configuration, location, and distance leave-one-domain-out protocols. These results are used as extended deployment evidence rather than as the primary clean cross-day protocol, as their training recipe follows the Phase4 setting described in Section~\ref{sec:experiments}.
 
 \input{tables/table3_deployment_shift.tex}
 
+The distance-shift results provide the clearest deployment benefit. At 10\,m, 15\,m, and 20\,m held-out distances, the hybrid model achieves 20.8\%, 33.3\%, and 37.5\% file-level accuracy, respectively, compared with 4.2\%, 4.2\%, and 8.3\% for CNN-IQ. Fig.~\ref{fig:distance_shift} visualizes this trend. The advantage becomes more visible at larger distances, suggesting that OOB-aware RF modeling can preserve device evidence when propagation distance changes.
+
 \begin{figure}[!t]
-  \centering
-  \includegraphics[width=\linewidth]{fig4_distance_shift.pdf}
-  \caption{Distance LOCO file-level accuracy (5/10/15/20\,m held-out). Hybrid gains are clearest from 10\,m onward.}
-  \label{fig:distance_shift}
+    \centering
+    \includegraphics[width=\linewidth]{fig4_distance_shift.pdf}
+    \caption{Distance leave-one-domain-out evaluation. The hybrid model shows stronger performance than CNN-IQ at 10\,m, 15\,m, and 20\,m held-out distances.}
+    \label{fig:distance_shift}
 \end{figure}
 
-\subsection{Edge Deployment Profile}
-Table~\ref{tab:edge_deployment} shows the hybrid model is heavier (1.16\,M vs 47.7\,K parameters) yet still achieves about 2.45\,ms single-window latency on the benchmark GPU setup, suggesting feasibility for edge gateways with modest compute headroom.
+The location-shift results are more mixed. The hybrid model improves over CNN-IQ in indoor and office held-out locations, but underperforms CNN-IQ in the outdoor held-out location. Configuration shift is challenging for both models, with all file-level accuracies remaining low. These results indicate that the proposed model improves robustness under some realistic deployment changes, especially distance and indoor-location shifts, but does not solve all forms of deployment variability.
+
+\subsection{Edge Deployment Benchmark}
+
+Table~\ref{tab:edge_deployment} summarizes the edge-deployment benchmark. CNN-IQ is substantially smaller, with 47.7K parameters, while the proposed hybrid model has approximately 1.16M parameters. However, the latency overhead remains moderate in the evaluated setting: batch-1 latency increases from approximately 1.12\,ms for CNN-IQ to 2.45\,ms for the hybrid model.
 
 \input{tables/table5_edge_deployment.tex}
 
+These results show that the proposed model is more computationally expensive than the CNN baseline, but still feasible for gateway-side inference. Since LoRa RFFI authentication is performed at the edge gateway rather than on battery-constrained transmitters, the additional computation is acceptable for many deployment scenarios. We therefore view the hybrid model as a practical gateway-side authentication module, while further compression and hardware-specific optimization are left for future work.
+
 \subsection{Cross-Receiver Stress Test}
-Strict source-only cross-receiver transfer remains near the 4.17\% chance level for 24-way file classification (Table~\ref{tab:cross_receiver}, Fig.~\ref{fig:cross_receiver}).
-Hybrid models improve the hard RX1$\rightarrow$RX2 direction (18.1\% vs 4.2\% mean file accuracy) but do not uniformly dominate CNN-IQ in the reverse direction.
-Same-receiver upper bounds from prior diagnostics reach much higher accuracy, indicating receiver calibration mismatch as the dominant bottleneck rather than lack of separability.
+
+Finally, Table~\ref{tab:cross_receiver} reports strict source-only cross-receiver transfer. This evaluation is intentionally difficult: the model is trained and validated on one receiver and tested on the other receiver, with no target-receiver labels used for checkpoint selection.
 
 \input{tables/table4_cross_receiver.tex}
 
+The results are direction-dependent. In RX1$\rightarrow$RX2 transfer, CNN-IQ remains at 4.2$\pm$0.0\%, which is near the random baseline of 4.17\%, while the proposed hybrid model improves to 18.1$\pm$3.9\%. This suggests that OOB-guided fusion can provide limited benefit in this transfer direction. However, in RX2$\rightarrow$RX1 transfer, CNN-IQ obtains 23.6$\pm$15.3\%, whereas the hybrid model reaches 15.3$\pm$7.1\%. The large seed variance and direction dependence show that cross-receiver transfer remains unstable.
+
 \begin{figure}[!t]
-  \centering
-  \includegraphics[width=\linewidth]{fig5_cross_receiver_stress.pdf}
-  \caption{Cross-receiver stress-test file-level accuracy (Phase5-clean strict source-only protocol). Both models remain far below cross-day performance.}
-  \label{fig:cross_receiver}
+    \centering
+    \includegraphics[width=\linewidth]{fig5_cross_receiver_stress.pdf}
+    \caption{Strict source-only cross-receiver stress test. The proposed model improves over CNN-IQ in RX1$\rightarrow$RX2 but not in RX2$\rightarrow$RX1, indicating direction-dependent receiver mismatch rather than receiver-invariant generalization.}
+    \label{fig:cross_receiver_stress}
 \end{figure}
+
+Overall, the bidirectional average file-level accuracy is 16.7\% for the hybrid model and 13.9\% for CNN-IQ, both far below the 75.0\% cross-day accuracy of the proposed model under the same-receiver setting. Therefore, these results should not be interpreted as evidence of receiver-invariant LoRa RFFI. Instead, they reveal that receiver front-end calibration mismatch remains a major open challenge. The proposed OOB-guided cross-attentive model improves cross-day robustness and some deployment shifts, but strict source-only cross-receiver generalization requires additional receiver-adaptive calibration or multi-receiver training.
