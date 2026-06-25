@@ -1,28 +1,106 @@
 \section{System Model and Problem Formulation}
 \label{sec:system}
 
-Consider a LoRa IoT network with $N$ registered end devices.
-The edge gateway observes complex baseband IQ snapshots partitioned into windows $\mathbf{x}\in\mathbb{C}^{L}$.
-Each training window has label $y\in\{1,\ldots,N\}$.
-At deployment time, distribution shift from source domain $\mathcal{D}_S$ to target domain $\mathcal{D}_T$ may occur due to different collection days, locations, distances, LoRa configurations, or receiver hardware.
+This section formulates the LoRa RFFI task considered in this paper. We focus on gateway-side device authentication from received LoRa RF captures. The transmitter does not perform any additional computation and does not modify the LoRa packet format. All fingerprint extraction and classification are performed at the receiving gateway using captured IQ samples and their derived spectral views.
 
-We learn a classifier $f_\theta$ and report:
-(i) window-level accuracy and macro-F1 over deterministic evaluation windows;
-(ii) file-level accuracy and macro-F1 using mean-logits voting across windows from the same \texttt{.dat} capture file.
-File-level metrics match authentication-style evaluation but have higher variance because each test fold contains only 24 files (one per device).
+\subsection{LoRa RF Capture Model}
 
-\subsection{Dataset and Device Mapping}
-We use the public OSU LoRa RFFI dataset~\cite{elmaghbub2021lora_wild,elmaghbub2021dataset_release}.
-Following prior cross-day experiments, raw Device9 is excluded and the remaining devices are remapped to 24 contiguous classes.
-Each device/condition typically contributes one $\sim$20\,s capture file per split, sampled into 8192-point windows.
+Consider a set of $C$ enrolled LoRa transmitters,
+\begin{equation}
+    \mathcal{D} = \{1,2,\ldots,C\},
+\end{equation}
+where each transmitter corresponds to one device identity. In the OSU LoRa dataset used in this work, $C=24$. For a transmitter $y \in \mathcal{D}$, the gateway receives a complex baseband signal
+\begin{equation}
+    r(t) = h(t) * s_y(t;\theta_y) + n(t),
+\end{equation}
+where $s_y(t;\theta_y)$ is the emitted LoRa waveform affected by device-specific hardware parameters $\theta_y$, $h(t)$ is the propagation and receiver response, $*$ denotes convolution, and $n(t)$ is additive noise and interference. The hardware parameters $\theta_y$ summarize transmitter-side imperfections such as oscillator offset, I/Q imbalance, power-amplifier nonlinearity, filtering response, and other analog front-end effects. These imperfections are not directly observed, but they can induce repeatable distortions in the received RF signal.
 
-\subsection{Evaluation Domains}
-We evaluate four domain-shift types:
-\begin{itemize}
-  \item \textbf{Cross-day} (primary): train on early days, validate on a source day, test on a held-out future day.
-  \item \textbf{Deployment shift} (extension): leave-one-config/location/distance-out (LOCO) protocols.
-  \item \textbf{Cross-receiver stress test} (limitation): strict source-only transfer between two receivers.
-  \item \textbf{Edge deployment}: parameter count and single-window inference latency.
-\end{itemize}
+After sampling, each capture is represented as a complex IQ sequence
+\begin{equation}
+    \mathbf{x} = [x_1,x_2,\ldots,x_T] \in \mathbb{C}^{T}.
+\end{equation}
+A capture file is further segmented into deterministic windows
+\begin{equation}
+    \mathbf{x}^{(k)} \in \mathbb{C}^{L}, \quad k=1,\ldots,K,
+\end{equation}
+where $L$ is the window length and $K$ is the number of evaluation windows extracted from one file. In our experiments, $L=8192$ and $K=256$ for deterministic file-level evaluation.
 
-All primary cross-day experiments use source-domain validation for checkpoint selection; deprecated target-receiver validation protocols are excluded from the paper.
+\subsection{Multi-View RF Observations}
+
+For each window, the model can use several views derived from the same IQ samples. The raw IQ view preserves in-phase and quadrature components. Spectral views, such as FFT magnitude, expose frequency-domain distortion and leakage. Amplitude--phase views provide an alternative representation of magnitude and phase variation. In addition, out-of-band (OOB) spectral components are extracted from frequency bins outside the nominal in-band LoRa bandwidth.
+
+Let
+\begin{equation}
+    \mathbf{v}^{(k)}
+    =
+    \left[
+    \mathbf{v}^{(k)}_{\mathrm{iq}},
+    \mathbf{v}^{(k)}_{\mathrm{fft}},
+    \mathbf{v}^{(k)}_{\mathrm{ap}},
+    \mathbf{v}^{(k)}_{\mathrm{oob}}
+    \right]
+\end{equation}
+denote the multi-view representation of the $k$-th window. The first three views form the main RF path, while $\mathbf{v}^{(k)}_{\mathrm{oob}}$ is used as auxiliary spectral hardware evidence. This separation is important because OOB information may contain useful transmitter distortion, but it can also be sensitive to receiver gain, filtering, and deployment conditions. Therefore, the goal is not merely to append OOB features to IQ features, but to fuse OOB evidence selectively.
+
+\subsection{Closed-Set File-Level Authentication}
+
+This paper studies closed-set device identification as a proxy for LoRa device authentication. Given an input capture file $\mathcal{X}$ from one of the enrolled devices, the gateway predicts its device identity:
+\begin{equation}
+    f(\mathcal{X}) \rightarrow \hat{y}, \quad \hat{y} \in \mathcal{D}.
+\end{equation}
+A prediction is correct if $\hat{y}=y$, where $y$ is the true transmitter identity.
+
+Although the model is trained on window-level samples, authentication is performed at the file level. For a capture file containing $K$ windows, the classifier produces one logit vector $\mathbf{s}^{(k)} \in \mathbb{R}^{C}$ for each window. The file-level logit vector is computed by mean-logits aggregation:
+\begin{equation}
+    \bar{\mathbf{s}}
+    =
+    \frac{1}{K}
+    \sum_{k=1}^{K}
+    \mathbf{s}^{(k)}.
+\end{equation}
+The final file-level decision is
+\begin{equation}
+    \hat{y}
+    =
+    \arg\max_{c \in \mathcal{D}}
+    \bar{s}_{c}.
+\end{equation}
+This setting matches gateway-side authentication, where multiple windows from a received capture can be aggregated before making a device decision. File-level accuracy and file-level macro-F1 are therefore treated as the primary metrics in this paper.
+
+\subsection{Deployment Domains and Shift Types}
+
+A central challenge in LoRa RFFI is that the observed signal depends not only on transmitter hardware but also on deployment conditions. We define a domain variable
+\begin{equation}
+    d \in \mathcal{S},
+\end{equation}
+where $d$ can represent the collection day, receiver, distance, location, or device configuration. A training set and a test set may share the same device identities but differ in domain:
+\begin{equation}
+    \mathcal{D}_{\mathrm{train}} = \mathcal{D}_{\mathrm{test}},
+    \quad
+    d_{\mathrm{train}} \neq d_{\mathrm{test}}.
+\end{equation}
+The objective is to learn a classifier that preserves transmitter-specific evidence while reducing sensitivity to nuisance variation introduced by $d$.
+
+We consider three types of domain shift. First, cross-day shift evaluates temporal and channel drift under the same receiver setting. This is the primary protocol of the paper. Second, deployment shift evaluates changes in configuration, distance, and location. These experiments approximate practical changes after devices are deployed. Third, cross-receiver shift evaluates transfer between different receiver front ends. This is the most difficult setting because receiver gain, filtering, frequency response, and OOB statistics may all change. We treat cross-receiver evaluation as a stress test and limitation analysis rather than as a solved receiver-invariant authentication problem.
+
+\subsection{Learning Objective}
+
+Given a source-domain training set
+\begin{equation}
+    \mathcal{T}
+    =
+    \{(\mathbf{x}_i,y_i)\}_{i=1}^{N},
+\end{equation}
+the model learns parameters $\Theta$ by minimizing the empirical cross-entropy loss over window-level samples:
+\begin{equation}
+    \min_{\Theta}
+    \frac{1}{N}
+    \sum_{i=1}^{N}
+    \ell
+    \left(
+    g_{\Theta}(\mathbf{x}_i), y_i
+    \right),
+\end{equation}
+where $g_{\Theta}(\cdot)$ outputs device logits and $\ell(\cdot)$ is the cross-entropy loss. Checkpoints are selected using labeled source-domain validation data. Target-domain test labels are never used for checkpoint selection in the clean cross-day or cross-receiver protocols.
+
+The main design problem addressed in this paper is how to construct $g_{\Theta}$ so that it can jointly exploit local RF impairments, LoRa patch-level sequence structure, and OOB spectral evidence without overfitting to unstable deployment artifacts. The next section introduces the proposed OOB-guided cross-attentive RF-HSTU hybrid model.
