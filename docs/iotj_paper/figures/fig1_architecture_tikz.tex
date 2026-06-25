@@ -12,13 +12,13 @@
         line width=0.45pt,
         inner sep=2.3pt
     },
-    input/.style={box, fill=gray!8},
-    main/.style={box, fill=blue!7},
-    oob/.style={box, fill=red!7},
-    fuse/.style={box, fill=green!9},
-    enc/.style={box, fill=purple!9},
-    out/.style={box, fill=orange!9},
-    group/.style args={#1}{
+    inputbox/.style={box, fill=gray!8},
+    mainbox/.style={box, fill=blue!7},
+    oobbox/.style={box, fill=red!7},
+    fusebox/.style={box, fill=green!9},
+    encbox/.style={box, fill=purple!9},
+    outbox/.style={box, fill=orange!9},
+    stagegroup/.style args={#1}{
         draw,
         rounded corners=3pt,
         dashed,
@@ -28,55 +28,55 @@
         fill opacity=0.18,
         text opacity=1
     },
-    arrow/.style={->, line width=0.48pt},
+    arr/.style={->, line width=0.48pt},
     note/.style={font=\scriptsize, align=center}
 ]
 
 % ----- Stage 1: Tokenization -----
-\node[input] (iq) {IQ/FFT/AP\\views};
-\node[main, right=of iq] (cnn) {CNN\\stem};
-\node[main, right=of cnn] (tm) {Main tokens\\$T_m$};
+\node[inputbox] (iq) {IQ/FFT/AP\\views};
+\node[mainbox, right=of iq] (cnn) {CNN\\stem};
+\node[mainbox, right=of cnn] (tm) {Main tokens\\$T_m$};
 
-\node[input, below=0.92cm of iq] (oobspec) {OOB\\spectrum};
-\node[oob, right=of oobspec] (oobtok) {OOB\\tokenizer};
-\node[oob, right=of oobtok] (to) {OOB tokens\\$T_o$};
+\node[inputbox, below=0.92cm of iq] (oobspec) {OOB\\spectrum};
+\node[oobbox, right=of oobspec] (oobtok) {OOB\\tokenizer};
+\node[oobbox, right=of oobtok] (oobtokens) {OOB tokens\\$T_o$};
 
-\draw[arrow] (iq) -- (cnn);
-\draw[arrow] (cnn) -- (tm);
-\draw[arrow] (oobspec) -- (oobtok);
-\draw[arrow] (oobtok) -- (to);
+\draw[arr] (iq) -- (cnn);
+\draw[arr] (cnn) -- (tm);
+\draw[arr] (oobspec) -- (oobtok);
+\draw[arr] (oobtok) -- (oobtokens);
 
 \node[note, below=0.08cm of tm] (shape1) {$T_m,T_o\in\mathbb{R}^{P\times D}$\\$P=32,\;D=64$};
 
 % ----- Stage 2: Fusion -----
-\node[main, right=1.05cm of tm] (pos) {Pos./chirp\\embedding};
-\node[fuse, right=of pos, minimum width=1.52cm] (attn) {OOB-guided\\cross-attn};
-\node[fuse, right=of attn, minimum width=1.42cm] (gate) {Gated residual\\injection};
-\node[fuse, right=of gate] (tf) {Fused tokens\\$T_f$};
+\node[mainbox, right=1.05cm of tm] (pos) {Pos./chirp\\embedding};
+\node[fusebox, right=of pos, minimum width=1.52cm] (attn) {OOB-guided\\cross-attn};
+\node[fusebox, right=of attn, minimum width=1.42cm] (gate) {Gated residual\\injection};
+\node[fusebox, right=of gate] (tf) {Fused tokens\\$T_f$};
 
-\draw[arrow] (tm) -- (pos);
-\draw[arrow] (pos) -- node[above, note, pos=0.55] {$Q{=}T_m$} (attn);
-\draw[arrow] (to.east) -- ++(0.42,0) |- node[pos=0.24, below, note] {$K,V{=}T_o$} (attn.south);
-\draw[arrow] (attn) -- (gate);
-\draw[arrow] (gate) -- (tf);
+\draw[arr] (tm) -- (pos);
+\draw[arr] (pos) -- node[above, note, pos=0.55] {$Q{=}T_m$} (attn);
+\draw[arr] (oobtokens.east) -- ++(0.42,0) |- node[pos=0.24, below, note] {$K,V{=}T_o$} (attn.south);
+\draw[arr] (attn) -- (gate);
+\draw[arr] (gate) -- (tf);
 
 % ----- Stage 3: Authentication -----
-\node[enc, right=1.0cm of tf, minimum width=1.42cm] (hstu) {RF-HSTU\\encoder\\[-1pt]\scriptsize gated mixing};
-\node[out, right=of hstu] (logits) {Window logits\\$s^{(k)}$};
-\node[out, right=of logits, minimum width=1.50cm] (vote) {Mean over\\$K$ windows};
-\node[out, right=of vote] (decision) {File-level\\decision\\$\hat{y}$};
+\node[encbox, right=1.0cm of tf, minimum width=1.42cm] (hstu) {RF-HSTU\\encoder\\[-1pt]{\scriptsize gated mixing}};
+\node[outbox, right=of hstu] (logits) {Window logits\\$s^{(k)}$};
+\node[outbox, right=of logits, minimum width=1.50cm] (vote) {Mean over\\$K$ windows};
+\node[outbox, right=of vote] (decision) {File-level\\decision\\$\hat{y}$};
 
-\draw[arrow] (tf) -- (hstu);
-\draw[arrow] (hstu) -- (logits);
-\draw[arrow] (logits) -- (vote);
-\draw[arrow] (vote) -- (decision);
+\draw[arr] (tf) -- (hstu);
+\draw[arr] (hstu) -- (logits);
+\draw[arr] (logits) -- (vote);
+\draw[arr] (vote) -- (decision);
 
 % ----- Stage group boxes -----
-\node[group=gray!20, fit=(iq)(cnn)(tm)(oobspec)(oobtok)(to)(shape1),
+\node[stagegroup=gray!20, fit=(iq)(cnn)(tm)(oobspec)(oobtok)(oobtokens)(shape1),
       label={[font=\footnotesize\bfseries]above:Stage 1: multi-view RF tokenization}] {};
-\node[group=green!25, fit=(pos)(attn)(gate)(tf),
+\node[stagegroup=green!25, fit=(pos)(attn)(gate)(tf),
       label={[font=\footnotesize\bfseries]above:Stage 2: OOB-guided fusion}] {};
-\node[group=orange!25, fit=(hstu)(logits)(vote)(decision),
+\node[stagegroup=orange!25, fit=(hstu)(logits)(vote)(decision),
       label={[font=\footnotesize\bfseries]above:Stage 3: file-level authentication}] {};
 
 \end{tikzpicture}
