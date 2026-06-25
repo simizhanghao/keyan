@@ -1,22 +1,48 @@
 \section{Discussion and Limitations}
 \label{sec:discussion}
 
-\textbf{Mechanism interpretation.}
-The sharp gap between cross-attention and concat/gated fusion under identical training budgets suggests that OOB evidence is useful but must be injected selectively.
-Naive fusion can amplify OOB noise or induce optimization collapse when only 24 test files are available per fold.
+The experimental results show that OOB-guided cross-attentive RF sequence modeling is effective for cross-day LoRa RFFI and provides useful robustness under several deployment shifts. At the same time, the results also reveal clear boundaries. In this section, we discuss the practical implications, the role of OOB cross-attention, the interpretation of different protocols, and remaining limitations.
 
-\textbf{Deployment claims.}
-Distance and indoor-location gains are practically relevant for IoT gateway deployment, but outdoor location and configuration shifts remain open problems.
-Phase4 uses a slightly different normalization/batch setting than the primary cross-day protocol and should be interpreted as an extension with a protocol footnote.
+\subsection{Practical Implications for LoRa Gateways}
 
-\textbf{Cross-receiver limitation.}
-We explicitly treat cross-receiver evaluation as a stress test, not a main contribution.
-Prior target-receiver validation protocols can overestimate transfer and are deprecated in this work.
-Safe wording: receiver calibration mismatch remains an open challenge for deployable LoRa RFFI.
+The proposed model is intended for gateway-side device authentication rather than for execution on battery-powered LoRa transmitters. This distinction is important for practical IoT deployment. The transmitter does not need to change its firmware, modulation, or packet format; the additional computation is performed at the receiver or gateway after the IQ samples are captured. Therefore, a moderately larger model can be acceptable if it improves authentication reliability under deployment drift.
 
-\textbf{Comparison fairness.}
-High-accuracy contrastive or spectrogram-based LoRa RFFI papers~\cite{ma2025contrastive_lora_rffi,shen2022scalable_lora_rffi} use different datasets, enrollment assumptions, or adaptation pipelines.
-We therefore compare against a reproduced CNN-IQ baseline under a unified source-domain validation protocol instead of claiming leaderboard superiority.
+The edge benchmark supports this use case. Although the hybrid model has approximately 1.16M parameters compared with 47.7K parameters for CNN-IQ, its measured batch-1 latency remains around 2.45\,ms in our benchmark. This overhead is moderate for gateway-side processing, especially because LoRa traffic is typically sparse compared with high-throughput wireless systems. The proposed model should therefore be viewed as a practical edge-gateway authentication module, not as an on-device transmitter-side algorithm.
 
-\textbf{Future work.}
-Spectrogram branches, calibrated receiver normalization, and principled test-time adaptation~\cite{wang2021tent,lim2023ttn} are promising but were not the primary gain source in the frozen main line.
+\subsection{Why Cross-Attentive OOB Fusion Helps}
+
+The ablation results indicate that the main gain comes from the cross-attentive OOB fusion mechanism rather than from simply adding more features. Directly concatenating OOB and main-path RF features performs poorly and can collapse to a small number of predicted classes. This suggests that OOB evidence is informative but must be injected carefully.
+
+Cross-attention provides a selective fusion mechanism. Main-path RF tokens query OOB tokens, allowing the model to decide which OOB evidence is relevant for each local RF patch. The gated residual injection further controls how much OOB information is added back to the main sequence. This is different from early concatenation, where all features are mixed before the model has learned token-level relevance. It is also different from treating OOB features as a standalone classifier input. In our experiments, selective OOB injection is more stable under cross-day evaluation.
+
+The chirp-aware embedding should be interpreted as a compatible LoRa-structure prior. It helps align the representation with the patch position and chirp-like structure of LoRa signals, but the controlled ablation shows that it is not the primary source of the observed gain. Removing chirp embedding from the cross-attentive model does not reduce cross-day accuracy, whereas adding chirp embedding to concat fusion does not recover stability. Therefore, the key design choice is the cross-attentive OOB fusion, with chirp embedding retained as an auxiliary structural prior.
+
+\subsection{Protocol Boundaries}
+
+The results in this paper should be interpreted according to their corresponding protocols. The clean cross-day protocol is the primary protocol. It uses Day1--Day3 for training, Day4 for source-domain validation, and Day5 for testing. Under this protocol, the proposed model consistently improves over CNN-IQ across random seeds, and the paired bootstrap confidence interval is entirely positive.
+
+The deployment-shift experiments are extended robustness evaluations. They use a Phase4 protocol with ratio OOB normalization, batch size 256, and label smoothing 0.05. These results are valuable for understanding performance under configuration, location, and distance shifts, but they are not used to replace the primary clean cross-day protocol. The strongest deployment evidence appears in the distance-shift setting and in indoor/office location shifts, while configuration and outdoor-location shifts remain difficult.
+
+The cross-receiver experiments are stress tests rather than evidence of receiver-invariant RFFI. They follow a strict source-only setting, where the target receiver is not used for checkpoint selection. The results remain close to chance overall and are direction-dependent. Therefore, this paper does not claim receiver-independent or receiver-invariant LoRa RFFI. Instead, the cross-receiver results identify receiver front-end mismatch as a major open challenge.
+
+\subsection{Receiver Calibration Mismatch}
+
+The gap between same-receiver cross-day performance and strict cross-receiver performance suggests that receiver calibration mismatch is qualitatively different from cross-day channel drift. A receiver change can alter gain, filtering, noise floor, frequency response, and OOB spectral statistics. These effects can distort both the main-path RF representation and the OOB evidence used by the hybrid model.
+
+Ratio OOB normalization partially reduces energy-scale mismatch, but it does not fully solve receiver-induced domain shift. This explains why the hybrid model improves over CNN-IQ in the RX1$\rightarrow$RX2 direction but not in the RX2$\rightarrow$RX1 direction. Future receiver-independent LoRa RFFI likely requires additional mechanisms, such as multi-receiver training, receiver calibration data, unsupervised receiver adaptation, or test-time normalization. These directions are complementary to the proposed OOB cross-attentive fusion.
+
+\subsection{Limitations}
+
+This work has several limitations. First, all experiments are based on the public OSU LoRa dataset with 24 devices. Although the dataset contains useful day, distance, location, configuration, and receiver variations, larger multi-site datasets are needed to validate scalability under broader hardware and environmental diversity.
+
+Second, the proposed method is evaluated as a closed-set device identification model. Real authentication systems may require open-set rejection, unknown-device detection, replay/spoofing evaluation, and threshold calibration. These aspects are important for deployment but are outside the scope of the current study.
+
+Third, the deployment-shift and cross-receiver protocols are not identical to the clean cross-day protocol. We explicitly report their normalization and training settings to avoid overclaiming. A fully unified protocol across all shift types would be desirable, but may require additional data balancing and receiver-specific calibration design.
+
+Fourth, the current model is larger than the CNN-IQ baseline. Although the measured inference latency is still practical for gateway-side deployment, compression, pruning, quantization, and hardware-specific optimization could further reduce deployment cost.
+
+Finally, the current work does not solve strict source-only cross-receiver generalization. The cross-receiver results should be read as a limitation analysis: OOB-guided cross-attention improves cross-day robustness and some deployment shifts, but receiver-independent LoRa RFFI remains an open problem.
+
+\subsection{Future Work}
+
+Future work will focus on receiver-adaptive LoRa RFFI. Promising directions include multi-receiver training, unsupervised feature alignment, receiver calibration using a small number of reference devices, adaptive OOB normalization, and test-time adaptation. Another important direction is open-set physical-layer authentication, where the system must reject unknown or spoofed devices rather than only classify among known transmitters. Finally, lightweight deployment techniques such as quantization and structured pruning can make OOB-guided RF sequence models more suitable for low-cost edge gateways.
