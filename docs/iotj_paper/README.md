@@ -18,11 +18,20 @@ figures/                 # Generated PDF/PNG figures
 
 ```bash
 cd docs/iotj_paper
+./build.sh
+```
+
+Or manually:
+
+```bash
+python3 validate_citations.py   # ensure cites are READ/ABSTRACT_CHECKED only
 pdflatex main.tex
 bibtex main
 pdflatex main.tex
 pdflatex main.tex
 ```
+
+If `pdflatex` is missing: `sudo apt install texlive-latex-recommended texlive-bibtex-extra`
 
 ## Regenerate figures
 

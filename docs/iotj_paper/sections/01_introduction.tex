@@ -1,29 +1,40 @@
 \section{Introduction}
-\IEEEPARstart{L}{oRa}/LoRaWAN has become a dominant low-power wide-area networking (LPWAN) technology for smart cities, industrial monitoring, and large-scale IoT deployments~\cite{zanella2014iot_smart_cities,hamdaoui2022deeplearning}.
-Because LoRa nodes are often low-cost and long-lived, cloned or spoofed devices can threaten network integrity even when upper-layer credentials are present.
-Radio frequency fingerprint identification (RFFI) exploits transmitter hardware impairments---such as power-amplifier nonlinearity, I/Q imbalance, and filter roll-off---to provide a physical-layer identity signal at the gateway~\cite{xu2015device_fingerprinting_survey,jian2020deeplearning_rf_fingerprinting}.
 
-Despite promising same-setting performance, LoRa RFFI degrades under \emph{deployment variability}: cross-day channel drift, distance and location changes, LoRa configuration shifts, and receiver front-end mismatch~\cite{elmaghbub2021lora_wild,hamdaoui2022deeplearning}.
-Prior OSU LoRa studies show that out-of-band (OOB) spectral distortion caused by hardware impairments provides useful device evidence~\cite{elmaghbub2020widescan,hamdaoui2022deeplearning}.
-However, simply concatenating OOB features with IQ representations can be unstable under small-sample cross-day settings, as confirmed by our controlled ablations (Table~\ref{tab:fusion_chirp}).
+\IEEEPARstart{L}{oRa} and LoRaWAN have become important low-power wide-area networking technologies for smart-city sensing, industrial monitoring, environmental data collection, and other large-scale IoT deployments.
+In these scenarios, end devices are often inexpensive, battery-powered, and deployed for long periods in uncontrolled environments.
+Although upper-layer cryptographic mechanisms are essential, they may not fully eliminate risks caused by cloned devices, compromised credentials, rogue transmitters, or post-deployment hardware replacement.
+This motivates lightweight edge-side authentication mechanisms that can complement protocol-layer security without requiring additional hardware on constrained IoT nodes~\cite{lorawan_spec,hamdaoui2022deeplearning}.
 
-We propose \model, a hybrid architecture that preserves CNN-style local RF distortion modeling through a lightweight CNN stem, models chirp-structured patch sequences with an RF-HSTU encoder inspired by gated sequence transduction~\cite{vaswani2017attention}, injects LoRa chirp positional priors, and fuses OOB hardware evidence through \emph{OOB-guided cross-attention} rather than naive feature concatenation.
-File-level mean-logits voting supports authentication-style evaluation when each device contributes one test capture file.
+Radio frequency fingerprint identification (RFFI) addresses this need by exploiting device-specific transmitter impairments introduced by analog front-end components, including power-amplifier nonlinearity, I/Q imbalance, oscillator imperfections, and filtering effects.
+These impairments can leave subtle but repeatable signatures in received baseband signals, enabling a gateway to identify or verify a transmitter from its RF emissions~\cite{jian2020deeplearning_rf_fingerprinting}.
+For LoRa devices, however, practical RFFI is complicated by chirp spread spectrum modulation and by deployment variability.
+A model trained under one condition may degrade under cross-day channel drift, distance changes, location changes, configuration shifts, or receiver hardware mismatch~\cite{elmaghbub2021lora_wild,hamdaoui2022deeplearning}.
+Therefore, a useful LoRa RFFI model should not only perform well under a fixed collection setting, but should also remain stable under realistic deployment shifts.
 
-Our contributions are fourfold:
-\begin{enumerate}
-  \item We propose an OOB-guided cross-attentive RF-HSTU hybrid model for LoRa RFFI that jointly models local RF distortions, chirp-structured patch sequences, and OOB spectral evidence.
-  \item We show through controlled fusion/chirp ablations that cross-attentive OOB fusion is the key mechanism for stable cross-day generalization, while concat/gated fusion can collapse under the same protocol.
-  \item We conduct systematic source-domain validation under cross-day and deployment-shift protocols, demonstrating consistent improvements over a reproduced CNN-IQ baseline.
-  \item We identify strict source-only cross-receiver transfer as an open challenge via stress tests that remain near chance, indicating receiver calibration mismatch rather than lack of device separability.
-\end{enumerate}
+Existing LoRa RFFI methods have explored raw-IQ convolutional baselines, spectrogram-based classifiers, and the use of out-of-band (OOB) distortion as additional evidence of hardware impairments~\cite{shen2021lora_spectrogram_cnn,elmaghbub2020widescan,hamdaoui2022deeplearning}.
+These studies show that OOB spectrum can contain useful transmitter information; therefore, our work does not claim the first use of OOB evidence.
+Instead, we focus on a different question: how should OOB evidence be fused into an RF representation so that it improves robustness rather than introducing unstable shortcuts?
+Our experiments show that naive OOB concatenation and gated fusion can collapse under small-sample cross-day evaluation, whereas cross-attentive OOB fusion provides a more stable mechanism for injecting spectral hardware evidence into RF token representations.
 
-The remainder of this paper is organized as follows.
-Section~\ref{sec:related} reviews related work.
-Section~\ref{sec:system} formulates the authentication problem.
-Section~\ref{sec:method} presents the proposed hybrid model.
-Sections~\ref{sec:experiments}--\ref{sec:results} describe protocols and results.
-Section~\ref{sec:discussion} discusses deployment implications and limitations.
-Section~\ref{sec:conclusion} concludes the paper.
+In this paper, we propose \model, an OOB-guided cross-attentive RF-HSTU hybrid model for LoRa device authentication.
+The model uses a lightweight CNN stem to preserve local RF impairment modeling, converts received LoRa captures into patch-level RF tokens, and applies an RF-HSTU sequence encoder to model token interactions.
+An auxiliary OOB branch extracts spectral distortion evidence, which is then injected through cross-attention instead of static feature concatenation.
+Chirp-aware positional embeddings are included as a LoRa-structure prior, while file-level mean-logits voting is used to match authentication-style evaluation where each device contributes one test capture file.
 
-% FIGURE PLACEHOLDER: fig1_model_architecture.pdf
+The main contributions of this paper are summarized as follows:
+\begin{itemize}
+  \item We propose an OOB-guided cross-attentive RF-HSTU hybrid architecture for LoRa RFFI, combining local RF distortion extraction, RF token sequence modeling, and OOB spectral evidence.
+  \item We demonstrate through controlled fusion/chirp ablations that cross-attentive OOB fusion is the key mechanism for stable cross-day generalization, while naive concatenation and gated OOB fusion can be unstable under the same protocol.
+  \item We conduct a strict source-domain validation evaluation on the public OSU LoRa dataset.
+        Under the Day1--3/Day4/Day5 cross-day protocol, the proposed model improves file-level accuracy from 54.2$\pm$14.2\% for CNN-IQ to 75.0$\pm$5.3\%, with a paired bootstrap confidence interval entirely above zero.
+  \item We further evaluate deployment shifts and receiver shifts.
+        The hybrid model shows promising gains under distance and indoor-location shifts, while strict source-only cross-receiver transfer remains close to chance, revealing receiver calibration mismatch as an open challenge rather than a solved problem.
+\end{itemize}
+
+The rest of this paper is organized as follows.
+Section~\ref{sec:related} reviews LoRa RFFI, OOB fingerprinting, RF sequence modeling, and domain-shift-related work.
+Section~\ref{sec:system} formulates the LoRa RFFI authentication problem.
+Section~\ref{sec:method} presents the proposed OOB-guided cross-attentive RF-HSTU model.
+Section~\ref{sec:experiments} describes the dataset, protocols, baselines, and implementation details.
+Section~\ref{sec:results} reports cross-day, ablation, deployment-shift, edge-deployment, and cross-receiver stress-test results.
+Section~\ref{sec:discussion} discusses deployment implications and limitations, and Section~\ref{sec:conclusion} concludes the paper.
