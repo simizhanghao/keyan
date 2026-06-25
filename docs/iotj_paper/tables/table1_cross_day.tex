@@ -1,15 +1,19 @@
-\begin{table}[!t]
-\caption{Cross-Day Main Results on Day5 Test (mean $\pm$ std over seeds)}
-\label{tab:cross_day_main}
+\begin{table}[t]
 \centering
-\renewcommand{\arraystretch}{1.1}
-\begin{tabular}{lcccc}
-\toprule
-Model & File-Acc & File-Macro-F1 & Window-Acc & Window-Macro-F1 \\
-\midrule
-CNN-IQ & 54.2$\pm$14.2 & 45.6$\pm$14.8 & 43.5$\pm$5.2 & 38.7$\pm$5.7 \\
-RF-HSTU linear no OOB & 66.7$\pm$3.4 & 59.1$\pm$4.5 & 39.4$\pm$13.7 & 36.8$\pm$14.3 \\
-\textbf{F cross-attn OOB + chirp} & \textbf{75.0$\pm$5.3} & \textbf{67.9$\pm$6.8} & 41.5$\pm$2.4 & 39.4$\pm$2.1 \\
-\bottomrule
-\end{tabular}
+\caption{Cross-day main results on Day5 test (mean $\pm$ std over seeds, \%).}
+\label{tab:cross_day_main}
+\footnotesize
+\setlength{\tabcolsep}{2.5pt}
+\renewcommand{\arraystretch}{1.05}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lcccc@{}}
+\hline
+Model & F-Acc & F-F1 & W-Acc & W-F1 \\
+\hline
+CNN-IQ & $54.2{\pm}14.2$ & $45.6{\pm}14.8$ & $43.5{\pm}5.2$ & $38.7{\pm}5.7$ \\
+RF-HSTU no OOB & $66.7{\pm}3.4$ & $59.1{\pm}4.5$ & $39.4{\pm}13.7$ & $36.8{\pm}14.3$ \\
+\textbf{F cross-attn + chirp} & $\mathbf{75.0{\pm}5.3}$ & $\mathbf{67.9{\pm}6.8}$ & $41.5{\pm}2.4$ & $39.4{\pm}2.1$ \\
+\hline
+\end{tabular}%
+}
 \end{table}
