@@ -23,4 +23,5 @@ https://www.overleaf.com/latex/templates/ieee-journal-paper-template/jbbbdkztwxr
 Downloaded locally (layout reference only, not committed as large PDFs):
 - style_refs/shen2022_channel_robust_lora.pdf  (arXiv:2107.02867, TIFS 2022)
 - style_refs/shen2021_lora_spectrogram_cnn.pdf (arXiv:2101.01668, INFOCOM 2021)
-- style_refs/rendered/*.png  (first 6 pages rendered for quick layout review)
+- style_refs/rendered/*.png  (pages 1--8 rendered for layout review)
+- Removed invalid 0-byte IEEE download placeholders (iotj_lora_*.pdf)

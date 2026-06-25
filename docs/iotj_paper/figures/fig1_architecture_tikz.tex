@@ -1,0 +1,79 @@
+% TikZ architecture figure — input via \resizebox in 04_method.tex
+\begin{tikzpicture}[
+    font=\footnotesize,
+    >=Latex,
+    node distance=0.50cm and 0.62cm,
+    box/.style={
+        draw,
+        rounded corners=1.8pt,
+        minimum height=0.88cm,
+        minimum width=1.28cm,
+        align=center,
+        line width=0.45pt,
+        inner sep=2.2pt
+    },
+    mainbox/.style={box, fill=blue!6},
+    oobbox/.style={box, fill=red!6},
+    fusebox/.style={box, fill=green!8, minimum width=1.55cm},
+    encbox/.style={box, fill=purple!8, minimum width=1.42cm},
+    outbox/.style={box, fill=gray!8, minimum width=1.22cm},
+    group/.style={
+        draw,
+        rounded corners=2pt,
+        dashed,
+        line width=0.35pt,
+        inner sep=4.5pt
+    },
+    arrow/.style={->, line width=0.45pt},
+    branchlabel/.style={font=\footnotesize\bfseries}
+]
+
+% Main RF branch
+\node[mainbox] (views) {IQ/FFT/AP\\views};
+\node[mainbox, right=of views] (cnn) {CNN\\stem};
+\node[mainbox, right=of cnn] (tokens) {RF patch\\tokens\\[-2pt]{\scriptsize $T_m\!\in\!\mathbb{R}^{P\times D}$}\\[-2pt]{\scriptsize $P{=}32,\;D{=}64$}};
+\node[mainbox, right=of tokens] (pos) {Pos./chirp\\embedding};
+
+% OOB branch
+\node[oobbox, below=1.0cm of views] (oob) {OOB\\spectrum};
+\node[oobbox, right=of oob] (oobtok) {OOB\\tokenizer};
+\node[oobbox, right=of oobtok] (oobtoks) {OOB\\tokens\\[-2pt]{\scriptsize $T_o\!\in\!\mathbb{R}^{P\times D}$}\\[-2pt]{\scriptsize $P{=}32,\;D{=}64$}};
+
+% Fusion and encoder
+\node[fusebox, right=0.95cm of pos] (attn) {OOB-guided\\cross-attention};
+\node[fusebox, right=of attn] (gate) {Gated\\residual};
+\node[encbox, right=of gate] (hstu) {RF-HSTU\\encoder\\[-2pt]{\scriptsize lightweight gated}\\[-2pt]{\scriptsize token mixing}};
+\node[outbox, right=of hstu] (clf) {Device\\classifier};
+\node[outbox, right=of clf] (vote) {Mean over\\$K$ windows\\[-2pt]{\scriptsize file-level logits}};
+
+% Main path arrows
+\draw[arrow] (views) -- (cnn);
+\draw[arrow] (cnn) -- (tokens);
+\draw[arrow] (tokens) -- (pos);
+\draw[arrow] (pos) -- node[above, font=\scriptsize, pos=0.75] {$Q$} (attn);
+
+% OOB path arrows
+\draw[arrow] (oob) -- (oobtok);
+\draw[arrow] (oobtok) -- (oobtoks);
+\draw[arrow] (oobtoks.east) -- ++(0.48,0) |- node[pos=0.22, below, font=\scriptsize] {$K,V$} (attn.south);
+
+% Fusion to output
+\draw[arrow] (attn) -- (gate);
+\draw[arrow] (gate) -- node[above, font=\scriptsize] {$T_f$} (hstu);
+\draw[arrow] (hstu) -- (clf);
+\draw[arrow] (clf) -- node[above, font=\scriptsize] {window logits} (vote);
+
+% Branch groups
+\node[group, fit=(views)(cnn)(tokens)(pos), label={[branchlabel]above:Main RF branch}] {};
+\node[group, fit=(oob)(oobtok)(oobtoks), label={[branchlabel]above:OOB branch}] {};
+\node[group, fit=(attn)(gate), label={[branchlabel]above:Fusion module}] {};
+\node[group, fit=(hstu)(clf)(vote), label={[branchlabel]above:Authentication head}] {};
+
+% Mechanism inset
+\node[draw, rounded corners=1.5pt, fill=yellow!8, align=left,
+      font=\scriptsize, below=0.55cm of gate, minimum width=4.6cm, inner sep=3pt] (eq) {
+    $A=\mathrm{MHA}(Q{=}T_m,\,K{=}T_o,\,V{=}T_o)$\\[-1pt]
+    $T_f=\mathrm{LN}\!\bigl(T_m+\sigma([T_m;A]W_g)\odot AW_o\bigr)$
+};
+
+\end{tikzpicture}
