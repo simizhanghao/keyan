@@ -70,6 +70,10 @@ if "Data and Code Availability" not in all_tex:
     warn("Data and Code Availability section not found in PDF source")
 
 print("LAYOUT VISUAL AUDIT")
+print("MANUAL CHECK REQUIRED:")
+print(" - Fig.1: readable at 100% zoom; no right-edge clipping.")
+print(" - Fig.2: legend must not overlap panel titles; y tick labels visible in all panels.")
+print(" - Cross-receiver figure removed; Table VI retained.")
 for w in warnings:
     print(" - " + w)
 for e in errors:

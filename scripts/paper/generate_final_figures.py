@@ -46,18 +46,14 @@ def _save(fig, stem: str, *, pad: float = 0.03) -> None:
     print(f"Wrote {stem}.pdf/png")
 
 
-def _style_axis(ax, *, ylabel: bool = False):
+def _style_axis(ax):
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
-    ax.grid(axis="y", alpha=GRID_ALPHA, linewidth=0.4)
-    ax.tick_params(length=2.8, width=0.55, direction="out")
-    if ylabel:
-        ax.set_ylabel("File-Acc (%)")
-    else:
-        ax.set_yticklabels([])
+    ax.grid(axis="y", alpha=GRID_ALPHA, linewidth=0.5)
+    ax.tick_params(axis="both", labelsize=8, length=2.8, width=0.55, direction="out")
 
 
-def _plot_cross_day(ax, *, show_legend: bool = True):
+def _plot_cross_day(ax):
     seeds = [0, 1, 2, 3, 4]
     cnn = [62.5, 41.7, 62.5, 33.3, 70.8]
     hybrid = [83.3, 70.8, 70.8, 79.2, 70.8]
@@ -68,11 +64,8 @@ def _plot_cross_day(ax, *, show_legend: bool = True):
     ax.set_xticks(list(x))
     ax.set_xticklabels([f"seed{s}" for s in seeds])
     ax.set_ylim(0, 100)
-    ax.set_title("(a) Cross-day stability", fontsize=9, pad=3)
-    if show_legend:
-        ax.legend(frameon=False, loc="upper center", bbox_to_anchor=(0.5, 1.22),
-                  ncol=2, fontsize=8, handlelength=1.1, columnspacing=0.9)
-    _style_axis(ax, ylabel=True)
+    ax.set_title("(a) Cross-day stability", fontsize=9, pad=7)
+    _style_axis(ax)
 
 
 def _plot_fusion(ax):
@@ -91,10 +84,10 @@ def _plot_fusion(ax):
         errs.append(float(r["file_acc_std_pct"]))
     colors = ["#A8483C", "#A8483C", "#2F6B4F", "#2F6B4F"]
     ax.bar(labels, vals, yerr=errs, capsize=2.0, color=colors, edgecolor="none", width=0.62)
-    ax.set_ylim(0, 90)
-    ax.set_title("(b) Fusion/chirp ablation", fontsize=9, pad=3)
+    ax.set_ylim(0, 100)
+    ax.set_title("(b) Fusion/chirp ablation", fontsize=9, pad=7)
     ax.tick_params(axis="x", labelsize=7.2)
-    _style_axis(ax, ylabel=False)
+    _style_axis(ax)
 
 
 def _plot_distance(ax):
@@ -110,16 +103,34 @@ def _plot_distance(ax):
     ax.set_xticks(list(x))
     ax.set_xticklabels(labels, fontsize=7.5)
     ax.set_ylim(0, 40)
-    ax.set_title("(c) Distance shift", fontsize=9, pad=3)
-    _style_axis(ax, ylabel=False)
+    ax.set_yticks([0, 10, 20, 30, 40])
+    ax.set_title("(c) Distance shift", fontsize=9, pad=7)
+    _style_axis(ax)
 
 
 def fig_results_summary() -> None:
-    fig, axes = plt.subplots(1, 3, figsize=(10.2, 2.35))
-    _plot_cross_day(axes[0], show_legend=True)
+    fig, axes = plt.subplots(1, 3, figsize=(10.4, 2.55))
+
+    _plot_cross_day(axes[0])
     _plot_fusion(axes[1])
     _plot_distance(axes[2])
-    fig.subplots_adjust(wspace=0.22, left=0.09, right=0.99, top=0.78, bottom=0.24)
+
+    axes[0].set_ylabel("File-Acc (%)", fontsize=8.5)
+
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(
+        handles,
+        labels,
+        loc="upper center",
+        bbox_to_anchor=(0.5, 1.02),
+        ncol=2,
+        frameon=False,
+        fontsize=8,
+        handlelength=1.2,
+        columnspacing=0.9,
+    )
+
+    fig.subplots_adjust(top=0.76, bottom=0.24, left=0.06, right=0.99, wspace=0.30)
     _save(fig, "fig_results_summary", pad=0.03)
 
 
