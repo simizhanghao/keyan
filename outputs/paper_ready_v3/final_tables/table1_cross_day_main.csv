@@ -1,0 +1,4 @@
+model,model_id,file_acc_mean_pct,file_acc_std_pct,file_macro_f1_mean_pct,file_macro_f1_std_pct,window_acc_mean_pct,window_acc_std_pct,window_macro_f1_mean_pct,window_macro_f1_std_pct,n_seeds,protocol,source
+CNN-IQ,A_cnn_iq,54.2,14.2,45.6,14.8,43.5,5.2,38.7,5.7,5,Step1 cross-day (Day1-3 train / Day4 val / Day5 test),outputs/paper_ready_v3/step1_phase7_clean/STEP1_REPORT_FOR_GPT.md
+RF-HSTU linear no OOB,B_linear_no_oob,66.7,3.4,59.1,4.5,39.4,13.7,36.8,14.3,3,Step1 cross-day (diagnostic baseline),outputs/paper_ready_v3/step1_phase7_clean/STEP1_REPORT_FOR_GPT.md
+F cross-attn OOB + chirp,F_cross_attn_chirp_plain,75.0,5.3,67.9,6.8,41.5,2.4,39.4,2.1,5,Step1 cross-day (primary main model),outputs/paper_ready_v3/step1_phase7_clean/STEP1_REPORT_FOR_GPT.md

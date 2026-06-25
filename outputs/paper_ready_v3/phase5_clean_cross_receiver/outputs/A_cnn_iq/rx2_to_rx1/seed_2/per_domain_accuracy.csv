@@ -1,0 +1,9 @@
+field,value,num_samples,window_acc
+setup,diff_receivers_indoor_sametx,6144,0.19921875
+split,test,6144,0.19921875
+day,0,6144,0.19921875
+receiver,1,6144,0.19921875
+location,0,6144,0.19921875
+distance,0,6144,0.19921875
+sf,0,6144,0.19921875
+config,0,6144,0.19921875

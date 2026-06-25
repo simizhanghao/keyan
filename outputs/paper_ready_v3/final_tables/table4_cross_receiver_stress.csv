@@ -1,0 +1,5 @@
+direction,model,model_id,file_acc_mean_pct,file_acc_std_pct,file_macro_f1_mean_pct,file_macro_f1_std_pct,n_seeds,oob_norm,protocol
+RX1→RX2,CNN-IQ,A_cnn_iq,4.2,0.0,0.4,0.0,3,iq_rms (CNN) / n/a,Phase5-clean strict source-only
+RX1→RX2,F Hybrid,F_cross_attn_chirp_plain,18.1,3.9,12.5,1.2,3,ratio,Phase5-clean strict source-only
+RX2→RX1,CNN-IQ,A_cnn_iq,23.6,15.3,17.8,12.9,3,iq_rms (CNN) / n/a,Phase5-clean strict source-only
+RX2→RX1,F Hybrid,F_cross_attn_chirp_plain,15.3,7.1,10.9,7.1,3,ratio,Phase5-clean strict source-only

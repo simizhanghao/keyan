@@ -1,5 +1,15 @@
 # Cross-Receiver Findings (Diff_Receivers_Setup_Indoor_SameTx, 24 classes)
 
+> **DEPRECATED / DO NOT USE FOR PAPER MAIN RESULTS**
+>
+> This document contains early cross-receiver diagnostic results based on **target-RX validation manifests** (`data/manifest_rx*_to_rx*.csv` where `val` = target receiver). These runs are **not strict source-only** and may **overestimate** cross-receiver performance (e.g. inflated RX2→RX1 CNN ~58%).
+>
+> **Final paper results must use:**
+> - Manifests: `data/paper/*_source_only.csv` (train/val on source RX only; test on target RX)
+> - Output path: `outputs/paper_ready_v3/phase5_clean_cross_receiver/`
+>
+> 注意：本文档包含早期 target-val 协议结果，不满足 strict source-only，**不得用于论文主表**。
+
 Diagnostic-only report. No training was run, no backbone change, no center loss /
 SupCon / multi-scale / hard margin / TTA. Subject model = center_none Hybrid
 (`classifier mean_logits`), compared against the OSU-CNN-IQ baseline.

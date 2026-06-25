@@ -1,0 +1,9 @@
+field,value,num_samples,window_acc
+setup,diff_days_indoor,6144,0.4140625
+split,test,6144,0.4140625
+day,5,6144,0.4140625
+receiver,0,6144,0.4140625
+location,0,6144,0.4140625
+distance,0,6144,0.4140625
+sf,0,6144,0.4140625
+config,0,6144,0.4140625

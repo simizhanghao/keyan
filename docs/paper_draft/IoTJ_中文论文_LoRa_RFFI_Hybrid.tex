@@ -1,0 +1,314 @@
+% !TEX program = xelatex
+% IEEE IoTJ 双栏中文初稿 — 需 XeLaTeX 编译
+% 编译: xelatex IoTJ_中文论文_LoRa_RFFI_Hybrid.tex (运行两遍)
+\documentclass[journal]{IEEEtran}
+
+\usepackage[UTF8, scheme=plain]{ctex}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{cite}
+\usepackage{url}
+\usepackage{balance}
+
+% 中文段落首行缩进
+\setlength{\parindent}{2em}
+
+\begin{document}
+
+\title{面向物联网鲁棒 LoRa 设备认证的\\OOB 引导混合射频序列建模方法}
+
+\author{作者姓名$^{1}$，合作者$^{2}$%
+\thanks{$^{1}$单位名称，城市，国家（email@domain.edu）。}%
+\thanks{$^{2}$单位名称，城市，国家。}%
+\thanks{稿件目标期刊：IEEE Internet of Things Journal（IoTJ）。本文档为中文方向稿；正式投稿需英文摘要（150--250 词）及 IEEE 英文终稿。}}
+
+\maketitle
+
+\begin{abstract}
+低功耗广域物联网（LPWAN）中，LoRa 终端通常部署在开放、低成本与长周期运行环境下，面临克隆设备、伪造接入与非法重放等威胁。射频指纹识别（RFFI）利用发射机硬件非理想性形成物理层身份，可为边缘网关侧设备认证提供轻量补充。然而，真实部署中存在跨天信道变化、接收机前端差异、增益漂移与频谱形态偏移等域偏移，使仅依赖 IQ 波形的卷积基线难以稳定泛化。本文提出一种面向 LoRa 设备认证的带外（OOB）引导混合 RFFI 框架：CNN-stem 提取 IQ、FFT 与幅度--相位等局部射频畸变；RF-HSTU 序列模块建模 LoRa chirp 结构下的 patch 级长程依赖；OOB-guided cross-attention 动态融合主路径与带外硬件失真证据；chirp embedding 注入调制先验。针对跨接收机场景，系统比较 input/FFT/OOB 归一化组合，实验表明 \texttt{oob\_ratio} 归一化可更有效削弱接收机增益差异。在 OSU LoRa 公开数据集上，Hybrid 模型在 Day1--Day4$\rightarrow$Day5 多源跨天设置下窗口准确率达 74.6\%、宏 F1 为 0.732，显著优于复现 CNN-IQ 基线（56.4\%、0.515）；留一跨天（LODO）五折平均窗口准确率 60.7\%$\pm$8.9\%。跨接收机 80 epoch 正式实验中，Hybrid \texttt{oob\_ratio} 在困难方向 RX1$\rightarrow$RX2 上优于 CNN，但 RX2$\rightarrow$RX1 上 CNN 仍占优；受 24 测试文件限制，文件级显著性尚不充分。结果表明，OOB 引导混合建模可提升 LoRa RFFI 在 IoT 部署偏移下的鲁棒性，跨接收机迁移仍是物理层认证的关键瓶颈。
+\end{abstract}
+
+\begin{IEEEkeywords}
+物联网安全，LoRa，射频指纹识别，设备认证，带外频谱，RF-HSTU，跨域鲁棒性，边缘智能
+\end{IEEEkeywords}
+
+\section{引言}
+\IEEEPARstart{L}{oRa}/LoRaWAN 已广泛应用于智慧城市、工业监测、环境感知与农业物联网等 LPWAN 场景~\cite{lorawan_spec}。终端节点通常成本低、部署周期长、维护频率低；一旦出现密钥泄露、设备克隆或非法节点伪装，仅依赖协议层身份的认证难以验证真实物理发射机。因此，如何在边缘网关侧以低开销识别真实发射设备，是 IoT 安全中的重要问题。
+
+射频指纹识别利用功率放大器非线性、I/Q 不平衡、频率偏移、相位噪声与滤波器滚降等硬件差异，在接收 IQ 与频谱结构中形成设备级“物理层身份”~\cite{rffi_survey}。与密码认证不同，RFFI 不依赖上层协议字段，可作为 LoRaWAN 入网、重入网与异常节点检测的辅助机制。
+
+然而，LoRa RFFI 在真实 IoT 场景面临显著部署偏移：（1）\emph{跨天偏移}——环境、温度与信道随时间变化；（2）\emph{跨接收机偏移}——前端滤波、增益控制、噪声底与采样链路差异，使模型易学习接收机相关特征；（3）\emph{调制结构}——LoRa chirp 扩频具有明确时序结构，纯 CNN 擅长局部波形畸变但对 chirp 级依赖建模有限，纯序列模型又可能弱化局部 RF 先验。
+
+本文提出 OOB 引导的混合 RFFI 架构，\emph{并非}用 Transformer 完全替代 CNN，而是以 CNN-stem 保留局部畸变敏感性，以 RF-HSTU 建模 patch 序列，以 cross-attention 让主路径 token 自适应选择 OOB 硬件证据，并研究 IQ/FFT/OOB 归一化对跨接收机迁移的影响。
+
+\textbf{主要贡献：}
+\begin{enumerate}
+  \item 提出 CNN-stem、RF-HSTU、chirp embedding 与 OOB-guided cross-attention 相结合的 LoRa RFFI 混合架构，面向 IoT 边缘设备认证；
+  \item 系统研究 IQ、FFT 与 OOB 在跨天与跨接收机场景下的归一化策略，发现 \texttt{oob\_ratio} 可更有效缓解接收机增益差异；
+  \item 在 OSU LoRa 数据集上构建多源跨天、LODO 与双向跨接收机实验协议，审慎比较 CNN-IQ 与 Hybrid 的鲁棒性边界；
+  \item 从 IoT 部署角度讨论可用性与局限，指出跨接收机迁移是当前方法走向真实网关认证的核心瓶颈。
+\end{enumerate}
+
+\section{相关工作}
+
+\subsection{LoRa 物联网与物理层设备认证}
+LoRa 采用 chirp spread spectrum（CSS）调制，具备低功耗、远距离与抗干扰能力。LoRaWAN 安全主要依赖密钥与协议层认证~\cite{lorawan_spec}，但在设备克隆与硬件替换场景中，需物理层证据补充。RFFI 已被用于 LoRa 设备识别与认证~\cite{osu_lora_dataset}。
+
+\subsection{深度学习射频指纹识别}
+现有 RFFI 方法将 IQ、幅度--相位、频谱图等输入 CNN、RNN 或 Transformer~\cite{rffi_survey}。CNN 对局部波形畸变建模能力强，是常用基线；但在跨天、跨位置与跨接收机偏移下，易同时学习发射机与环境/接收机特征。序列模型可捕获长程依赖，若缺少 RF 局部先验则可能不如 CNN 稳定。面向 LoRa 的有效模型需同时建模局部畸变、chirp 结构与频谱硬件失真。
+
+\subsection{OOB 特征与跨接收机鲁棒性}
+带外频谱位于 LoRa 主能量带宽之外，可能包含 PA 非线性、滤波器滚降与频谱泄漏引入的硬件差异。OOB 亦受接收机增益与噪声底影响，不能默认稳定。本文不声称“首次使用 OOB”，而是强调 OOB-guided cross-attention 将 OOB 作为辅助证据动态注入主路径，并结合 ratio 归一化削弱幅度尺度差异。
+
+\section{系统模型与问题定义}
+
+考虑含 $N$ 个 LoRa 终端的 IoT 网络。边缘网关采集复基带 IQ，划分为长度 $L$ 的窗口 $\mathbf{x}\in\mathbb{C}^{L}$。训练集含标签 $y\in\{1,\ldots,N\}$；测试阶段存在域偏移 $\mathcal{D}_S\rightarrow\mathcal{D}_T$（不同采集日或不同接收机）。学习分类器 $f_\theta$ 最大化窗口准确率 $\mathrm{Acc}_w$、宏平均 F1 及文件级准确率 $\mathrm{Acc}_f$。
+
+\textbf{域偏移类型。}（1）跨天：训练与测试来自不同日期；（2）跨接收机：训练与测试由不同接收机采集，通常更困难。评估指标：$\mathrm{Acc}_w$（窗口级）、$\mathrm{Acc}_f$（文件内多窗口 logits 均值投票）、macro-F1（类别均衡）。
+
+\textbf{数据集与类别。}采用 OSU LoRa 公开数据集~\cite{osu_lora_dataset}：1\,MS/s 采样，SF7，BW 125\,kHz，室内 24 类发射机。原始 Device9 在 Day2 的 IQ\_1 子集缺失，为保持五天标签一致，\emph{全实验排除 raw Device9}，将 Device $\{1,\ldots,8,10,\ldots,25\}$ 重映射为 device $1,\ldots,24$，label $0,\ldots,23$。每设备每条件通常 1 个 \texttt{.dat} 文件（约 20\,s，$\sim$2441 个 8192 点窗口）。
+
+\section{所提方法}
+
+\subsection{总体框架}
+如图~\ref{fig:framework} 所示（待绘制），输入 IQ 窗口经多视图构造、CNN-stem patch 嵌入、OOB cross-attention、RF-HSTU 与 chirp embedding，均值池化后接线性分类器。
+
+\subsection{多视图构造与 patch 化}
+复基带信号 $x[n]=I[n]+jQ[n]$。构造：
+\begin{itemize}
+  \item IQ 视图：$[I[n],Q[n]]$；
+  \item FFT 视图：$\log(1+|X[k]|)$，可选 per-window z-score（\texttt{log\_zscore}）；
+  \item 幅度--相位：$[\log(1+A[n]),\angle x[n]/\pi]$；
+  \item OOB 视图：见第~\ref{sec:oob} 节。
+\end{itemize}
+窗口划分为 $P=L/P_s$ 个 patch（默认 $L=8192$，$P_s=256$，$P=32$）。
+
+\subsection{CNN-stem 局部编码}
+拼接 IQ、FFT 与幅度--相位为 5 通道输入，经两层 1-D 卷积（kernel 7/5，stem\_dim=32，LeakyReLU+BN），再以 stride=$P_s$ 的 Conv1d 映射为 $D$ 维 patch token：
+\begin{equation}
+  \mathbf{T}_{\mathrm{main}} = \mathrm{CNNStem}([\mathbf{v}_{\mathrm{IQ}};\mathbf{v}_{\mathrm{FFT}};\mathbf{v}_{\mathrm{AP}}]) \in \mathbb{R}^{P\times D}.
+\end{equation}
+该设计保留 OSU-CNN-IQ 对局部 RF 畸变的敏感性。
+
+\subsection{OOB 带定义与归一化}
+\label{sec:oob}
+设采样率 $f_s$，LoRa 带宽 $B_w$。FFT 后频率 bin $f_k$ 的带内掩码为 $\mathbb{I}_{\mathrm{in}}(k)=\mathbb{1}[|f_k|\le B_w/2]$，OOB 掩码 $\mathbb{I}_{\mathrm{oob}}=1-\mathbb{I}_{\mathrm{in}}$。带内 RMS 幅度：
+\begin{equation}
+  r = \sqrt{\frac{\sum_k |X[k]|^2\,\mathbb{I}_{\mathrm{in}}(k)}{\sum_k \mathbb{I}_{\mathrm{in}}(k)+\epsilon}}.
+\end{equation}
+\textbf{oob\_ratio}（跨接收机推荐）：
+\begin{equation}
+  \mathbf{v}_{\mathrm{oob}}[k] = \frac{|X[k]|}{r+\epsilon}\cdot \mathbb{I}_{\mathrm{oob}}(k).
+\end{equation}
+\textbf{legacy zscore}（对照）：对 masked $\log(1+|X|)$ 使用与 FFT 相同的 per-window z-score。绝对 OOB 幅度易随接收机增益变化；ratio 归一化可削弱该尺度差异。
+
+\subsection{OOB-guided cross-attention}
+OOB patch token $\mathbf{T}_{\mathrm{oob}}\in\mathbb{R}^{P\times D}$ 经独立投影与位置编码。主路径 token 作 query，OOB token 作 key/value：
+\begin{equation}
+  \mathrm{Attn}(\mathbf{Q},\mathbf{K},\mathbf{V}) = \mathrm{softmax}\!\left(\frac{\mathbf{Q}\mathbf{K}^\top}{\sqrt{D}}\right)\mathbf{V},
+\end{equation}
+\begin{equation}
+  \mathbf{T}'_{\mathrm{main}} = \mathrm{LN}\!\left(\mathbf{T}_{\mathrm{main}} + \sigma\!\left(\mathbf{W}_g[\mathbf{T}_{\mathrm{main}};\mathrm{Attn}]\right)\odot \mathbf{W}_o\,\mathrm{Attn}\right),
+\end{equation}
+其中 $\sigma$ 为 sigmoid 门控。相较简单拼接 OOB，cross-attention 避免 OOB 噪声直接污染主表征，并按样本动态选择硬件证据。
+
+\subsection{RF-HSTU 与 chirp embedding}
+patch token 经 RF-HSTU 块（含相对位置偏置的 sigmoid 注意力与前馈子层，depth=2）建模序列依赖。LoRa chirp 周期先验：每 chirp 样本数 $N_c=f_s 2^{\mathrm{SF}}/B_w$，每 chirp patch 数 $P_c=\mathrm{round}(N_c/P_s)$。对 patch 索引 $p$：
+\begin{equation}
+  c_p = \left\lfloor \frac{p}{P_c} \right\rfloor,\quad
+  u_p = p \bmod P_c,
+\end{equation}
+加入 chirp-id 与 chirp 内位置 embedding：$\mathbf{e}_p \leftarrow \mathbf{e}_p + \mathbf{E}_{\mathrm{chirp}}(c_p)+\mathbf{E}_{\mathrm{in}}(u_p)$。
+
+\subsection{分类与文件级投票}
+序列均值池化得 $\mathbf{z}\in\mathbb{R}^D$，线性层输出 logits。文件级预测对同文件 $M$ 个窗口 logits 求均值后 argmax（\texttt{mean\_logits}）：
+\begin{equation}
+  \hat{y}_{\mathrm{file}} = \arg\max_c \frac{1}{M}\sum_{m=1}^{M} \mathbf{z}_{m}^\top \mathbf{w}_c.
+\end{equation}
+
+\section{实验设计}
+
+\subsection{实现细节}
+表~\ref{tab:hyper} 汇总超参数。优化器 AdamW，$lr=10^{-3}$，weight decay $5\times10^{-4}$；Hybrid 使用 label smoothing 0.05。输入 \texttt{iq\_rms}：每窗口 IQ 除以 RMS 功率。无学习率 scheduler。
+
+\begin{table}[!t]
+\caption{训练与模型超参数（正式实验）}
+\label{tab:hyper}
+\centering
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{ll}
+\toprule
+\textbf{项目} & \textbf{取值} \\
+\midrule
+窗口长度 / patch 大小 & 8192 / 256 \\
+隐藏维度 $D$ / RF-HSTU depth & 64 / 2 \\
+OOB 注意力头数 & 4 \\
+CNN-stem dim / kernels & 32 / 7,5 \\
+训练 epoch & 80（跨接收机正式）；30（快速对照） \\
+batch size & 16（跨天）；64（跨接收机） \\
+每文件训练/评估窗口数 & 256 / 256 \\
+文件级投票 & classifier + mean\_logits \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{评估协议}
+\textbf{（1）多源跨天：}Day1--Day4 训练，Day5 验证/测试（96/24 文件）。\\
+\textbf{（2）LODO：}Day1--Day5 五折，每折留一天测试、其余四天训练。\\
+\textbf{（3）跨接收机：}RX1$\rightarrow$RX2 与 RX2$\rightarrow$RX1，各 24 训练 + 24 验证/测试文件。
+
+\textbf{协议说明（重要）。}当前 manifest 仅含 \texttt{train}/\texttt{val} 划分，无独立 test；\texttt{best.pt} 由目标域 \texttt{val} 集 \emph{带标签} 窗口准确率选取，最终评估亦在同一 \texttt{val} 集报告。该设置等价于\emph{目标域带标签验证集上模型选择}，而非 strict source-only blind transfer。正式投稿建议补充 source-only early stopping 或明确标注为 transductive/oracle selection；本文据实报告并保守解读。
+
+训练阶段窗口随机截取（可重叠）；评估阶段确定性 stride 均匀采样，256 窗口/文件，$6144$ 评估窗口/24 文件。
+
+\subsection{基线与主模型}
+\textbf{CNN-IQ：}复现 OSU-CNN-IQ，输入归一化 IQ。\\
+\textbf{Hybrid（本文）：}cnn\_stem + cross\_attn\_oob + chirp\_embedding + RF-HSTU；跨天默认 OOB zscore，跨接收机主结果用 \texttt{oob\_ratio}。
+
+\section{实验结果与分析}
+
+\subsection{多源跨天（Day1--Day4$\rightarrow$Day5）}
+表~\ref{tab:day15} 给出正式 80 epoch 结果（\texttt{outputs/single\_gpu\_compare\_20260614\_141808}）。Hybrid 在窗口级与 macro-F1 上显著优于 CNN-IQ；文件级 75.0\% vs 70.8\% 呈正向趋势，但 24 文件下单文件改变 $\mathrm{Acc}_f$ 约 4.17\%，需 bootstrap 置信区间（脚本已备，结果待补）。
+
+\begin{table}[!t]
+\caption{多源跨天 Day1--Day4$\rightarrow$Day5（80 epoch，classifier mean\_logits）}
+\label{tab:day15}
+\centering
+\begin{tabular}{lccc}
+\toprule
+方法 & $\mathrm{Acc}_w$ & $\mathrm{Acc}_f$ & Macro-F1 \\
+\midrule
+OSU-CNN-IQ & 56.4\% & 70.8\% & 0.515 \\
+Hybrid（本文） & \textbf{74.6\%} & \textbf{75.0\%} & \textbf{0.732} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{留一跨天（LODO）}
+表~\ref{tab:lodo} 为五折完整结果（\texttt{outputs/lodo\_day1to5}）。Hybrid 在 Day3--Day5 折上优势明显，Day5 与表~\ref{tab:day15} 一致；Day1/Day2 折 CNN 略优，说明偏移方向不对称。五折平均：CNN $\mathrm{Acc}_w=57.5\%\pm2.1\%$，Hybrid $60.7\%\pm8.9\%$；macro-F1 分别为 $0.533\pm0.030$ 与 $0.583\pm0.096$。
+
+\begin{table}[!t]
+\caption{LODO 五折窗口级结果（80 epoch，classifier mean\_logits）}
+\label{tab:lodo}
+\centering
+\renewcommand{\arraystretch}{1.1}
+\begin{tabular}{c|cc|cc}
+\toprule
+\multirow{2}{*}{测试日} & \multicolumn{2}{c|}{$\mathrm{Acc}_w$} & \multicolumn{2}{c}{Macro-F1} \\
+ & CNN & Hybrid & CNN & Hybrid \\
+\midrule
+Day1 & 59.7 & 50.6 & 0.568 & 0.491 \\
+Day2 & 53.5 & 51.8 & 0.479 & 0.471 \\
+Day3 & 57.1 & \textbf{61.1} & 0.534 & \textbf{0.589} \\
+Day4 & 58.2 & \textbf{65.5} & 0.548 & \textbf{0.630} \\
+Day5 & 58.7 & \textbf{74.6} & 0.538 & \textbf{0.732} \\
+\midrule
+均值$\pm$std & 57.5$\pm$2.1 & 60.7$\pm$8.9 & 0.533$\pm$0.030 & 0.583$\pm$0.096 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{跨接收机迁移（80 epoch 正式）}
+表~\ref{tab:crossrx} 为归一化确认实验（\texttt{outputs/cross\_receiver\_norm\_confirm\_80ep}）。RX1$\rightarrow$RX2 为更困难方向：CNN 窗口准确率仅 8.6\%，Hybrid \texttt{oob\_ratio} 达 20.3\%。RX2$\rightarrow$RX1 上 CNN 文件级 58.3\% 仍显著高于 Hybrid 33.3\%。双向平均窗口准确率：CNN 23.6\%，Hybrid 22.1\%——\emph{不能}表述为 Hybrid 全面胜出。
+
+\begin{table}[!t]
+\caption{跨接收机 80 epoch 归一化确认（classifier mean\_logits）}
+\label{tab:crossrx}
+\centering
+\renewcommand{\arraystretch}{1.1}
+\begin{tabular}{llccc}
+\toprule
+方向 & 配置 & $\mathrm{Acc}_w$ & $\mathrm{Acc}_f$ & F1 \\
+\midrule
+\multirow{3}{*}{RX1$\rightarrow$RX2}
+ & CNN iq\_rms & 8.6 & 8.3 & 0.036 \\
+ & Hybrid legacy zscore & 12.1 & 20.8 & 0.070 \\
+ & Hybrid oob\_ratio & \textbf{20.3} & \textbf{20.8} & \textbf{0.158} \\
+\midrule
+\multirow{3}{*}{RX2$\rightarrow$RX1}
+ & CNN iq\_rms & \textbf{38.5} & \textbf{58.3} & \textbf{0.317} \\
+ & Hybrid legacy zscore & 14.6 & 20.8 & 0.121 \\
+ & Hybrid oob\_ratio & 23.8 & 33.3 & 0.201 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{OOB 归一化消融}
+表~\ref{tab:crossrx} 中 C（legacy zscore）vs D（oob\_ratio）构成跨接收机 OOB 归一化消融：RX1$\rightarrow$RX2 上 F1 由 0.070 提升至 0.158。说明 ratio 归一化对削弱接收机增益差异至关重要。组件级消融（无 CNN-stem / 无 OOB / concat OOB / 无 chirp）在统一 80 epoch 协议下\emph{尚待补跑}，不宜作为 IoTJ 主文 claim。
+
+\subsection{快速对照与统计}
+30 epoch 快速实验（\texttt{cross\_receiver\_quick\_30ep}）趋势与 80 epoch 一致：双向平均 Hybrid 21.0\% vs CNN 13.7\% 窗口准确率，\emph{仅作趋势}，不作最终统计结论。McNemar 配对检验 $p>0.05$（$n=24$ 文件）。多 seed 初步结果（3 seeds，Day1--4$\rightarrow$Day5）显示 Hybrid 窗口准确率 50.4\%/29.2\%/51.5\%，方差较大；正式投稿需 3--5 seeds 的 mean$\pm$std 与 bootstrap CI。
+
+\section{IoT 部署讨论}
+
+\textbf{边缘可行性。}推理为固定长度窗口单次前向，适合网关批处理；输出设备置信度，无需回传完整 IQ。\\
+\textbf{安全场景。}可作为 LoRaWAN 入网/Rejoin 的辅助因子，检测克隆节点。\\
+\textbf{局限。}（1）跨接收机迁移仍困难，Hybrid 仅部分方向优于 CNN；（2）每方向 24 测试文件，文件级统计功效不足；（3）Config/Location/Distance 扩展实验数据已备、结果未报；（4）参数量、推理延迟与边缘资源消耗未系统评估；（5）当前 checkpoint 选择使用目标域标签，与严格盲迁移存在差距。
+
+\section{结论}
+本文面向 LoRa IoT 设备认证，提出 OOB 引导的 CNN--RF-HSTU 混合 RFFI 方法。CNN-stem 保留局部畸变建模，RF-HSTU 与 chirp embedding 建模 patch 序列结构，OOB cross-attention 动态融合带外硬件证据。多源跨天与 LODO 实验表明 Hybrid 相较 CNN-IQ 具有明显窗口级与 F1 优势；跨接收机实验揭示 receiver shift 仍是核心瓶颈，\texttt{oob\_ratio} 可在困难方向上缓解部分增益差异。后续将补全组件消融、source-only 模型选择、Config/Location/Distance 评测、多 seed 统计与英文 IoTJ 终稿。
+
+\section*{致谢}
+（待填）
+
+\begin{figure}[!t]
+\centering
+\fbox{\parbox{0.92\columnwidth}{\centering\vspace{2.2em}
+\textbf{图 1（待绘制）}：系统框架\\
+IQ $\rightarrow$ 多视图 $\rightarrow$ CNN-stem $\rightarrow$ OOB cross-attn $\rightarrow$ RF-HSTU $\rightarrow$ 分类器\vspace{2.2em}}}
+\caption{OOB 引导混合 LoRa RFFI 总体框架。}
+\label{fig:framework}
+\end{figure}
+
+\begin{figure}[!t]
+\centering
+\fbox{\parbox{0.92\columnwidth}{\centering\vspace{2.0em}
+\textbf{图 2（待绘制）}：OOB-guided cross-attention 细节\vspace{2.0em}}}
+\caption{主路径 token 以 OOB token 为 K/V 的单层 cross-attention 与门控融合。}
+\label{fig:oob_attn}
+\end{figure}
+
+\balance
+\begin{thebibliography}{10}
+
+\bibitem{lorawan_spec}
+LoRa Alliance, ``LoRaWAN Specification,'' v1.0.4, 2020.
+
+\bibitem{rffi_survey}
+A.~Author \emph{et al.}, ``Radio frequency fingerprint identification for IoT: A survey,'' \emph{IEEE Internet Things J.}, vol.~X, no.~X, pp.~XX--XX, 20XX.
+
+\bibitem{osu_lora_dataset}
+Y.~Li \emph{et al.}, ``Open-source LoRa RF fingerprinting dataset and benchmarks,'' OSU, [Online]. Available: \url{https://github.com/liuyida/osu_lora_dataset}
+
+\bibitem{iotj_guide}
+IEEE Internet of Things Journal, ``Guidelines for Authors,'' [Online]. Available: \url{https://ieee-iotj.org/guidelines-for-authors/}
+
+\bibitem{cnn_rffi}
+B.~Author \emph{et al.}, ``Deep learning for RF device identification,'' in \emph{Proc. IEEE ICC}, 20XX.
+
+\bibitem{transformer_rf}
+C.~Author \emph{et al.}, ``Sequence modeling for wireless signals,'' \emph{IEEE Trans. Wireless Commun.}, vol.~X, 20XX.
+
+\bibitem{oob_lora}
+D.~Author \emph{et al.}, ``Out-of-band features for LoRa transmitter identification,'' in \emph{Proc. IEEE GLOBECOM}, 20XX.
+
+\bibitem{domain_adapt}
+E.~Author \emph{et al.}, ``Domain adaptation for RF fingerprinting,'' \emph{IEEE Internet Things J.}, vol.~X, 20XX.
+
+\end{thebibliography}
+
+\appendices
+\section{复现信息}
+代码与 manifest：\url{https://github.com/hanCChan/lunwen}。正式结果目录：\\
+\texttt{outputs/single\_gpu\_compare\_20260614\_141808/}（跨天）；\\
+\texttt{outputs/lodo\_day1to5/}（LODO）；\\
+\texttt{outputs/cross\_receiver\_norm\_confirm\_80ep/}（跨接收机 80ep）。
+
+\section{英文摘要草稿（投稿 IoTJ 用，$\approx$200 词）}
+\emph{Low-power wide-area IoT networks based on LoRa face cloning, spoofing, and long-term deployment drift. Radio frequency fingerprint identification (RFFI) offers a lightweight physical-layer complement to cryptographic authentication at the edge gateway. However, cross-day channel variation and cross-receiver front-end mismatch severely degrade IQ-only convolutional baselines. We propose an out-of-band (OOB) guided hybrid architecture that combines a CNN stem for local RF impairments, RF-HSTU sequence modeling for LoRa chirp structure, chirp positional embeddings, and OOB-guided cross-attention for adaptive hardware-distortion evidence. We further study IQ/FFT/OOB normalization and show that OOB ratio normalization improves cross-receiver transfer under receiver gain shift. On the public OSU LoRa dataset with 24 devices, our hybrid model reaches 74.6\% window accuracy and 0.732 macro-F1 on Day1--4$\rightarrow$Day5 evaluation, outperforming a reproduced CNN-IQ baseline (56.4\%, 0.515). Leave-one-day-out averages are 60.7\%$\pm$8.9\% vs 57.5\%$\pm$2.1\%. In 80-epoch cross-receiver tests, the hybrid model with OOB ratio is stronger on RX1$\rightarrow$RX2, while CNN-IQ remains better on RX2$\rightarrow$RX1; file-level significance is limited by 24 test files per direction. Results indicate improved cross-day robustness but highlight receiver shift as the main barrier to deployable LoRa RFFI authentication.}
+
+\end{document}

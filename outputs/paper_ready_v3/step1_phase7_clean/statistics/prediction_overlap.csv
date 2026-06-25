@@ -1,0 +1,6 @@
+seed,n_files,same_prediction,same_prediction_rate,both_correct,f_only_correct,a_only_correct,both_wrong
+0,24,13,0.5416666666666666,12,8,3,1
+1,24,11,0.4583333333333333,8,9,2,5
+2,24,11,0.4583333333333333,11,6,4,3
+3,24,7,0.2916666666666667,7,12,1,4
+4,24,15,0.625,13,4,4,3

@@ -1,0 +1,12 @@
+shift_type,condition,cnn_file_acc_pct,cnn_file_macro_f1_pct,cnn_window_acc_pct,hybrid_file_acc_pct,hybrid_file_macro_f1_pct,hybrid_window_acc_pct,file_acc_winner,notes,source
+config LOCO,Config1 (SF7 BW125),0.0,0.0,0.9,4.2,0.4,5.5,Hybrid,,outputs/paper_ready_v2/deployment_shift_fixed_summary.csv
+config LOCO,Config2 (SF8),4.2,2.8,7.0,8.3,5.2,6.0,Hybrid,,outputs/paper_ready_v2/deployment_shift_fixed_summary.csv
+config LOCO,Config3 (SF11),8.3,5.8,6.8,16.7,12.5,13.2,Hybrid,,outputs/paper_ready_v2/deployment_shift_fixed_summary.csv
+config LOCO,Config4,4.2,0.4,4.2,0.0,0.0,4.0,CNN,,outputs/paper_ready_v2/deployment_shift_fixed_summary.csv
+location LOCO,office,37.5,24.6,32.4,54.2,43.8,29.3,Hybrid,,outputs/paper_ready_v2/deployment_shift_fixed_summary.csv
+location LOCO,outdoor,25.0,14.4,29.9,16.7,7.5,14.5,CNN,Hybrid worse than CNN — do not over-claim location robustness,outputs/paper_ready_v2/deployment_shift_fixed_summary.csv
+location LOCO,room (indoor),29.2,16.1,27.1,54.2,44.0,31.6,Hybrid,,outputs/paper_ready_v2/deployment_shift_fixed_summary.csv
+distance LOCO,10m held-out,4.2,4.2,1.3,20.8,12.3,17.6,Hybrid,,outputs/paper_ready_v2/deployment_shift_fixed_summary.csv
+distance LOCO,15m held-out,4.2,0.5,5.5,33.3,25.7,25.1,Hybrid,,outputs/paper_ready_v2/deployment_shift_fixed_summary.csv
+distance LOCO,20m held-out,8.3,2.5,10.5,37.5,26.9,28.5,Hybrid,,outputs/paper_ready_v2/deployment_shift_fixed_summary.csv
+distance LOCO,5m held-out,8.3,1.6,7.1,8.3,4.5,5.0,tie,Similar file-acc; distance gains clearer at 10/15/20m,outputs/paper_ready_v2/deployment_shift_fixed_summary.csv
