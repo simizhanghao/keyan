@@ -1,20 +1,26 @@
-# IoTJ / IEEE reference papers for layout style only
+# Layout reference papers for IoTJ/RFFI style review
 
-1. IEEE IoTJ author guidelines
+Use these only for layout/style reference:
+- figure density
+- model architecture figure style
+- table style
+- caption style
+- data/code availability placement
+
+Do not copy text, figures, or claims.
+
+1. IEEE IoTJ Guidelines for Authors
 https://ieee-iotj.org/guidelines-for-authors/
 
-2. IEEE journal LaTeX template / IEEEtran journal style
+2. IEEE Journal Paper Template / IEEEtran journal style
 https://www.overleaf.com/latex/templates/ieee-journal-paper-template/jbbbdkztwxrd
 
-3. IoTJ RFF / LoRa / RFFI related examples (IEEE Xplore search)
-- Carrier Frequency Offset in Internet of Things Radio Frequency Fingerprint Identification, IEEE Internet of Things Journal, 2023/2024.
-- Supervised Contrastive Learning for RFF Identification with Differential Constellation Trace Figure, IEEE Internet of Things Journal, 2023.
-- A Frequency Offset Decoupled Radio Frequency Fingerprint Identification Scheme, IEEE Internet of Things Journal, 2025.
+3. LoRa/RFFI related examples
+- Authentication by Intelligent Learning: A Novel Hybrid Deep Learning-Based Radio Frequency Fingerprinting Approach for Authenticating LoRa Devices
+- A Novel Radio Frequency Fingerprint Identification Method for LoRa
+- Towards Scalable and Channel-Robust Radio Frequency Fingerprint Identification for LoRa
 
-Use these papers only to observe:
-- how many figures appear in one page;
-- whether result plots are combined as multi-panel figures;
-- how tables are typeset in IEEE two-column format;
-- how model architecture figures are drawn;
-- how captions are written.
-Do not copy text, figures, or claims.
+Downloaded locally (layout reference only, not committed as large PDFs):
+- style_refs/shen2022_channel_robust_lora.pdf  (arXiv:2107.02867, TIFS 2022)
+- style_refs/shen2021_lora_spectrogram_cnn.pdf (arXiv:2101.01668, INFOCOM 2021)
+- style_refs/rendered/*.png  (first 6 pages rendered for quick layout review)

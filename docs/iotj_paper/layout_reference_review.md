@@ -1,45 +1,41 @@
 # IoTJ Layout Reference Review
 
-## What to imitate
+## Reference material checked
 
-1. Core architecture figure
-- Should be a clean pipeline diagram, usually one full-width or one-column figure.
-- It should show modules, inputs, feature flows, and decision output.
-- Avoid toy-looking boxes and oversized text.
+- IEEE IoTJ author guidelines.
+- IEEEtran journal paper template.
+- Publicly accessible LoRa/RFFI or RF fingerprinting papers, where downloadable.
 
-2. Result figures
-- Do not scatter too many small figures.
-- Prefer one multi-panel summary figure if several plots support the same experimental story.
-- Each panel should have compact labels and consistent font sizes.
+## Observed style requirements
+
+1. Architecture figure
+- Should be vector-style, clean, and readable at IEEE two-column scale.
+- Should not look like a debugging block diagram.
+- Main data path and auxiliary branch should be visually separated.
+- Cross-attention should explicitly show Q from main branch and K/V from auxiliary branch.
+- The final classifier/output should be inside the canvas with safe margin.
+- Captions explain the flow; the figure itself should not contain too much prose.
+
+2. Results figures
+- Multi-panel summary figures are acceptable, but labels must be self-explanatory.
+- Avoid cryptic x-axis labels such as "conca -c".
+- Avoid oversized legends and crowded gridlines.
+- Use consistent y-axis units and panel labels.
 
 3. Tables
-- Tables should not be scaled up to fill a column.
-- Use IEEE-style thin rules or booktabs.
-- Use short headers and consistent units.
-- Use `adjustbox` max width or native tabular layout; do not use `resizebox{0.98\columnwidth}` blindly.
+- Do not enlarge small tables just to fill a column.
+- Use booktabs-style rules.
+- Use short but interpretable column names.
+- Use max-width guards only to shrink wide tables, not to enlarge narrow tables.
 
-4. Page budget
-- Avoid pushing appendices or code URLs into the main page count if not necessary.
-- Keep limitations text, because it protects claim boundaries.
-- Prefer combining figures over deleting important limitation text.
+4. Appendix / reproducibility
+- A raw appendix with a URL and output path is visually poor.
+- For initial submission, prefer a short Data and Code Availability paragraph or a footnote.
+- Do not leave branch/path text as a large appendix block unless the journal explicitly asks for it.
 
-## Current manuscript problems (pre-refactor)
+## Current manuscript actions
 
-- Table I/III/IV were visually too large because resizebox scales them up.
-- Fig.2/Fig.3/Fig.4 were scattered and made Page 8 look like an experiment report.
-- Fig.1 was too simple and should be replaced by a professional network architecture figure.
-- References are still thin, but reference expansion should happen only after layout is stable.
-
-## Refactor actions (this commit)
-
-- Replace `resizebox{0.98\columnwidth}` with native tabular or `adjustbox{max width=\columnwidth}` (shrink-only).
-- Redesign Fig.1 as dual-branch architecture with Q/K/V cross-attention and gated residual.
-- Merge Fig.2/3/4 into `fig_results_summary.pdf` (three-panel figure*).
-- Keep Fig.5 single-column at 0.92\columnwidth.
-
-## Reference URLs checked
-
-- IoTJ author guidelines: https://ieee-iotj.org/guidelines-for-authors/
-- IEEEtran journal template (Overleaf): IEEE journal paper template based on IEEEtran.
-
-Note: IEEE Xplore PDF downloads require institutional access; layout observations follow IEEE two-column journal conventions and IoTJ author guidelines.
+- Redesign Fig.1 as a professional full-width architecture figure.
+- Redesign Fig.2 as a clean three-panel summary with readable labels.
+- Remove Appendix A Reproducibility and replace with a compact Data and Code Availability statement before References or in a footnote.
+- Recompile and inspect pages containing Fig.1, Fig.2, and References.
