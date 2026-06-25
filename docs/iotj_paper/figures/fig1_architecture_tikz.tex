@@ -1,79 +1,82 @@
-% TikZ architecture figure — input via \resizebox in 04_method.tex
+% Three-stage partitioned architecture (TikZ) — input via \resizebox in 04_method.tex
 \begin{tikzpicture}[
     font=\footnotesize,
     >=Latex,
-    node distance=0.50cm and 0.62cm,
+    node distance=0.48cm and 0.58cm,
     box/.style={
         draw,
         rounded corners=1.8pt,
-        minimum height=0.88cm,
-        minimum width=1.28cm,
+        minimum height=0.78cm,
+        minimum width=1.24cm,
         align=center,
         line width=0.45pt,
-        inner sep=2.2pt
+        inner sep=2.3pt
     },
-    mainbox/.style={box, fill=blue!6},
-    oobbox/.style={box, fill=red!6},
-    fusebox/.style={box, fill=green!8, minimum width=1.55cm},
-    encbox/.style={box, fill=purple!8, minimum width=1.42cm},
-    outbox/.style={box, fill=gray!8, minimum width=1.22cm},
-    group/.style={
+    input/.style={box, fill=gray!8},
+    main/.style={box, fill=blue!7},
+    oob/.style={box, fill=red!7},
+    fuse/.style={box, fill=green!9},
+    enc/.style={box, fill=purple!9},
+    out/.style={box, fill=orange!9},
+    group/.style args={#1}{
         draw,
-        rounded corners=2pt,
+        rounded corners=3pt,
         dashed,
         line width=0.35pt,
-        inner sep=4.5pt
+        inner sep=6pt,
+        fill=#1,
+        fill opacity=0.18,
+        text opacity=1
     },
-    arrow/.style={->, line width=0.45pt},
-    branchlabel/.style={font=\footnotesize\bfseries}
+    arrow/.style={->, line width=0.48pt},
+    note/.style={font=\scriptsize, align=center}
 ]
 
-% Main RF branch
-\node[mainbox] (views) {IQ/FFT/AP\\views};
-\node[mainbox, right=of views] (cnn) {CNN\\stem};
-\node[mainbox, right=of cnn] (tokens) {RF patch\\tokens\\[-2pt]{\scriptsize $T_m\!\in\!\mathbb{R}^{P\times D}$}\\[-2pt]{\scriptsize $P{=}32,\;D{=}64$}};
-\node[mainbox, right=of tokens] (pos) {Pos./chirp\\embedding};
+% ----- Stage 1: Tokenization -----
+\node[input] (iq) {IQ/FFT/AP\\views};
+\node[main, right=of iq] (cnn) {CNN\\stem};
+\node[main, right=of cnn] (tm) {Main tokens\\$T_m$};
 
-% OOB branch
-\node[oobbox, below=1.0cm of views] (oob) {OOB\\spectrum};
-\node[oobbox, right=of oob] (oobtok) {OOB\\tokenizer};
-\node[oobbox, right=of oobtok] (oobtoks) {OOB\\tokens\\[-2pt]{\scriptsize $T_o\!\in\!\mathbb{R}^{P\times D}$}\\[-2pt]{\scriptsize $P{=}32,\;D{=}64$}};
+\node[input, below=0.92cm of iq] (oobspec) {OOB\\spectrum};
+\node[oob, right=of oobspec] (oobtok) {OOB\\tokenizer};
+\node[oob, right=of oobtok] (to) {OOB tokens\\$T_o$};
 
-% Fusion and encoder
-\node[fusebox, right=0.95cm of pos] (attn) {OOB-guided\\cross-attention};
-\node[fusebox, right=of attn] (gate) {Gated\\residual};
-\node[encbox, right=of gate] (hstu) {RF-HSTU\\encoder\\[-2pt]{\scriptsize lightweight gated}\\[-2pt]{\scriptsize token mixing}};
-\node[outbox, right=of hstu] (clf) {Device\\classifier};
-\node[outbox, right=of clf] (vote) {Mean over\\$K$ windows\\[-2pt]{\scriptsize file-level logits}};
+\draw[arrow] (iq) -- (cnn);
+\draw[arrow] (cnn) -- (tm);
+\draw[arrow] (oobspec) -- (oobtok);
+\draw[arrow] (oobtok) -- (to);
 
-% Main path arrows
-\draw[arrow] (views) -- (cnn);
-\draw[arrow] (cnn) -- (tokens);
-\draw[arrow] (tokens) -- (pos);
-\draw[arrow] (pos) -- node[above, font=\scriptsize, pos=0.75] {$Q$} (attn);
+\node[note, below=0.08cm of tm] (shape1) {$T_m,T_o\in\mathbb{R}^{P\times D}$\\$P=32,\;D=64$};
 
-% OOB path arrows
-\draw[arrow] (oob) -- (oobtok);
-\draw[arrow] (oobtok) -- (oobtoks);
-\draw[arrow] (oobtoks.east) -- ++(0.48,0) |- node[pos=0.22, below, font=\scriptsize] {$K,V$} (attn.south);
+% ----- Stage 2: Fusion -----
+\node[main, right=1.05cm of tm] (pos) {Pos./chirp\\embedding};
+\node[fuse, right=of pos, minimum width=1.52cm] (attn) {OOB-guided\\cross-attn};
+\node[fuse, right=of attn, minimum width=1.42cm] (gate) {Gated residual\\injection};
+\node[fuse, right=of gate] (tf) {Fused tokens\\$T_f$};
 
-% Fusion to output
+\draw[arrow] (tm) -- (pos);
+\draw[arrow] (pos) -- node[above, note, pos=0.55] {$Q{=}T_m$} (attn);
+\draw[arrow] (to.east) -- ++(0.42,0) |- node[pos=0.24, below, note] {$K,V{=}T_o$} (attn.south);
 \draw[arrow] (attn) -- (gate);
-\draw[arrow] (gate) -- node[above, font=\scriptsize] {$T_f$} (hstu);
-\draw[arrow] (hstu) -- (clf);
-\draw[arrow] (clf) -- node[above, font=\scriptsize] {window logits} (vote);
+\draw[arrow] (gate) -- (tf);
 
-% Branch groups
-\node[group, fit=(views)(cnn)(tokens)(pos), label={[branchlabel]above:Main RF branch}] {};
-\node[group, fit=(oob)(oobtok)(oobtoks), label={[branchlabel]above:OOB branch}] {};
-\node[group, fit=(attn)(gate), label={[branchlabel]above:Fusion module}] {};
-\node[group, fit=(hstu)(clf)(vote), label={[branchlabel]above:Authentication head}] {};
+% ----- Stage 3: Authentication -----
+\node[enc, right=1.0cm of tf, minimum width=1.42cm] (hstu) {RF-HSTU\\encoder\\[-1pt]\scriptsize gated mixing};
+\node[out, right=of hstu] (logits) {Window logits\\$s^{(k)}$};
+\node[out, right=of logits, minimum width=1.50cm] (vote) {Mean over\\$K$ windows};
+\node[out, right=of vote] (decision) {File-level\\decision\\$\hat{y}$};
 
-% Mechanism inset
-\node[draw, rounded corners=1.5pt, fill=yellow!8, align=left,
-      font=\scriptsize, below=0.55cm of gate, minimum width=4.6cm, inner sep=3pt] (eq) {
-    $A=\mathrm{MHA}(Q{=}T_m,\,K{=}T_o,\,V{=}T_o)$\\[-1pt]
-    $T_f=\mathrm{LN}\!\bigl(T_m+\sigma([T_m;A]W_g)\odot AW_o\bigr)$
-};
+\draw[arrow] (tf) -- (hstu);
+\draw[arrow] (hstu) -- (logits);
+\draw[arrow] (logits) -- (vote);
+\draw[arrow] (vote) -- (decision);
+
+% ----- Stage group boxes -----
+\node[group=gray!20, fit=(iq)(cnn)(tm)(oobspec)(oobtok)(to)(shape1),
+      label={[font=\footnotesize\bfseries]above:Stage 1: multi-view RF tokenization}] {};
+\node[group=green!25, fit=(pos)(attn)(gate)(tf),
+      label={[font=\footnotesize\bfseries]above:Stage 2: OOB-guided fusion}] {};
+\node[group=orange!25, fit=(hstu)(logits)(vote)(decision),
+      label={[font=\footnotesize\bfseries]above:Stage 3: file-level authentication}] {};
 
 \end{tikzpicture}

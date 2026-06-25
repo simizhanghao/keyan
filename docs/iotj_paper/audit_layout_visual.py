@@ -16,9 +16,6 @@ texts: list[tuple[Path, str]] = []
 for p in tex_paths:
     if p.exists():
         texts.append((p, p.read_text(encoding="utf-8", errors="ignore")))
-if script_path.exists():
-    texts.append((script_path, script_path.read_text(encoding="utf-8", errors="ignore")))
-
 all_tex = "\n".join(t for p, t in texts if p.suffix == ".tex")
 all_script = script_path.read_text(encoding="utf-8", errors="ignore") if script_path.exists() else ""
 
@@ -34,7 +31,6 @@ def warn(msg: str) -> None:
     warnings.append("WARN: " + msg)
 
 
-# Hard bans in LaTeX PDF source
 for pat, msg in [
     ("draft block diagram", "draft block diagram remains"),
     ("paper-ready-v3", "branch name should not appear in PDF source"),
@@ -49,26 +45,26 @@ for pat, msg in [
     if pat in all_tex:
         err(msg)
 
-# Branch name in reproducibility context
 if re.search(r"\\texttt\{paper-ready", all_tex):
     err("branch name in texttt should not appear in PDF source")
 
-# Appendix reproducibility block
 if re.search(r"\\appendices[\s\S]*?\\section\{Reproducibility\}", all_tex):
     err("Appendix Reproducibility section must be removed")
 if re.search(r"\\section\{Reproducibility\}", all_tex):
     err("Raw Reproducibility section must be replaced by Data and Code Availability")
 
-# Script-only checks: cryptic abbreviated labels like "conca -c"
-if re.search(r"conca[\s\-\+]|fusion\]\[:5\]", all_script.lower()):
-    err("cryptic result-figure label may remain in figure generation script")
+if "fig:cross_receiver_stress" in all_tex:
+    err("cross-receiver figure is redundant; use Table VI only")
 
-# Required labels and TikZ source
 if "fig1_architecture_tikz" not in all_tex:
     err("TikZ architecture figure source not referenced")
-for label in ["fig:architecture", "fig:results_summary", "fig:cross_receiver_stress"]:
+
+for label in ["fig:architecture", "fig:results_summary"]:
     if label not in all_tex:
         err(f"required figure label missing: {label}")
+
+if re.search(r"conca[\s\-\+]|fusion\]\[:5\]", all_script.lower()):
+    err("cryptic result-figure label may remain in figure generation script")
 
 if "Data and Code Availability" not in all_tex:
     warn("Data and Code Availability section not found in PDF source")

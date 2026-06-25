@@ -197,7 +197,6 @@ required_labels = [
     "tab:edge_deployment",
     "fig:architecture",
     "fig:results_summary",
-    "fig:cross_receiver_stress",
 ]
 for lab in required_labels:
     if lab not in labels:

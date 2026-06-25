@@ -56,11 +56,4 @@ Finally, Table~\ref{tab:cross_receiver} reports strict source-only cross-receive
 
 The results are direction-dependent. In RX1$\rightarrow$RX2 transfer, CNN-IQ remains at 4.2$\pm$0.0\%, which is near the random baseline of 4.17\%, while the proposed hybrid model improves to 18.1$\pm$3.9\%. This suggests that OOB-guided fusion can provide limited benefit in this transfer direction. However, in RX2$\rightarrow$RX1 transfer, CNN-IQ obtains 23.6$\pm$15.3\%, whereas the hybrid model reaches 15.3$\pm$7.1\%. The large seed variance and direction dependence show that cross-receiver transfer remains unstable.
 
-\begin{figure}[!t]
-    \centering
-    \includegraphics[width=0.92\columnwidth]{fig5_cross_receiver_stress.pdf}
-    \caption{Strict source-only cross-receiver stress test.}
-    \label{fig:cross_receiver_stress}
-\end{figure}
-
 Overall, the bidirectional average file-level accuracy is 16.7\% for the hybrid model and 13.9\% for CNN-IQ, both far below the 75.0\% cross-day accuracy of the proposed model under the same-receiver setting. Therefore, these results should not be interpreted as evidence of receiver-invariant LoRa RFFI. Instead, they reveal that receiver front-end calibration mismatch remains a major open challenge. The proposed OOB-guided cross-attentive model improves cross-day robustness and some deployment shifts, but strict source-only cross-receiver generalization requires additional receiver-adaptive calibration or multi-receiver training.
