@@ -1,27 +1,27 @@
-\begin{table*}[!t]
+\begin{table}[!t]
+\centering
 \caption{Deployment-shift LOCO results (file-level accuracy, \%).}
 \label{tab:deployment_shift}
-\centering
 \scriptsize
-\setlength{\tabcolsep}{2pt}
-\renewcommand{\arraystretch}{1.03}
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{@{}llccccc@{}}
+\setlength{\tabcolsep}{2.1pt}
+\renewcommand{\arraystretch}{1.04}
+\begin{adjustbox}{max width=\columnwidth,center}
+\begin{tabular}{@{}llcccl@{}}
 \toprule
 Shift & Held-out & CNN & F & Win & Note \\
 \midrule
-Config LOCO & Config1 (SF7 BW125) & 0.0 & 4.2 & F & both weak \\
-Config LOCO & Config2 (SF8) & 4.2 & 8.3 & F & \\
-Config LOCO & Config3 (SF11) & 8.3 & 16.7 & F & \\
-Config LOCO & Config4 & 4.2 & 0.0 & CNN & \\
-Location LOCO & room (indoor) & 29.2 & 54.2 & F & \\
-Location LOCO & office & 37.5 & 54.2 & F & \\
-Location LOCO & outdoor & 25.0 & 16.7 & CNN & outdoor difficult \\
-Distance LOCO & 5\,m & 8.3 & 8.3 & tie & \\
-Distance LOCO & 10\,m & 4.2 & 20.8 & F & \\
-Distance LOCO & 15\,m & 4.2 & 33.3 & F & \\
-Distance LOCO & 20\,m & 8.3 & 37.5 & F & \\
+Config & Config1 (SF7 BW125) & 0.0 & 4.2 & F & both weak \\
+Config & Config2 (SF8) & 4.2 & 8.3 & F & \\
+Config & Config3 (SF11) & 8.3 & 16.7 & F & \\
+Config & Config4 & 4.2 & 0.0 & CNN & \\
+Location & room & 29.2 & 54.2 & F & indoor \\
+Location & office & 37.5 & 54.2 & F & \\
+Location & outdoor & 25.0 & 16.7 & CNN & difficult \\
+Distance & 5 m & 8.3 & 8.3 & tie & \\
+Distance & 10 m & 4.2 & 20.8 & F & \\
+Distance & 15 m & 4.2 & 33.3 & F & \\
+Distance & 20 m & 8.3 & 37.5 & F & \\
 \bottomrule
-\end{tabular}%
-}
-\end{table*}
+\end{tabular}
+\end{adjustbox}
+\end{table}

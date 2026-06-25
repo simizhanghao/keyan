@@ -196,9 +196,7 @@ required_labels = [
     "tab:cross_receiver",
     "tab:edge_deployment",
     "fig:architecture",
-    "fig:cross_day_seed_bars",
-    "fig:fusion_chirp_ablation",
-    "fig:distance_shift",
+    "fig:results_summary",
     "fig:cross_receiver_stress",
 ]
 for lab in required_labels:
@@ -237,28 +235,35 @@ if bad_status:
     err(f"Cite keys not READ/ABSTRACT_CHECKED in reference_candidates.csv: {bad_status}")
 
 # ---------------------------------------------------------------------
-# 6. Skeleton / placeholder detection
+# 6. PDF-source placeholder detection (main + sections + tables + bib only)
 # ---------------------------------------------------------------------
+pdf_source_files = [MAIN] + sorted(SECTIONS.glob("*.tex")) + sorted(TABLES.glob("*.tex")) + ([REF_BIB] if REF_BIB.exists() else [])
 placeholder_patterns = [
+    r"Author~One",
+    r"Author One",
+    r"Author~Two",
+    r"Author Two",
+    r"Affiliations TBD",
+    r"Manuscript prepared",
+    r"\\section\*\{Acknowledgment\}",
+    r"draft block diagram",
     r"TODO",
     r"FIXME",
     r"placeholder",
-    r"to be completed",
     r"待补",
     r"占位",
-    r"骨架",
     r"A\. Author",
     r"Lorem ipsum",
 ]
-for p in tex_files:
+for p in pdf_source_files:
     if not p.exists():
         continue
     s = p.read_text(encoding="utf-8", errors="ignore")
     for pat in placeholder_patterns:
         if re.search(pat, s, flags=re.IGNORECASE):
-            warn(f"Placeholder-like text in {p.relative_to(ROOT)}: pattern={pat}")
+            err(f"PDF-source placeholder in {p.relative_to(ROOT)}: pattern={pat}")
 
-# specific Section III length check
+# Section III length check
 sys_model = SECTIONS / "03_system_model.tex"
 if sys_model.exists():
     s = sys_model.read_text(encoding="utf-8", errors="ignore")

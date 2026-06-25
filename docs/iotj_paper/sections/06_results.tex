@@ -9,14 +9,7 @@ Table~\ref{tab:cross_day_main} summarizes the clean cross-day results under the 
 
 \input{tables/table1_cross_day.tex}
 
-The improvement is not only reflected in the mean value but also in seed-level stability. As shown in Fig.~\ref{fig:cross_day_seed_bars}, the proposed model outperforms CNN-IQ in four out of five random seeds and ties in the remaining seed. A pooled paired bootstrap analysis over file-level predictions yields a 95\% confidence interval of [+9.2, +32.5] percentage points for the accuracy gain over CNN-IQ. This interval is entirely above zero, indicating that the improvement is unlikely to be explained by seed selection alone.
-
-\begin{figure}[!t]
-    \centering
-    \includegraphics[width=\linewidth]{fig2_cross_day_seed_bars.pdf}
-    \caption{Cross-day file-level accuracy across five random seeds. The proposed cross-attentive OOB hybrid improves over CNN-IQ in four seeds and ties in one seed.}
-    \label{fig:cross_day_seed_bars}
-\end{figure}
+The improvement is not only reflected in the mean value but also in seed-level stability. As shown in Fig.~\ref{fig:results_summary}(a), the proposed model outperforms CNN-IQ in four out of five random seeds and ties in the remaining seed. A pooled paired bootstrap analysis over file-level predictions yields a 95\% confidence interval of [+9.2, +32.5] percentage points for the accuracy gain over CNN-IQ. This interval is entirely above zero, indicating that the improvement is unlikely to be explained by seed selection alone.
 
 The diagnostic RF-HSTU variant without OOB evidence also improves over CNN-IQ in file-level accuracy, reaching 66.7$\pm$3.4\%. This suggests that RF patch sequence modeling itself is useful for cross-day generalization. However, the final OOB-guided cross-attentive model further improves accuracy and macro-F1, showing that OOB spectral evidence provides additional discriminative information when fused appropriately.
 
@@ -26,14 +19,7 @@ Table~\ref{tab:fusion_chirp} reports the controlled fusion/chirp ablation. The g
 
 \input{tables/table2_fusion_chirp.tex}
 
-The cross-attentive model without chirp embedding achieves 75.0$\pm$3.4\% file-level accuracy, essentially matching the full model with chirp embedding at 75.0$\pm$5.3\%. In contrast, the concat OOB model remains unstable. Without chirp embedding, concat OOB reaches only 18.3$\pm$18.6\%, and adding chirp embedding further results in 9.7$\pm$2.0\%. Therefore, chirp embedding does not rescue naive concatenation.
-
-\begin{figure}[!t]
-    \centering
-    \includegraphics[width=\linewidth]{fig3_fusion_chirp_ablation.pdf}
-    \caption{Fusion/chirp ablation. Cross-attentive OOB fusion remains stable with or without chirp embedding, while concat-based OOB fusion remains weak and unstable.}
-    \label{fig:fusion_chirp_ablation}
-\end{figure}
+The cross-attentive model without chirp embedding achieves 75.0$\pm$3.4\% file-level accuracy, essentially matching the full model with chirp embedding at 75.0$\pm$5.3\%. Fig.~\ref{fig:results_summary}(b) confirms the same pattern visually. In contrast, the concat OOB model remains unstable. Without chirp embedding, concat OOB reaches only 18.3$\pm$18.6\%, and adding chirp embedding further results in 9.7$\pm$2.0\%. Therefore, chirp embedding does not rescue naive concatenation.
 
 Prediction-distribution diagnostics further support this interpretation. The cross-attentive variants produce predictions over many device classes, while concat-based variants often collapse to a small number of dominant classes. This indicates that the failure of concat OOB fusion is not simply a lack of chirp prior, but a more fundamental instability in how OOB evidence is injected into the RF representation. We therefore treat cross-attentive OOB fusion as the primary mechanism of the proposed model, and chirp embedding as a compatible auxiliary LoRa-structure prior.
 
@@ -43,16 +29,16 @@ Table~\ref{tab:deployment_shift} reports deployment-shift evaluation under confi
 
 \input{tables/table3_deployment_shift.tex}
 
-The distance-shift results provide the clearest deployment benefit. At 10\,m, 15\,m, and 20\,m held-out distances, the hybrid model achieves 20.8\%, 33.3\%, and 37.5\% file-level accuracy, respectively, compared with 4.2\%, 4.2\%, and 8.3\% for CNN-IQ. Fig.~\ref{fig:distance_shift} visualizes this trend. The advantage becomes more visible at larger distances, suggesting that OOB-aware RF modeling can preserve device evidence when propagation distance changes.
-
-\begin{figure}[!t]
-    \centering
-    \includegraphics[width=\linewidth]{fig4_distance_shift.pdf}
-    \caption{Distance leave-one-domain-out evaluation. The hybrid model shows stronger performance than CNN-IQ at 10\,m, 15\,m, and 20\,m held-out distances.}
-    \label{fig:distance_shift}
-\end{figure}
+The distance-shift results provide the clearest deployment benefit. At 10\,m, 15\,m, and 20\,m held-out distances, the hybrid model achieves 20.8\%, 33.3\%, and 37.5\% file-level accuracy, respectively, compared with 4.2\%, 4.2\%, and 8.3\% for CNN-IQ. Fig.~\ref{fig:results_summary}(c) visualizes this trend. The advantage becomes more visible at larger distances, suggesting that OOB-aware RF modeling can preserve device evidence when propagation distance changes.
 
 The location-shift results are more mixed. The hybrid model improves over CNN-IQ in indoor and office held-out locations, but underperforms CNN-IQ in the outdoor held-out location. Configuration shift is challenging for both models, with all file-level accuracies remaining low. These results indicate that the proposed model improves robustness under some realistic deployment changes, especially distance and indoor-location shifts, but does not solve all forms of deployment variability.
+
+\begin{figure*}[!t]
+    \centering
+    \includegraphics[width=0.95\textwidth]{fig_results_summary.pdf}
+    \caption{Summary of cross-day and deployment-shift results. (a) Cross-day file-level accuracy across five random seeds. (b) Fusion/chirp ablation showing that cross-attentive OOB fusion is the dominant factor behind stable performance. (c) Distance leave-one-domain-out evaluation.}
+    \label{fig:results_summary}
+\end{figure*}
 
 \subsection{Edge Deployment Benchmark}
 
@@ -72,8 +58,8 @@ The results are direction-dependent. In RX1$\rightarrow$RX2 transfer, CNN-IQ rem
 
 \begin{figure}[!t]
     \centering
-    \includegraphics[width=\linewidth]{fig5_cross_receiver_stress.pdf}
-    \caption{Strict source-only cross-receiver stress test. The proposed model improves over CNN-IQ in RX1$\rightarrow$RX2 but not in RX2$\rightarrow$RX1, indicating direction-dependent receiver mismatch rather than receiver-invariant generalization.}
+    \includegraphics[width=0.92\columnwidth]{fig5_cross_receiver_stress.pdf}
+    \caption{Strict source-only cross-receiver stress test.}
     \label{fig:cross_receiver_stress}
 \end{figure}
 

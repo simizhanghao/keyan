@@ -32,9 +32,8 @@ Table~\ref{tab:protocol_variants} summarizes the protocol variants used in the p
 \caption{Protocol variants used in this paper.}
 \label{tab:protocol_variants}
 \footnotesize
-\setlength{\tabcolsep}{2.5pt}
+\setlength{\tabcolsep}{3.5pt}
 \renewcommand{\arraystretch}{1.05}
-\resizebox{0.98\columnwidth}{!}{%
 \begin{tabular}{@{}lcccc@{}}
 \toprule
 Protocol & Purpose & OOB & Batch & LS \\
@@ -43,8 +42,7 @@ Cross-day & Main & z-score & 128 & 0 \\
 Deployment & Extension & ratio & 256 & 0.05 \\
 Cross-receiver & Stress & ratio & 128 & 0 \\
 \bottomrule
-\end{tabular}%
-}
+\end{tabular}
 \end{table}
 
 The use of different OOB normalization in different protocols reflects the type of shift being evaluated. For cross-day experiments, z-score normalization is used to preserve relative spectral variation under the same receiver. For receiver-shift experiments, ratio normalization is used to reduce sensitivity to receiver-dependent gain and energy scaling, following prior observations that OOB and energy-related features are affected by deployment and receiver conditions~\cite{hamdaoui2022deeplearning}.

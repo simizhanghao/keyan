@@ -10,12 +10,12 @@ Third, OOB spectral evidence should be injected selectively, since prior LoRa RF
 Accordingly, the pipeline is:
 CNN-stem main tokens $\rightarrow$ position/chirp embedding $\rightarrow$ OOB-guided cross-attention with gated residual injection $\rightarrow$ RF-HSTU sequence encoding $\rightarrow$ file-level classification.
 
-\begin{figure}[!t]
+\begin{figure*}[!t]
     \centering
-    \includegraphics[width=\linewidth]{fig1_model_architecture.pdf}
-    \caption{Proposed OOB-guided cross-attentive RF-HSTU hybrid architecture. A CNN stem extracts local RF tokens from multi-view LoRa windows. Position and chirp embeddings are added to main-path tokens. An auxiliary OOB branch supplies spectral-distortion tokens for gated cross-attention fusion. The fused sequence is processed by an RF-HSTU encoder, and file-level mean-logits voting yields authentication-style device decisions.}
+    \includegraphics[width=0.95\textwidth]{fig1_model_architecture.pdf}
+    \caption{Proposed OOB-guided cross-attentive RF-HSTU architecture. The main RF branch extracts patch-level tokens from IQ/FFT/AP views and augments them with position/chirp embeddings. The OOB branch provides spectral-distortion tokens as keys and values for cross-attention. A gated residual module selectively injects OOB evidence before RF-HSTU sequence encoding and file-level mean-logits voting.}
     \label{fig:architecture}
-\end{figure}
+\end{figure*}
 
 \subsection{Input Window and Multi-View RF Representation}
 

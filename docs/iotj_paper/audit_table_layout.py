@@ -33,9 +33,18 @@ for p in tex_files:
         if begins != 1 or ends != 1:
             add_error(f"{label}: nested or malformed table env in {p}")
 
+        if re.search(r"\\resizebox\s*\{\s*0\.98\\columnwidth", block):
+            add_error(
+                f"{label}: do not use resizebox to force table to 0.98 columnwidth; "
+                "use adjustbox max width or native tabular"
+            )
+
+        if re.search(r"\\resizebox\s*\{\s*\\columnwidth\s*\}", block):
+            add_warn(f"{label}: resizebox to full columnwidth may upscale narrow tables")
+
         is_star = "\\begin{table*}" in block
-        if "\\resizebox" not in block and "\\begin{tabularx}" not in block:
-            add_warn(f"{label}: no resizebox/tabularx guard; check column overflow manually")
+        if not is_star and "\\toprule" not in block:
+            add_warn(f"{label}: single-column table without booktabs toprule")
 
         if "Window-Macro-F1" in block:
             add_warn(f"{label}: long header Window-Macro-F1 should be shortened to W-F1")
@@ -46,9 +55,8 @@ for p in tex_files:
         if "Held-out condition" in block:
             add_warn(f"{label}: long header Held-out condition may overflow; consider Held-out")
 
-        if not is_star and "\\resizebox{0.98\\columnwidth}" not in block and "\\resizebox{0.90\\columnwidth}" not in block:
-            if "\\resizebox{\\columnwidth}" in block:
-                add_warn(f"{label}: uses full \\columnwidth; prefer 0.98\\columnwidth margin")
+        if "draft block diagram" in block.lower():
+            add_error(f"{label}: draft block diagram text must not appear in tables")
 
 print("TABLE LAYOUT AUDIT")
 for w in warnings:

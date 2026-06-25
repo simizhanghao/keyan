@@ -1,0 +1,20 @@
+# IoTJ / IEEE reference papers for layout style only
+
+1. IEEE IoTJ author guidelines
+https://ieee-iotj.org/guidelines-for-authors/
+
+2. IEEE journal LaTeX template / IEEEtran journal style
+https://www.overleaf.com/latex/templates/ieee-journal-paper-template/jbbbdkztwxrd
+
+3. IoTJ RFF / LoRa / RFFI related examples (IEEE Xplore search)
+- Carrier Frequency Offset in Internet of Things Radio Frequency Fingerprint Identification, IEEE Internet of Things Journal, 2023/2024.
+- Supervised Contrastive Learning for RFF Identification with Differential Constellation Trace Figure, IEEE Internet of Things Journal, 2023.
+- A Frequency Offset Decoupled Radio Frequency Fingerprint Identification Scheme, IEEE Internet of Things Journal, 2025.
+
+Use these papers only to observe:
+- how many figures appear in one page;
+- whether result plots are combined as multi-panel figures;
+- how tables are typeset in IEEE two-column format;
+- how model architecture figures are drawn;
+- how captions are written.
+Do not copy text, figures, or claims.
