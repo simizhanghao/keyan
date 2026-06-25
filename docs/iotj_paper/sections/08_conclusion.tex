@@ -1,0 +1,8 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+We presented an OOB-guided cross-attentive RF-HSTU hybrid model for robust LoRa device authentication.
+By combining CNN-stem local distortion modeling, chirp-structured sequence encoding, and cross-attentive OOB fusion, the proposed method significantly improves cross-day file-level accuracy over a reproduced CNN-IQ baseline under strict source-domain validation.
+Controlled ablations identify cross-attention as the key mechanism, while chirp embeddings serve as a secondary structural prior.
+Deployment-shift experiments show partial robustness to distance and indoor-location changes, but configuration, outdoor-location, and strict cross-receiver shifts remain challenging.
+Future work will explore receiver-aware normalization, spectrogram-enhanced token views, and reproducible adaptation under low file-count regimes.

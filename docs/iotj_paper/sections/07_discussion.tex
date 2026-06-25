@@ -1,0 +1,22 @@
+\section{Discussion and Limitations}
+\label{sec:discussion}
+
+\textbf{Mechanism interpretation.}
+The sharp gap between cross-attention and concat/gated fusion under identical training budgets suggests that OOB evidence is useful but must be injected selectively.
+Naive fusion can amplify OOB noise or induce optimization collapse when only 24 test files are available per fold.
+
+\textbf{Deployment claims.}
+Distance and indoor-location gains are practically relevant for IoT gateway deployment, but outdoor location and configuration shifts remain open problems.
+Phase4 uses a slightly different normalization/batch setting than the primary cross-day protocol and should be interpreted as an extension with a protocol footnote.
+
+\textbf{Cross-receiver limitation.}
+We explicitly treat cross-receiver evaluation as a stress test, not a main contribution.
+Prior target-receiver validation protocols can overestimate transfer and are deprecated in this work.
+Safe wording: receiver calibration mismatch remains an open challenge for deployable LoRa RFFI.
+
+\textbf{Comparison fairness.}
+High-accuracy contrastive or spectrogram-based LoRa RFFI papers~\cite{ma2025contrastive_lora_rffi,shen2022scalable_lora_rffi} use different datasets, enrollment assumptions, or adaptation pipelines.
+We therefore compare against a reproduced CNN-IQ baseline under a unified source-domain validation protocol instead of claiming leaderboard superiority.
+
+\textbf{Future work.}
+Spectrogram branches, calibrated receiver normalization, and principled test-time adaptation~\cite{wang2021tent,lim2023ttn} are promising but were not the primary gain source in the frozen main line.

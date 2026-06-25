@@ -1,0 +1,31 @@
+\section{Experimental Setup}
+\label{sec:experiments}
+
+\subsection{Implementation Details}
+Table~\ref{tab:hyper} summarizes the primary cross-day configuration.
+We use AdamW with learning rate $3\times10^{-3}$, batch size 128, weight decay $5\times10^{-4}$, and 80 epochs.
+Hybrid models use cross-attention OOB fusion, chirp embeddings, hidden dimension 64, RF-HSTU depth 2, and four OOB attention heads unless otherwise noted.
+Checkpoints are selected by source-domain validation accuracy.
+
+\input{tables/table_hyperparams.tex}
+
+\subsection{Baselines and Ablations}
+\textbf{CNN-IQ:} reproduced OSU-style IQ baseline~\cite{jian2020deeplearning_rf_fingerprinting}.
+\textbf{RF-HSTU linear no OOB:} diagnostic sequence baseline without CNN stem or OOB branch.
+\textbf{Proposed F hybrid:} \texttt{F\_cross\_attn\_chirp\_plain}.
+\textbf{Fusion/chirp ablations:} concat vs cross-attention, with/without chirp embeddings (Table~\ref{tab:fusion_chirp}).
+Gated fusion and full domain-robust stacks are excluded from main claims due to instability under the clean protocol.
+
+\subsection{Protocols}
+\textbf{Cross-day (primary):} Day1--3 train, Day4 validation, Day5 test; five random seeds; OOB z-score normalization.
+\textbf{Deployment shift:} Phase4 LOCO over configuration, location, and distance manifests; OOB ratio normalization and batch size 256 (footnote differences from primary protocol).
+\textbf{Cross-receiver stress test:} strict source-only manifests with source-RX validation and target-RX testing; three seeds; OOB ratio for hybrid models.
+\textbf{Edge benchmark:} parameter count and GPU inference latency at batch sizes 1/32/64.
+
+\subsection{Metrics and Statistics}
+We report window/file accuracy and macro-F1.
+Cross-day gains use paired seed-level comparisons and pooled bootstrap confidence intervals on file-level accuracy differences~\cite{cekic2020robust_wireless_fingerprinting}.
+McNemar tests are reserved for appendix material due to small file counts.
+
+\input{tables/table1_cross_day.tex}
+\input{tables/table2_fusion_chirp.tex}

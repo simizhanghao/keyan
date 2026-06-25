@@ -1,0 +1,21 @@
+\begin{table}[!t]
+\caption{Primary Cross-Day Training Configuration (Step1)}
+\label{tab:hyper}
+\centering
+\renewcommand{\arraystretch}{1.12}
+\begin{tabular}{ll}
+\toprule
+\textbf{Item} & \textbf{Value} \\
+\midrule
+Window length / patch size & 8192 / 256 \\
+Hidden dimension / RF-HSTU depth & 64 / 2 \\
+OOB attention heads & 4 \\
+Train / val / test days & Day1--3 / Day4 / Day5 \\
+Optimizer / LR / batch & AdamW / $3\times10^{-3}$ / 128 \\
+Epochs / checkpoint metric & 80 / val accuracy \\
+OOB normalization (cross-day) & z-score \\
+File-level voting & mean logits \\
+Random seeds (main models) & 5 \\
+\bottomrule
+\end{tabular}
+\end{table}

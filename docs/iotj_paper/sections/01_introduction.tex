@@ -1,0 +1,29 @@
+\section{Introduction}
+\IEEEPARstart{L}{oRa}/LoRaWAN has become a dominant low-power wide-area networking (LPWAN) technology for smart cities, industrial monitoring, and large-scale IoT deployments~\cite{zanella2014iot_smart_cities,hamdaoui2022deeplearning}.
+Because LoRa nodes are often low-cost and long-lived, cloned or spoofed devices can threaten network integrity even when upper-layer credentials are present.
+Radio frequency fingerprint identification (RFFI) exploits transmitter hardware impairments---such as power-amplifier nonlinearity, I/Q imbalance, and filter roll-off---to provide a physical-layer identity signal at the gateway~\cite{xu2015device_fingerprinting_survey,jian2020deeplearning_rf_fingerprinting}.
+
+Despite promising same-setting performance, LoRa RFFI degrades under \emph{deployment variability}: cross-day channel drift, distance and location changes, LoRa configuration shifts, and receiver front-end mismatch~\cite{elmaghbub2021lora_wild,hamdaoui2022deeplearning}.
+Prior OSU LoRa studies show that out-of-band (OOB) spectral distortion caused by hardware impairments provides useful device evidence~\cite{elmaghbub2020widescan,hamdaoui2022deeplearning}.
+However, simply concatenating OOB features with IQ representations can be unstable under small-sample cross-day settings, as confirmed by our controlled ablations (Table~\ref{tab:fusion_chirp}).
+
+We propose \model, a hybrid architecture that preserves CNN-style local RF distortion modeling through a lightweight CNN stem, models chirp-structured patch sequences with an RF-HSTU encoder inspired by gated sequence transduction~\cite{vaswani2017attention}, injects LoRa chirp positional priors, and fuses OOB hardware evidence through \emph{OOB-guided cross-attention} rather than naive feature concatenation.
+File-level mean-logits voting supports authentication-style evaluation when each device contributes one test capture file.
+
+Our contributions are fourfold:
+\begin{enumerate}
+  \item We propose an OOB-guided cross-attentive RF-HSTU hybrid model for LoRa RFFI that jointly models local RF distortions, chirp-structured patch sequences, and OOB spectral evidence.
+  \item We show through controlled fusion/chirp ablations that cross-attentive OOB fusion is the key mechanism for stable cross-day generalization, while concat/gated fusion can collapse under the same protocol.
+  \item We conduct systematic source-domain validation under cross-day and deployment-shift protocols, demonstrating consistent improvements over a reproduced CNN-IQ baseline.
+  \item We identify strict source-only cross-receiver transfer as an open challenge via stress tests that remain near chance, indicating receiver calibration mismatch rather than lack of device separability.
+\end{enumerate}
+
+The remainder of this paper is organized as follows.
+Section~\ref{sec:related} reviews related work.
+Section~\ref{sec:system} formulates the authentication problem.
+Section~\ref{sec:method} presents the proposed hybrid model.
+Sections~\ref{sec:experiments}--\ref{sec:results} describe protocols and results.
+Section~\ref{sec:discussion} discusses deployment implications and limitations.
+Section~\ref{sec:conclusion} concludes the paper.
+
+% FIGURE PLACEHOLDER: fig1_model_architecture.pdf

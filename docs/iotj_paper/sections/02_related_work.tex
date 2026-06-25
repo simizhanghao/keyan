@@ -1,0 +1,36 @@
+\section{Related Work}
+\label{sec:related}
+
+\subsection{LoRa RFFI and OSU Deployment Variability}
+LoRa chirp spread spectrum modulation motivates structure-aware RF modeling~\cite{shen2021lora_spectrogram_cnn}.
+The OSU LoRa RFFI line~\cite{elmaghbub2021lora_wild,hamdaoui2022deeplearning,elmaghbub2021dataset_release} systematically studies cross-day, cross-location, cross-configuration, and cross-receiver shifts.
+These works establish that same-setting training and testing can yield strong accuracy, whereas cross-setting evaluation exposes sensitivity---especially to configuration and receiver changes.
+We adopt their deployment-shift framing but do \emph{not} claim first use of OOB distortion; instead, we focus on \emph{how} OOB evidence is fused into a chirp-aware token model.
+
+\subsection{CNN-IQ, Spectrogram, and Deep RFFI Baselines}
+CNN-based IQ fingerprinting is a standard LoRa and wireless baseline~\cite{jian2020deeplearning_rf_fingerprinting,riyaz2018deep_cnn_radio_id}.
+Spectrogram-CNN methods exploit LoRa time--frequency structure and often outperform raw IQ or FFT inputs under their own collection protocols~\cite{shen2021lora_spectrogram_cnn}.
+Deep learning surveys and large-scale RF fingerprinting studies further highlight confounding channel and receiver effects~\cite{zhou2021robust_rffi_iotj,cekic2020wireless_fingerprinting_dl}.
+Because prior high-accuracy methods use different datasets, splits, and adaptation assumptions, we do not claim direct leaderboard comparison; we reproduce CNN-IQ under our strict source-domain validation protocol.
+
+\subsection{OOB Hardware Impairments and Prior OOB Usage}
+Hardware impairments manifest not only in-band but also in OOB leakage and distortion~\cite{elmaghbub2020widescan,hamdaoui2022deeplearning}.
+WideScan~\cite{elmaghbub2020widescan} and subsequent OSU LoRa work demonstrate that OOB views can strengthen device signatures.
+Our novelty boundary is therefore not ``using OOB,'' but \emph{token-level OOB-guided cross-attention} that lets main-path RF tokens selectively attend to OOB hardware evidence.
+
+\subsection{Sequence Modeling and Cross-Attention Fusion}
+Transformers and attention mechanisms provide flexible sequence modeling for RF and wireless signals~\cite{vaswani2017attention}.
+Our RF-HSTU encoder uses sigmoid-gated token mixing with relative position bias over RF patch tokens; cross-attention further decouples OOB evidence injection from naive early fusion.
+This design differs from simple concatenation or static gating, which our ablations show can collapse under cross-day evaluation.
+
+\subsection{Domain Shift, Metric Learning, and Test-Time Adaptation}
+Channel-robust and scalable LoRa RFFI methods employ metric learning, contrastive objectives, or channel-independent representations~\cite{shen2022scalable_lora_rffi,ma2025contrastive_lora_rffi,ma2025receiver_independent_rffi}.
+Center loss and supervised contrastive learning provide general embedding regularization tools~\cite{wen2016center_loss,khosla2020supcon}.
+Test-time adaptation methods such as TENT and TTN diagnose normalization/statistics shift at deployment time~\cite{wang2021tent,lim2023ttn}.
+In our project, contrastive and heavy domain-robust stacks did not outperform the proposed cross-attention fusion line; we cite these works for context and limitation discussion rather than as unreproduced baselines.
+
+\subsection{IoT Physical-Layer Security and Authentication}
+Physical-layer authentication complements LoRaWAN cryptographic mechanisms~\cite{zhang2019phy_layer_security_iot,yang2017iot_security_survey}.
+RFFI can support edge-side device verification, rogue-node screening, and post-compromise anomaly detection, but only if models remain stable under realistic deployment shifts~\cite{hamdaoui2022deeplearning,elmaghbub2021lora_wild}.
+
+% Citation placeholders above map to refs.bib keys verified in reference_candidates.csv

@@ -1,0 +1,63 @@
+\section{Results and Analysis}
+\label{sec:results}
+
+\subsection{Cross-Day Main Results}
+Table~\ref{tab:cross_day_main} and Fig.~\ref{fig:cross_day_seeds} summarize the primary cross-day comparison.
+The proposed hybrid achieves \textbf{75.0$\pm$5.3\%} file-level accuracy versus \textbf{54.2$\pm$14.2\%} for CNN-IQ, with mean paired gain \textbf{+20.8} percentage points and pooled bootstrap 95\% CI \textbf{[+9.2, +32.5]} pp.
+Across five seeds the hybrid wins four times, ties once, and never loses.
+CNN-IQ exhibits higher seed variance, indicating less stable cross-day behavior.
+
+\begin{figure}[!t]
+  \centering
+  \includegraphics[width=\linewidth]{fig2_cross_day_seed_bars.pdf}
+  \caption{Cross-day file-level accuracy by random seed (Day5 test). Hybrid model shows higher mean and lower variance than CNN-IQ.}
+  \label{fig:cross_day_seeds}
+\end{figure}
+
+\subsection{Fusion and Chirp Ablations}
+Table~\ref{tab:fusion_chirp} and Fig.~\ref{fig:fusion_ablation} confirm \textbf{Case A}: cross-attention dominates fusion choice.
+Cross-attention with or without chirp embeddings both reach about 75\% file accuracy, whereas concat fusion remains near chance for multiple seeds (9.7--18.3\%).
+Adding chirp to concat fusion does not rescue performance.
+We therefore attribute the main gain to \emph{cross-attentive OOB fusion}, not chirp embedding alone.
+
+\begin{figure}[!t]
+  \centering
+  \includegraphics[width=\linewidth]{fig3_fusion_chirp_ablation.pdf}
+  \caption{Fusion/chirp ablation (file-level accuracy, cross-day protocol). Cross-attention variants are stable; concat variants collapse.}
+  \label{fig:fusion_ablation}
+\end{figure}
+
+\subsection{Deployment-Shift Results}
+Table~\ref{tab:deployment_shift} reports LOCO deployment-shift results.
+Hybrid models outperform CNN-IQ on held-out distance bins at 10/15/20\,m and on indoor room/office locations.
+Outdoor location shift remains difficult and CNN-IQ can exceed the hybrid model.
+Configuration shifts are challenging for both models.
+These results support \emph{partial} deployment robustness rather than universal invariance.
+
+\input{tables/table3_deployment_shift.tex}
+
+\begin{figure}[!t]
+  \centering
+  \includegraphics[width=\linewidth]{fig4_distance_shift.pdf}
+  \caption{Distance LOCO file-level accuracy (5/10/15/20\,m held-out). Hybrid gains are clearest from 10\,m onward.}
+  \label{fig:distance_shift}
+\end{figure}
+
+\subsection{Edge Deployment Profile}
+Table~\ref{tab:edge_deployment} shows the hybrid model is heavier (1.16\,M vs 47.7\,K parameters) yet still achieves about 2.45\,ms single-window latency on the benchmark GPU setup, suggesting feasibility for edge gateways with modest compute headroom.
+
+\input{tables/table5_edge_deployment.tex}
+
+\subsection{Cross-Receiver Stress Test}
+Strict source-only cross-receiver transfer remains near the 4.17\% chance level for 24-way file classification (Table~\ref{tab:cross_receiver}, Fig.~\ref{fig:cross_receiver}).
+Hybrid models improve the hard RX1$\rightarrow$RX2 direction (18.1\% vs 4.2\% mean file accuracy) but do not uniformly dominate CNN-IQ in the reverse direction.
+Same-receiver upper bounds from prior diagnostics reach much higher accuracy, indicating receiver calibration mismatch as the dominant bottleneck rather than lack of separability.
+
+\input{tables/table4_cross_receiver.tex}
+
+\begin{figure}[!t]
+  \centering
+  \includegraphics[width=\linewidth]{fig5_cross_receiver_stress.pdf}
+  \caption{Cross-receiver stress-test file-level accuracy (Phase5-clean strict source-only protocol). Both models remain far below cross-day performance.}
+  \label{fig:cross_receiver}
+\end{figure}

@@ -1,0 +1,34 @@
+\section{Proposed Method}
+\label{sec:method}
+
+Fig.~\ref{fig:architecture} summarizes \model.
+The pipeline contains: multi-view RF construction, CNN-stem patch embedding, OOB tokenization, OOB-guided cross-attention fusion, RF-HSTU sequence encoding with chirp embeddings, and file-level mean-logits classification.
+
+\subsection{Multi-View RF Patch Construction}
+For each IQ window we construct IQ, log-FFT, amplitude--phase, and masked OOB magnitude views.
+Windows are divided into $P$ non-overlapping patches (default $L=8192$, patch size $256$, $P=32$).
+OOB bins lie outside the in-band LoRa bandwidth; per-window z-score normalization is used for cross-day training, while ratio normalization is used for cross-receiver stress tests following prior OSU receiver-gain analysis~\cite{hamdaoui2022deeplearning}.
+
+\subsection{CNN-Stem Local Encoder}
+A lightweight 1-D CNN stem maps concatenated IQ/FFT/AP channels into $D$-dimensional main-path tokens $\mathbf{T}_{\mathrm{main}}\in\mathbb{R}^{P\times D}$, preserving local RF impairment sensitivity similar to CNN-IQ baselines~\cite{jian2020deeplearning_rf_fingerprinting}.
+
+\subsection{OOB Tokenization and Cross-Attention Fusion}
+OOB patches form auxiliary tokens $\mathbf{T}_{\mathrm{oob}}$.
+In the proposed fusion module, main-path tokens act as queries and OOB tokens provide keys/values in a single cross-attention layer followed by gated residual injection.
+This allows sample-adaptive selection of OOB hardware evidence and avoids direct early concatenation, which our ablations show can destabilize training.
+
+\subsection{RF-HSTU Sequence Encoder and Chirp Embedding}
+The fused tokens pass through an RF-HSTU encoder: stacked blocks with sigmoid attention, relative position bias, and pointwise gating over patch sequences.
+LoRa chirp priors are injected via chirp-id and intra-chirp position embeddings computed from sampling rate, spreading factor, and bandwidth.
+Step1b ablations indicate chirp embeddings are compatible with LoRa structure but are \emph{not} the primary source of cross-day gain once cross-attention OOB fusion is present.
+
+\subsection{Classification and File-Level Voting}
+Mean pooling over the encoded sequence yields embedding $\mathbf{z}$.
+A linear classifier outputs logits; file-level prediction averages logits across deterministic evaluation windows from the same file before argmax.
+
+\begin{figure}[!t]
+  \centering
+  \includegraphics[width=\linewidth]{fig1_model_architecture.pdf}
+  \caption{Proposed OOB-guided cross-attentive RF-HSTU hybrid architecture. CNN-stem extracts local RF tokens; OOB branch supplies hardware-distortion evidence; cross-attention performs adaptive fusion; RF-HSTU models chirp-structured sequences; file-level mean-logits voting yields authentication-style decisions.}
+  \label{fig:architecture}
+\end{figure}

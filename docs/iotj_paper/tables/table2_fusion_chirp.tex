@@ -1,0 +1,16 @@
+\begin{table}[!t]
+\caption{Fusion/Chirp Ablation under Cross-Day Protocol}
+\label{tab:fusion_chirp}
+\centering
+\renewcommand{\arraystretch}{1.1}
+\begin{tabular}{lccccc}
+\toprule
+Fusion & Chirp & File-Acc & File-Macro-F1 & $n$ seeds \\
+\midrule
+concat & $\times$ & 18.3$\pm$18.6 & 12.3$\pm$15.7 & 5 \\
+concat & \checkmark & 9.7$\pm$2.0 & 3.1$\pm$1.8 & 3 \\
+cross-attn & $\times$ & 75.0$\pm$3.4 & 68.1$\pm$4.0 & 3 \\
+cross-attn & \checkmark & \textbf{75.0$\pm$5.3} & \textbf{67.9$\pm$6.8} & 5 \\
+\bottomrule
+\end{tabular}
+\end{table}

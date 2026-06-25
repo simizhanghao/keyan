@@ -1,0 +1,28 @@
+\section{System Model and Problem Formulation}
+\label{sec:system}
+
+Consider a LoRa IoT network with $N$ registered end devices.
+The edge gateway observes complex baseband IQ snapshots partitioned into windows $\mathbf{x}\in\mathbb{C}^{L}$.
+Each training window has label $y\in\{1,\ldots,N\}$.
+At deployment time, distribution shift from source domain $\mathcal{D}_S$ to target domain $\mathcal{D}_T$ may occur due to different collection days, locations, distances, LoRa configurations, or receiver hardware.
+
+We learn a classifier $f_\theta$ and report:
+(i) window-level accuracy and macro-F1 over deterministic evaluation windows;
+(ii) file-level accuracy and macro-F1 using mean-logits voting across windows from the same \texttt{.dat} capture file.
+File-level metrics match authentication-style evaluation but have higher variance because each test fold contains only 24 files (one per device).
+
+\subsection{Dataset and Device Mapping}
+We use the public OSU LoRa RFFI dataset~\cite{elmaghbub2021lora_wild,elmaghbub2021dataset_release}.
+Following prior cross-day experiments, raw Device9 is excluded and the remaining devices are remapped to 24 contiguous classes.
+Each device/condition typically contributes one $\sim$20\,s capture file per split, sampled into 8192-point windows.
+
+\subsection{Evaluation Domains}
+We evaluate four domain-shift types:
+\begin{itemize}
+  \item \textbf{Cross-day} (primary): train on early days, validate on a source day, test on a held-out future day.
+  \item \textbf{Deployment shift} (extension): leave-one-config/location/distance-out (LOCO) protocols.
+  \item \textbf{Cross-receiver stress test} (limitation): strict source-only transfer between two receivers.
+  \item \textbf{Edge deployment}: parameter count and single-window inference latency.
+\end{itemize}
+
+All primary cross-day experiments use source-domain validation for checkpoint selection; deprecated target-receiver validation protocols are excluded from the paper.

@@ -1,0 +1,65 @@
+% IEEE IoTJ manuscript scaffold — compile with pdflatex + bibtex
+% Target length: 8--10 pages (IoTJ overlength fees apply beyond 8 pages)
+\documentclass[journal]{IEEEtran}
+
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{cite}
+\usepackage{url}
+\usepackage[hidelinks]{hyperref}
+\usepackage{balance}
+
+% Paths relative to docs/iotj_paper/
+\graphicspath{{figures/}{../../outputs/paper_ready_v3/final_figures/}}
+
+\newcommand{\model}{\textsc{OOB-CrossAttn RF-HSTU}}
+
+\begin{document}
+
+\title{OOB-Guided Cross-Attentive RF-HSTU Hybrid Modeling for Robust LoRa Device Authentication}
+
+\author{Author~One, Author~Two%
+\thanks{Manuscript prepared on branch \texttt{paper-ready-v3}. Affiliations TBD.}}
+
+\maketitle
+
+\begin{abstract}
+Low-power wide-area IoT networks based on LoRa face cloning, spoofing, and long-term deployment drift.
+Radio frequency fingerprint identification (RFFI) offers a lightweight physical-layer complement to cryptographic authentication at edge gateways.
+However, IQ-only convolutional baselines often fail to generalize under cross-day channel variation.
+We propose an out-of-band (OOB) guided hybrid architecture combining a CNN stem for local RF impairments, an RF-HSTU sequence encoder for LoRa chirp-structured patch tokens, chirp positional embeddings, and OOB-guided cross-attention for adaptive hardware-distortion evidence injection.
+On the public OSU LoRa dataset with 24 devices, under strict source-domain validation (Day1--3 train, Day4 validation, Day5 test), our hybrid model achieves \textbf{75.0$\pm$5.3\%} file-level accuracy versus \textbf{54.2$\pm$14.2\%} for a reproduced CNN-IQ baseline, with a pooled bootstrap 95\% confidence interval of \textbf{[+9.2, +32.5]} percentage points on the paired gain.
+Controlled fusion ablations show that cross-attentive OOB fusion---rather than chirp embedding or naive concatenation---drives stable cross-day gains.
+Extended deployment-shift experiments indicate promising robustness under distance and indoor-location shifts, while configuration, outdoor-location, and strict source-only cross-receiver transfer remain challenging.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Internet of Things security, LoRa, radio frequency fingerprinting, device authentication, out-of-band spectrum, cross-attention, domain shift.
+\end{IEEEkeywords}
+
+\input{sections/01_introduction}
+\input{sections/02_related_work}
+\input{sections/03_system_model}
+\input{sections/04_method}
+\input{sections/05_experiments}
+\input{sections/06_results}
+\input{sections/07_discussion}
+\input{sections/08_conclusion}
+
+\section*{Acknowledgment}
+TBD.
+
+\bibliographystyle{IEEEtran}
+\bibliography{refs}
+
+\appendices
+\section{Reproducibility}
+Code, manifests, and result tables: \url{https://github.com/hanCChan/lunwen} (branch \texttt{paper-ready-v3}).
+Primary summaries: \texttt{outputs/paper\_ready\_v3/PAPER\_RESULTS\_SUMMARY.md}.
+
+\balance
+\end{document}

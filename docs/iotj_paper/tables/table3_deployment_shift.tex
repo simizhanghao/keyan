@@ -1,0 +1,24 @@
+\begin{table*}[!t]
+\caption{Deployment-Shift LOCO Results (File-Level Accuracy, \%)}
+\label{tab:deployment_shift}
+\centering
+\renewcommand{\arraystretch}{1.08}
+\small
+\begin{tabular}{llccccc}
+\toprule
+Shift & Held-out condition & CNN & Hybrid & Winner & Note \\
+\midrule
+Config LOCO & Config1 (SF7 BW125) & 0.0 & 4.2 & Hybrid & both weak \\
+Config LOCO & Config2 (SF8) & 4.2 & 8.3 & Hybrid & \\
+Config LOCO & Config3 (SF11) & 8.3 & 16.7 & Hybrid & \\
+Config LOCO & Config4 & 4.2 & 0.0 & CNN & \\
+Location LOCO & room (indoor) & 29.2 & 54.2 & Hybrid & \\
+Location LOCO & office & 37.5 & 54.2 & Hybrid & \\
+Location LOCO & outdoor & 25.0 & 16.7 & CNN & outdoor difficult \\
+Distance LOCO & 5\,m & 8.3 & 8.3 & tie & \\
+Distance LOCO & 10\,m & 4.2 & 20.8 & Hybrid & \\
+Distance LOCO & 15\,m & 4.2 & 33.3 & Hybrid & \\
+Distance LOCO & 20\,m & 8.3 & 37.5 & Hybrid & \\
+\bottomrule
+\end{tabular}
+\end{table*}
