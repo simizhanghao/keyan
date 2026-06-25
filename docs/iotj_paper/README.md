@@ -25,6 +25,7 @@ Or manually:
 
 ```bash
 python3 validate_citations.py   # ensure cites are READ/ABSTRACT_CHECKED only
+python3 validate_latex_structure.py   # figure/table env and nesting checks
 pdflatex main.tex
 bibtex main
 pdflatex main.tex

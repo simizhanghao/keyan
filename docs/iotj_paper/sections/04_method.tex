@@ -3,13 +3,12 @@
 
 \subsection{Overview}
 
-The proposed \model{} architecture follows three design principles.
+Fig.~\ref{fig:architecture} illustrates the proposed \model{} architecture. The design follows three design principles.
 First, local RF distortions should be preserved because device-specific impairments often appear as subtle time-domain and spectral variations.
 Second, LoRa captures should be modeled as structured RF token sequences rather than as a single global vector.
 Third, OOB spectral evidence should be injected selectively, since prior LoRa RFFI studies have shown that OOB distortion can be informative, but our ablations indicate that naive OOB concatenation can be unstable.
 Accordingly, the pipeline is:
 CNN-stem main tokens $\rightarrow$ position/chirp embedding $\rightarrow$ OOB-guided cross-attention with gated residual injection $\rightarrow$ RF-HSTU sequence encoding $\rightarrow$ file-level classification.
-Fig.~\ref{fig:architecture} summarizes the overall design.
 
 \begin{figure}[!t]
     \centering
