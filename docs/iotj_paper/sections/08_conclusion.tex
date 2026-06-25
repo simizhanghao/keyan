@@ -1,8 +1,8 @@
 \section{Conclusion}
 \label{sec:conclusion}
 
-We presented an OOB-guided cross-attentive RF-HSTU hybrid model for robust LoRa device authentication.
-By combining CNN-stem local distortion modeling, chirp-structured sequence encoding, and cross-attentive OOB fusion, the proposed method significantly improves cross-day file-level accuracy over a reproduced CNN-IQ baseline under strict source-domain validation.
-Controlled ablations identify cross-attention as the key mechanism, while chirp embeddings serve as a secondary structural prior.
-Deployment-shift experiments show partial robustness to distance and indoor-location changes, but configuration, outdoor-location, and strict cross-receiver shifts remain challenging.
-Future work will explore receiver-aware normalization, spectrogram-enhanced token views, and reproducible adaptation under low file-count regimes.
+This paper presented an OOB-guided cross-attentive RF-HSTU hybrid model for robust LoRa device authentication. The proposed architecture combines CNN-stem RF tokenization, RF patch sequence modeling, chirp-aware positional embeddings, and OOB-guided cross-attention with gated residual injection. The key idea is to use OOB spectral distortion as auxiliary hardware evidence while injecting it selectively into the main RF token sequence, rather than relying on naive feature concatenation.
+
+On the public OSU LoRa dataset, under a strict source-domain validation cross-day protocol, the proposed model achieved 75.0$\pm$5.3\% file-level accuracy, compared with 54.2$\pm$14.2\% for the reproduced CNN-IQ baseline. The paired bootstrap confidence interval for the accuracy gain was entirely positive, supporting the stability of the improvement. Controlled fusion/chirp ablations further showed that cross-attentive OOB fusion is the primary mechanism behind the cross-day gain: removing chirp embedding from the cross-attentive model did not degrade accuracy, whereas adding chirp embedding to concat OOB fusion did not prevent collapse.
+
+Extended deployment evaluations showed that the proposed hybrid model provides promising robustness under distance and indoor-location shifts, and the edge benchmark indicated that its inference overhead remains practical for gateway-side authentication. However, strict source-only cross-receiver transfer remained close to chance and direction-dependent. This result highlights receiver calibration mismatch as a major open challenge for deployable LoRa RFFI. Future work will therefore focus on receiver-adaptive calibration, multi-receiver training, unsupervised adaptation, open-set authentication, and lightweight model compression for practical edge deployment.
