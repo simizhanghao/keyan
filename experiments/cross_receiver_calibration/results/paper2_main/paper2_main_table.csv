@@ -1,0 +1,37 @@
+direction,method,K,file_acc,n_runs
+rx1_to_rx2,Source classifier,—,19.4 ± 3.4,9
+rx1_to_rx2,Source prototype (RCPA-S),0,15.3 ± 7.3,9
+rx1_to_rx2,Source prototype (RCPA-S),1,15.3 ± 7.3,9
+rx1_to_rx2,Source prototype (RCPA-S),3,15.3 ± 7.3,9
+rx1_to_rx2,Source prototype (RCPA-S),5,15.3 ± 7.3,9
+rx1_to_rx2,Source prototype (RCPA-S),10,15.3 ± 7.3,9
+rx1_to_rx2,Source prototype (RCPA-S),20,15.3 ± 7.3,9
+rx1_to_rx2,RCPA-T (primary),1,36.1 ± 11.9,9
+rx1_to_rx2,RCPA-T (primary),3,49.1 ± 12.5,9
+rx1_to_rx2,RCPA-T (primary),5,57.4 ± 9.4,9
+rx1_to_rx2,RCPA-T (primary),10,67.6 ± 10.0,9
+rx1_to_rx2,RCPA-T (primary),20,77.3 ± 7.1,9
+rx1_to_rx2,RCPA-B (ablation),0,15.3 ± 7.3,9
+rx1_to_rx2,RCPA-B (ablation),1,29.2 ± 6.5,9
+rx1_to_rx2,RCPA-B (ablation),3,32.9 ± 5.7,9
+rx1_to_rx2,RCPA-B (ablation),5,33.8 ± 4.1,9
+rx1_to_rx2,RCPA-B (ablation),10,33.8 ± 4.1,9
+rx1_to_rx2,RCPA-B (ablation),20,38.0 ± 3.1,9
+rx2_to_rx1,Source classifier,—,20.8 ± 8.8,9
+rx2_to_rx1,Source prototype (RCPA-S),0,13.0 ± 3.1,9
+rx2_to_rx1,Source prototype (RCPA-S),1,13.0 ± 3.1,9
+rx2_to_rx1,Source prototype (RCPA-S),3,13.0 ± 3.1,9
+rx2_to_rx1,Source prototype (RCPA-S),5,13.0 ± 3.1,9
+rx2_to_rx1,Source prototype (RCPA-S),10,13.0 ± 3.1,9
+rx2_to_rx1,Source prototype (RCPA-S),20,13.0 ± 3.1,9
+rx2_to_rx1,RCPA-T (primary),1,30.1 ± 9.4,9
+rx2_to_rx1,RCPA-T (primary),3,50.5 ± 10.1,9
+rx2_to_rx1,RCPA-T (primary),5,59.3 ± 8.5,9
+rx2_to_rx1,RCPA-T (primary),10,71.3 ± 9.1,9
+rx2_to_rx1,RCPA-T (primary),20,72.7 ± 8.1,9
+rx2_to_rx1,RCPA-B (ablation),0,13.0 ± 3.1,9
+rx2_to_rx1,RCPA-B (ablation),1,30.1 ± 5.8,9
+rx2_to_rx1,RCPA-B (ablation),3,34.7 ± 8.3,9
+rx2_to_rx1,RCPA-B (ablation),5,38.4 ± 4.7,9
+rx2_to_rx1,RCPA-B (ablation),10,40.3 ± 5.2,9
+rx2_to_rx1,RCPA-B (ablation),20,37.5 ± 5.6,9

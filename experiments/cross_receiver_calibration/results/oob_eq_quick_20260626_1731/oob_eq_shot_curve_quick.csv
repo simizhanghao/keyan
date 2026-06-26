@@ -1,0 +1,13 @@
+eq_method,eval_method,shot_k,file_acc
+none,RCPA-T,1,0.375
+none,RCPA-T,3,0.3333333333333333
+none,RCPA-T,5,0.4583333333333333
+mean_shift,oob_eq_RCPA-T,1,0.3333333333333333
+mean_shift,oob_eq_RCPA-T,3,0.3333333333333333
+mean_shift,oob_eq_RCPA-T,5,0.4166666666666667
+std_alignment,oob_eq_RCPA-T,1,0.2916666666666667
+std_alignment,oob_eq_RCPA-T,3,0.3333333333333333
+std_alignment,oob_eq_RCPA-T,5,0.4166666666666667
+coral,oob_eq_RCPA-T,1,0.375
+coral,oob_eq_RCPA-T,3,0.3333333333333333
+coral,oob_eq_RCPA-T,5,0.4166666666666667
