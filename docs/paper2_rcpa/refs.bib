@@ -1,20 +1,364 @@
-@article{snell2017prototypical,
-  title={Prototypical Networks for Few-shot Learning},
-  author={Snell, Jake and Swersky, Kevin and Zemel, Richard},
-  journal={arXiv preprint arXiv:1703.05175},
-  year={2017}
+% Paper 2 references — verified entries from Paper 1 refs + cross-receiver/adaptation literature
+
+@unpublished{paper1_placeholder,
+  author = {Z. Wang and C. Han},
+  title  = {{OOB}-Guided Cross-Attentive {RF-HSTU} Hybrid Modeling for Robust {LoRa} Device Authentication},
+  note   = {Manuscript submitted for publication},
+  year   = {2026}
 }
 
-@article{shen2023receiveragnostic,
-  title={Towards Receiver-Agnostic and Collaborative Radio Frequency Fingerprint Identification},
-  author={Shen, Guanxiong and others},
-  journal={IEEE Transactions on Mobile Computing},
-  year={2023}
+% --- A. Classic RFFI / radiometric fingerprinting ---
+
+@inproceedings{brik2008wireless_device_id,
+  author    = {V. Brik and S. Banerjee and M. Gruteser and S. Oh},
+  title     = {Wireless Device Identification with Radiometric Signatures},
+  booktitle = {Proc. ACM Int. Conf. Mobile Computing and Networking (MobiCom)},
+  pages     = {116--127},
+  year      = {2008},
+  doi       = {10.1145/1409944.1409959}
 }
 
-@article{paper1_placeholder,
-  title={OOB-Guided Cross-Attentive RF-HSTU Hybrid Modeling for Robust LoRa Device Authentication},
-  author={Wang, Ziyang and Han, Chengcheng},
-  note={Prior/submitted work --- update citation when available},
-  year={2026}
+@article{jian2020deeplearning_rf_fingerprinting,
+  author  = {T. Jian and B. C. Rendon and E. Ojuba and N. Soltani and Z. Wang and K. Sankhe and A. Gritsenko and J. Dy and K. Chowdhury and S. Ioannidis},
+  title   = {Deep Learning for {RF} Fingerprinting: A Massive Experimental Study},
+  journal = {IEEE Internet of Things Magazine},
+  volume  = {3},
+  number  = {1},
+  pages   = {50--57},
+  year    = {2020}
+}
+
+@inproceedings{sankhe2019oracle,
+  author    = {K. Sankhe and M. Belgiovine and F. Zhou and S. Riyaz and S. Ioannidis and K. Chowdhury},
+  title     = {{ORACLE}: Optimized Radio Classification Through Convolutional Neural Networks},
+  booktitle = {Proc. IEEE INFOCOM},
+  pages     = {370--378},
+  year      = {2019},
+  doi       = {10.1109/INFOCOM.2019.8737463}
+}
+
+@article{riyaz2018deep_cnn_radio_id,
+  author  = {S. Riyaz and K. Sankhe and S. Ioannidis and K. Chowdhury},
+  title   = {Deep Learning Convolutional Neural Networks for Radio Identification},
+  journal = {IEEE Communications Magazine},
+  volume  = {56},
+  number  = {9},
+  pages   = {146--152},
+  year    = {2018}
+}
+
+@article{xu2015device_fingerprinting_survey,
+  author  = {Q. Xu and R. Zheng and W. Saad and Z. Han},
+  title   = {Device Fingerprinting in Wireless Networks: Challenges and Opportunities},
+  journal = {IEEE Communications Surveys \& Tutorials},
+  volume  = {18},
+  number  = {1},
+  pages   = {94--104},
+  year    = {2015}
+}
+
+@article{xie2021physical_layer_auth_survey,
+  author  = {N. Xie and Z. Li and H.-J. Tan},
+  title   = {A Survey of Physical-Layer Authentication in Wireless Communications},
+  journal = {IEEE Communications Surveys \& Tutorials},
+  volume  = {23},
+  number  = {1},
+  pages   = {282--310},
+  year    = {2021},
+  doi     = {10.1109/COMST.2020.3042188}
+}
+
+@article{xie2024rffi_iot_survey,
+  author  = {L. Xie and L. Peng and J. Zhang and A. Hu},
+  title   = {Radio Frequency Fingerprint Identification for Internet of Things: A Survey},
+  journal = {Security and Safety},
+  volume  = {3},
+  pages   = {2023022},
+  year    = {2024},
+  doi     = {10.1051/sands/2023022}
+}
+
+@article{zhang2019phy_layer_security_iot,
+  author  = {J. Zhang and S. Rajendran and Z. Sun and R. Woods and L. Hanzo},
+  title   = {Physical Layer Security for the Internet of Things: Authentication and Key Generation},
+  journal = {IEEE Wireless Communications},
+  volume  = {26},
+  number  = {5},
+  pages   = {92--98},
+  year    = {2019}
+}
+
+% --- B. LoRa RFFI / OSU LoRa / deployment variability ---
+
+@article{elmaghbub2021lora_wild,
+  author  = {A. Elmaghbub and B. Hamdaoui},
+  title   = {{LoRa} Device Fingerprinting in the Wild: Disclosing {RF} Data-Driven Fingerprint Sensitivity to Deployment Variability},
+  journal = {IEEE Access},
+  volume  = {9},
+  pages   = {148956--148967},
+  year    = {2021},
+  doi     = {10.1109/ACCESS.2021.3121606}
+}
+
+@article{hamdaoui2022deeplearning,
+  author  = {B. Hamdaoui and A. Elmaghbub},
+  title   = {Deep-Learning-Based Device Fingerprinting for Increased {LoRa-IoT} Security: Sensitivity to Network Deployment Changes},
+  journal = {IEEE Network},
+  volume  = {36},
+  number  = {4},
+  pages   = {36--42},
+  year    = {2022},
+  doi     = {10.1109/MNET.001.2100553}
+}
+
+@inproceedings{elmaghbub2021dataset_release,
+  author    = {A. Elmaghbub and B. Hamdaoui},
+  title     = {Comprehensive {RF} Dataset Collection and Release: Deep Learning-Based {RF} Fingerprinting Use Case},
+  booktitle = {Proc. IEEE Globecom Workshops (GC Wkshps)},
+  year      = {2021}
+}
+
+@article{hamdaoui2020deep_nn_features,
+  author  = {B. Hamdaoui and A. Elmaghbub and S. Mejri},
+  title   = {Deep Neural Network Feature Designs for {RF} Data-Driven Wireless Device Classification},
+  journal = {IEEE Network},
+  volume  = {35},
+  number  = {3},
+  pages   = {191--197},
+  year    = {2021},
+  doi     = {10.1109/MNET.011.2000492}
+}
+
+@article{shen2021lora_jsac,
+  author  = {G. Shen and J. Zhang and A. Marshall and L. Peng and X. Wang},
+  title   = {Radio Frequency Fingerprint Identification for {LoRa} Using Deep Learning},
+  journal = {IEEE Journal on Selected Areas in Communications},
+  volume  = {39},
+  number  = {8},
+  pages   = {2604--2616},
+  year    = {2021},
+  doi     = {10.1109/JSAC.2021.3078123}
+}
+
+@inproceedings{shen2021lora_spectrogram_cnn,
+  author    = {G. Shen and J. Zhang and A. Marshall and L. Peng and X. Wang},
+  title     = {Radio Frequency Fingerprint Identification for {LoRa} Using Spectrogram and {CNN}},
+  booktitle = {Proc. IEEE INFOCOM},
+  year      = {2021},
+  note      = {arXiv:2101.01668}
+}
+
+@inproceedings{alshawabka2021deeplora,
+  author    = {A. Al-Shawabka and P. Pietraski and S. B. Pattar and F. Restuccia and T. Melodia},
+  title     = {{DeepLoRa}: Fingerprinting {LoRa} Devices at Scale Through Deep Learning and Data Augmentation},
+  booktitle = {Proc. ACM Int. Symp. Theory Algorithmic Foundations Protocol Design Mobile Networks Mobile Comput. (MobiHoc)},
+  pages     = {251--260},
+  year      = {2021},
+  doi       = {10.1145/3466772.3467054}
+}
+
+@article{shen2022scalable_lora_rffi,
+  author  = {G. Shen and J. Zhang and A. Marshall and J. Cavallaro},
+  title   = {Towards Scalable and Channel-Robust Radio Frequency Fingerprint Identification for {LoRa}},
+  journal = {IEEE Trans. Information Forensics and Security},
+  volume  = {17},
+  pages   = {774--789},
+  year    = {2022},
+  doi     = {10.1109/TIFS.2021.3138508}
+}
+
+@inproceedings{ma2025contrastive_lora_rffi,
+  author    = {J. Ma and J. Zhang and G. Shen and L. Peng and A. Marshall},
+  title     = {Towards Channel-Robust Radio Frequency Fingerprint Identification Using Contrastive Learning},
+  booktitle = {Proc. IEEE WCNC},
+  year      = {2025}
+}
+
+@article{ma2025receiver_independent_rffi,
+  author  = {J. Ma and J. Zhang and G. Shen and L. Peng and A. Marshall},
+  title   = {Toward Channel-Robust and Receiver-Independent Radio Frequency Fingerprint Identification},
+  journal = {IEEE Trans. Information Forensics and Security},
+  volume  = {20},
+  pages   = {12112--12125},
+  year    = {2025},
+  doi     = {10.1109/TIFS.2025.3630316}
+}
+
+@article{ahmed2024lora_rffi_survey,
+  author  = {A. Ahmed and B. Quoitin and A. Gros and V. Moeyaert},
+  title   = {A Comprehensive Survey on Deep Learning-Based {LoRa} Radio Frequency Fingerprinting Identification},
+  journal = {Sensors},
+  volume  = {24},
+  number  = {13},
+  pages   = {4411},
+  year    = {2024},
+  doi     = {10.3390/s24134411}
+}
+
+% --- C. OOB / WideScan / spectral evidence ---
+
+@inproceedings{elmaghbub2020widescan,
+  author    = {A. Elmaghbub and B. Hamdaoui and A. Natarajan},
+  title     = {{WideScan}: Exploiting Out-of-Band Distortion for Device Classification Using Deep Learning},
+  booktitle = {Proc. IEEE Global Communications Conference (GLOBECOM)},
+  year      = {2020},
+  doi       = {10.1109/GLOBECOM42002.2020.9348138}
+}
+
+@article{zhou2021robust_rffi_iotj,
+  author  = {X. Zhou and A. Hu and G. Li and L. Peng and Y. Xing and J. Yu},
+  title   = {A Robust Radio Frequency Fingerprint Extraction Scheme for Practical Device Recognition},
+  journal = {IEEE Internet of Things Journal},
+  volume  = {8},
+  number  = {14},
+  pages   = {11276--11289},
+  year    = {2021},
+  doi     = {10.1109/JIOT.2021.3054848}
+}
+
+@article{xie2018coherent_rff_iotj,
+  author  = {F. Xie and H. Wen and Y. Li and S. Chen and L. Hu and Y. Chen and H. Song},
+  title   = {Optimized Coherent Integration-Based Radio Frequency Fingerprinting in Internet of Things},
+  journal = {IEEE Internet of Things Journal},
+  volume  = {5},
+  number  = {5},
+  pages   = {3967--3977},
+  year    = {2018},
+  doi     = {10.1109/JIOT.2018.2875948}
+}
+
+% --- D. Cross-receiver / receiver-agnostic RFFI ---
+
+@article{shen2024receiveragnostic,
+  author  = {G. Shen and J. Zhang and A. Marshall and R. Woods and J. Cavallaro and L. Chen},
+  title   = {Towards Receiver-Agnostic and Collaborative Radio Frequency Fingerprint Identification},
+  journal = {IEEE Trans. Mobile Computing},
+  volume  = {23},
+  number  = {7},
+  pages   = {7618--7634},
+  year    = {2024},
+  doi     = {10.1109/TMC.2023.3340300}
+}
+
+@article{yang2025scrffi,
+  author  = {J. Yang and S. Zhu and Z. Wen and Q. Li},
+  title   = {Cross-Receiver Radio Frequency Fingerprint Identification: A Source-Free Adaptation Approach},
+  journal = {Sensors},
+  volume  = {25},
+  number  = {14},
+  pages   = {4451},
+  year    = {2025},
+  doi     = {10.3390/s25144451}
+}
+
+@article{yang2024cross_receiver_da,
+  author  = {L. Yang and Q. Li and X. Ren and Y. Fang and S. Wang},
+  title   = {Mitigating Receiver Impact on Radio Frequency Fingerprint Identification via Domain Adaptation},
+  journal = {IEEE Internet of Things Journal},
+  volume  = {11},
+  number  = {13},
+  pages   = {24024--24034},
+  year    = {2024},
+  doi     = {10.1109/JIOT.2024.3381234}
+}
+
+@misc{ma2025cross_receiver_disentangle,
+  author       = {J. Ma and J. Zhang and G. Shen and L. Peng and A. Marshall},
+  title        = {Cross-Receiver Generalization for {RF} Fingerprint Identification via Feature Disentanglement and Adversarial Training},
+  year         = {2025},
+  eprint       = {2510.09405},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.LG}
+}
+
+@inproceedings{alshawabka2020exposing_fingerprint,
+  author    = {A. Al-Shawabka and F. Restuccia and S. D'Oro and T. Jian and B. C. Rendon and N. Soltani and J. Dy and S. Ioannidis and K. Chowdhury and T. Melodia},
+  title     = {Exposing the Fingerprint: Dissecting the Impact of the Wireless Channel on Radio Fingerprinting},
+  booktitle = {Proc. IEEE INFOCOM},
+  year      = {2020},
+  doi       = {10.1109/INFOCOM48880.2020.9155493}
+}
+
+@article{cekic2020robust_wireless_fingerprinting,
+  author  = {M. Cekic and S. Gopalakrishnan and U. Madhow},
+  title   = {Robust Wireless Fingerprinting: Generalizing Across Space and Time},
+  journal = {arXiv preprint arXiv:2002.10791},
+  year    = {2020}
+}
+
+% --- E. Source-free / TTA / domain adaptation ---
+
+@inproceedings{wang2021tent,
+  author    = {D. Wang and E. Shelhamer and S. Liu and B. Olshausen and T. Darrell},
+  title     = {{TENT}: Fully Test-Time Adaptation by Entropy Minimization},
+  booktitle = {Proc. Int. Conf. Learning Representations (ICLR)},
+  year      = {2021}
+}
+
+@inproceedings{lim2023ttn,
+  author    = {H. Lim and B. Kim and J. Choo and S. Choi},
+  title     = {{TTN}: A Domain-Shift Aware Batch Normalization in Test-Time Adaptation},
+  booktitle = {Proc. Int. Conf. Learning Representations (ICLR)},
+  year      = {2023},
+  note      = {arXiv:2302.05155}
+}
+
+@inproceedings{liang2020shot,
+  author    = {J. Liang and D. Hu and J. Feng and J. Feng and T. H. Li},
+  title     = {Do We Really Need to Access the Source Data? Source Hypothesis Transfer for Unsupervised Domain Adaptation},
+  booktitle = {Proc. Int. Conf. Machine Learning (ICML)},
+  pages     = {6028--6039},
+  year      = {2020}
+}
+
+@inproceedings{sun2016deepcoral,
+  author    = {B. Sun and K. Saenko},
+  title     = {Deep {CORAL}: Correlation Alignment for Deep Domain Adaptation},
+  booktitle = {Proc. Eur. Conf. Computer Vision Workshops (ECCVW)},
+  pages     = {443--450},
+  year      = {2016}
+}
+
+@article{ben2010domain_adaptation,
+  author  = {S. Ben-David and J. Blitzer and K. Crammer and A. Kulesza and F. Pereira and J. W. Vaughan},
+  title   = {A Theory of Learning from Different Domains},
+  journal = {Machine Learning},
+  volume  = {79},
+  number  = {1},
+  pages   = {151--175},
+  year    = {2010}
+}
+
+@inproceedings{ganin2016domain_adversarial,
+  author    = {Y. Ganin and V. Lempitsky},
+  title     = {Unsupervised Domain Adaptation by Backpropagation},
+  booktitle = {Proc. Int. Conf. Machine Learning (ICML)},
+  pages     = {1184--1193},
+  year      = {2015}
+}
+
+% --- F. Few-shot / prototype / metric learning ---
+
+@inproceedings{snell2017prototypical,
+  author    = {J. Snell and K. Swersky and R. Zemel},
+  title     = {Prototypical Networks for Few-Shot Learning},
+  booktitle = {Proc. Adv. Neural Inf. Process. Syst. (NeurIPS)},
+  year      = {2017}
+}
+
+@inproceedings{khosla2020supcon,
+  author    = {P. Khosla and P. Teterwak and C. Wang and A. Sarna and Y. Tian and P. Isola and A. Maschinot and C. Liu and D. Krishnan},
+  title     = {Supervised Contrastive Learning},
+  booktitle = {Proc. Adv. Neural Inf. Process. Syst. (NeurIPS)},
+  year      = {2020},
+  note      = {arXiv:2004.11362}
+}
+
+@inproceedings{wen2016center_loss,
+  author    = {Y. Wen and K. Zhang and Z. Li and Y. Qiao},
+  title     = {A Discriminative Feature Learning Approach for Deep Face Recognition},
+  booktitle = {Proc. Eur. Conf. Computer Vision (ECCV)},
+  pages     = {499--515},
+  year      = {2016},
+  doi       = {10.1007/978-3-319-46478-7_31}
 }

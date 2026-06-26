@@ -2,45 +2,88 @@
 \label{sec:rcpa}
 
 \subsection{Frozen backbone}
-We use the OOB-guided RF-HSTU hybrid model from prior work as a fixed feature extractor~\cite{paper1_placeholder}.
+We use the OOB-guided RF-HSTU hybrid model from our related submitted work as a fixed feature extractor~\cite{paper1_placeholder}.
 No backbone parameters are updated in this paper.
-All calibration operates on fused embeddings extracted from target-receiver windows.
+All calibration operates on fused embeddings $z(w)$ extracted from target-receiver windows.
+This design isolates the value of target-receiver calibration from any architecture change.
 
 \subsection{Baselines}
-\textbf{Source classifier.} The source-trained softmax head applied directly to target-query embeddings.
+\textbf{Source classifier.}
+The source-trained softmax head $g(\cdot)$ is applied directly to target-query embeddings:
+$\hat{y}=\arg\max_c g(z)_c$.
 
-\textbf{Source prototype (RCPA-S).} Class prototypes computed from source-receiver labeled embeddings; query devices are classified by nearest prototype.
+\textbf{Source prototype (RCPA-S).}
+Source-receiver class prototypes are
+\begin{equation}
+\mu_s^{(c)}=\frac{1}{|\mathcal{S}_s^{(c)}|}\sum_{w\in\mathcal{S}_s^{(c)}} z(w),
+\end{equation}
+where $\mathcal{S}_s^{(c)}$ is the set of labeled source windows for class $c$.
+Target queries are classified by minimum cosine distance to $\{\mu_s^{(c)}\}$, following the prototypical classification principle~\cite{snell2017prototypical}.
 
 \subsection{Target-receiver prototype calibration}
-For each device class $c$, we form a target prototype $\mu_t^{(c)}$ by averaging fused embeddings of $K$ labeled support windows sampled uniformly from a dedicated support block.
-Query device files are represented by the mean fused embedding of query-block windows and classified by cosine distance to prototypes.
+For each device class $c$, we form a target prototype from labeled support windows on $r_t$:
+\begin{equation}
+\mu_t^{(c)}=\frac{1}{K}\sum_{w\in\mathcal{S}_t^{(c)}} z(w),
+\end{equation}
+where $\mathcal{S}_t^{(c)}$ contains $K$ labeled windows sampled uniformly from support Block~B for device $c$.
+Each query device file is represented by the mean fused embedding of its query-block windows $\bar{z}=\mathrm{mean}_{w\in\mathcal{Q}} z(w)$ and classified by
+\begin{equation}
+\hat{y}=\arg\min_c \; d_{\cos}(\bar{z},\mu^{(c)}).
+\end{equation}
 
-\textbf{RCPA-T (primary).} Use target prototypes only ($\alpha=0$).
+\textbf{RCPA-T (primary).}
+Use target prototypes only: $\mu^{(c)}=\mu_t^{(c)}$.
 
-\textbf{RCPA-B (ablation).} Fixed blend $\mu = \alpha \mu_s + (1-\alpha)\mu_t$ with $\alpha=0.5$; included as ablation only.
+\textbf{RCPA-B (ablation).}
+Fixed source-target blend
+\begin{equation}
+\mu^{(c)}=\alpha\mu_s^{(c)}+(1-\alpha)\mu_t^{(c)}, \quad \alpha=0.5,
+\end{equation}
+included as ablation only; not tuned on query data.
 
 \subsection{Block-disjoint split protocol}
-Each target file contributes 256 deterministic windows partitioned into four blocks of 64 windows:
-Block A (calibration, unlabeled), Block B (support, labeled), Blocks C+D (query, evaluation only).
-Three split repeats rotate block roles.
+Each target file contributes 256 deterministic windows partitioned into four contiguous blocks of 64 windows:
+Block~A (calibration, unlabeled), Block~B (support, labeled), Blocks~C+D (query, evaluation only).
+Three split repeats rotate block roles so that each block serves each role once across repeats.
 We assert zero overlap among calibration, support, and query window sets per device.
 
+Because each device has one capture file per receiver, $K$ always denotes labeled \emph{windows} per device rather than independent files.
+For example, $K=5$ uses five labeled windows from Block~B, not five separate enrollment captures.
+
 \subsection{Leakage prevention}
-Query windows are never used for prototype construction, pseudo-label selection, or equalization-statistic estimation.
+Query windows are never used for prototype construction, pseudo-label selection, confidence thresholding, or equalization-statistic estimation.
 Support labels are used only for RCPA-T/RCPA-B prototype construction.
+Unsupervised adaptation baselines may read Block~A only; evaluation uses Blocks~C+D only.
+
+\subsection{Unsupervised target calibration baselines}
+\textbf{Entropy-min TTA.}
+Following TENT~\cite{wang2021tent}, we update batch-norm or lightweight adapter statistics on unlabeled Block~A windows by minimizing prediction entropy, then evaluate on query blocks.
+
+\textbf{Pseudo-proto TTA.}
+High-confidence pseudo-labeled Block~A windows update class prototypes online, following source-free and pseudo-label adaptation practice~\cite{liang2020shot,yang2025scrffi}; we sweep confidence thresholds $\{0.5,0.7,0.8,0.9,0.95\}$ in appendix experiments.
+
+\subsection{OOB representation equalization (auxiliary)}
+As mechanism validation, we apply embedding-level CORAL alignment~\cite{sun2016deepcoral} to reduce OOB receiver probe accuracy before RCPA evaluation.
+Statistics are estimated from source embeddings and target calibration Block~A only, following unsupervised domain-adaptation practice~\cite{ben2010domain_adaptation,sun2016deepcoral}.
+This analysis tests whether suppressing receiver information in OOB embeddings alone restores classification without labeled target prototypes.
+It is not proposed as a primary deployment method.
+
+\subsection{K-shot parametric baselines (same protocol)}
+For comparison, we also evaluate K-shot multinomial logistic regression and classifier-head fine-tuning on frozen embeddings under the same support/query split.
+These baselines represent strong parametric target calibration alternatives to non-parametric prototype voting~\cite{snell2017prototypical,wen2016center_loss}.
 
 \subsection{Deployment modes}
 \begin{itemize}
-  \item \textbf{Source-only:} no target labels; source classifier or source prototype.
-  \item \textbf{Unlabeled target calibration:} entropy-min or pseudo-proto TTA on Block A only.
-  \item \textbf{$K$-shot labeled target calibration:} RCPA-T using Block B support windows.
+  \item \textbf{Source-only:} no target labels; source classifier or RCPA-S.
+  \item \textbf{Unlabeled target calibration:} entropy-min or pseudo-proto TTA on Block~A only.
+  \item \textbf{$K$-shot labeled target calibration:} RCPA-T using Block~B support windows.
 \end{itemize}
 
-\textbf{Important:} RCPA-T is post-hoc target-receiver calibration, not a new RF-HSTU architecture and not a retraining method.
+\textbf{Important:} RCPA-T is post-hoc target-receiver calibration, not a new RF-HSTU architecture and not a backbone retraining method.
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\linewidth]{fig2_rcpa_shotcurve.pdf}
-  \caption{RCPA-T file-level accuracy versus $K$ labeled calibration windows per device.}
-  \label{fig:rcpa_curve}
+  \includegraphics[width=\linewidth]{fig2_rcpa_shotcurve}
+  \caption{RCPA-T file-level accuracy versus $K$ labeled calibration windows per device (frozen full-mode results).}
+  \label{fig:rcpa_shotcurve}
 \end{figure}

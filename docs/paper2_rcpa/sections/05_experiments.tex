@@ -1,17 +1,36 @@
 \section{Experimental Setup}
 \label{sec:experiments}
 
-\subsection{Dataset and protocol}
-We use the OSU LoRa 24-device corpus with the Diff\_Receivers indoor same-transmitter setup.
-Cross-receiver evaluation uses RX1$\rightarrow$RX2 and RX2$\rightarrow$RX1 directions with Phase5-clean hybrid checkpoints (three seeds).
-Each target device has one capture file per receiver; therefore $K$ denotes labeled windows per device.
+\subsection{Dataset and receivers}
+We use the OSU LoRa 24-device corpus with the \texttt{Diff\_Receivers\_Setup\_Indoor\_SameTx} subset~\cite{elmaghbub2021lora_wild,hamdaoui2022deeplearning}.
+Two indoor receivers (RX1, RX2) observe the same transmitter population under controlled indoor conditions.
+Each device contributes one capture file per receiver; therefore cross-receiver evaluation is file-level authentication-style testing with window-level support.
 
-\subsection{Implementation}
+\subsection{Checkpoints and transfer directions}
+We evaluate cross-receiver transfer in both directions: RX1$\rightarrow$RX2 and RX2$\rightarrow$RX1.
+Feature extractors are Phase5-clean hybrid checkpoints trained on the source receiver with three random seeds.
 Embeddings are extracted once per direction/seed and reused across split repeats.
-RCPA evaluation uses cosine-distance prototype classification with file-level mean embedding voting.
-Full-mode experiments aggregate $3$ seeds $\times$ $3$ split repeats per direction.
 
-\subsection{Baselines and auxiliary analyses}
-We report source classifier, source prototype, entropy-min TTA, pseudo-proto TTA (appendix threshold sweep), RCPA-S/T/B, alpha-sensitivity, and OOB representation equalization as mechanism validation only.
+\subsection{Evaluation protocol}
+Each target file is split into 256 deterministic windows grouped into four block-disjoint sets as described in Section~\ref{sec:rcpa}.
+Three split repeats rotate block roles.
+Full-mode RCPA experiments aggregate $3$ seeds $\times$ $3$ split repeats per direction ($n=9$ runs per direction per method/$K$).
+Primary metrics are file-level accuracy and macro-F1; we report mean$\,\pm\,$std unless noted.
+
+\subsection{Methods evaluated}
+\textbf{Main:} source classifier, RCPA-S, RCPA-T ($K\in\{1,3,5,10,20\}$), RCPA-B ablation at selected $K$.
+
+\textbf{Supplementary:} entropy-min TTA, pseudo-proto TTA (quick run plus appendix threshold sweep), OOB representation equalization (CORAL on OOB embeddings), and alpha-sensitivity for RCPA-B.
+
+\subsection{Implementation details}
+RCPA uses cosine-distance prototype classification with file-level mean embedding voting over query blocks C+D.
+No query windows participate in calibration or prototype estimation.
+TTA baselines adapt on unlabeled Block~A only.
+OOB-Eq applies CORAL between source and target OOB embeddings on calibration windows only; fused embeddings are then used for RCPA-T evaluation in the auxiliary analysis.
+
+\subsection{Fairness and scope boundaries}
+We do not compare against multi-receiver retrained receiver-agnostic systems under different enrollment assumptions.
+Our goal is to quantify what a frozen same-receiver backbone can recover with honest target-side calibration under strict leakage control.
+Cross-day RCPA is out of scope because it mixes a different shift type with the source-only cross-day story of prior backbone work~\cite{paper1_placeholder}.
 
 \input{tables/table1_baseline.tex}

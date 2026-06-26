@@ -2,44 +2,57 @@
 \label{sec:diagnosis}
 
 \subsection{Problem formulation}
-We consider closed-set LoRa device identification under cross-receiver transfer.
-A source receiver $r_s$ provides labeled training captures for $C$ devices.
-A target receiver $r_t$ provides unlabeled calibration traffic and a held-out query set for evaluation.
-The goal is to classify each target-receiver device file correctly after minimal target-side calibration.
+We consider closed-set LoRa device identification under cross-receiver transfer~\cite{elmaghbub2021lora_wild,yang2024cross_receiver_da,yang2025scrffi}.
+Let $\mathcal{D}_s=\{(x_i,y_i)\}$ denote labeled captures collected at source receiver $r_s$ for devices $y_i\in\{1,\ldots,C\}$.
+At deployment, traffic is observed at target receiver $r_t\neq r_s$.
+The model must classify each target-receiver device file correctly after minimal target-side calibration.
 
-We use a frozen hybrid RF feature extractor trained on the source receiver~\cite{paper1_placeholder}.
-All diagnosis in this section is performed on extracted embeddings and OOB spectra; we do not retrain the backbone.
+We use a frozen hybrid RF feature extractor $f(\cdot)$ trained on $r_s$ from our related submitted OOB-guided RF-HSTU work~\cite{paper1_placeholder}.
+For each window $w$, path-specific embeddings are fused into $z(w)\in\mathbb{R}^d$.
+All diagnosis below is performed on extracted embeddings and OOB spectra; we do not retrain the backbone.
+Prior cross-receiver studies show that receiver front-end impairments interfere with transmitter fingerprint extraction~\cite{shen2024receiveragnostic,ma2025receiver_independent_rffi,alshawabka2020exposing_fingerprint}, but they do not analyze OOB-path entanglement under a frozen hybrid backbone.
 
 \subsection{Receiver-induced feature entanglement}
-Cross-receiver failure is not explained by complete embedding collapse alone.
+Cross-receiver failure is not explained by complete embedding collapse alone~\cite{cekic2020robust_wireless_fingerprinting}.
 File-level cosine analysis shows that same-device cross-receiver pairs can remain relatively close for the hybrid fused embedding, while device separability and decision boundaries degrade.
-We therefore analyze receiver entanglement at three levels: physical OOB spectra, linear probes on embedding paths, and prediction collapse.
+We therefore analyze receiver entanglement at three levels:
+\begin{enumerate}
+  \item \textbf{Physical layer:} OOB spectral energy bias between receivers.
+  \item \textbf{Representation layer:} linear receiver/device probes on main, OOB, and fused paths.
+  \item \textbf{Decision layer:} file-level accuracy, confusion structure, and top-1 prediction mass.
+\end{enumerate}
 
 \subsection{OOB path receiver probe}
-We train linear receiver probes on file-level mean embeddings mixed across RX1 and RX2.
-For the hybrid model, the OOB-only path yields the highest receiver-probe accuracy ($\approx 0.73$), compared with main ($\approx 0.62$) and fused ($\approx 0.50$).
-This indicates that OOB evidence, although useful under fixed-receiver operation, becomes more receiver-entangled under cross-receiver shift.
+We train linear receiver probes on file-level mean embeddings pooled across RX1 and RX2.
+For the hybrid model, the OOB-only path yields the highest receiver-probe accuracy ($72.7\%$), compared with main ($62.4\%$) and fused ($50.2\%$).
+The OOB path also yields higher device-probe accuracy on mixed-receiver windows ($28.9\%$) than the main path ($5.7\%$), indicating that OOB carries both device and receiver information simultaneously.
+Prior OOB studies establish that spectral leakage can encode hardware evidence~\cite{elmaghbub2020widescan,hamdaoui2022deeplearning}, but under cross-receiver shift the receiver component can dominate transfer failure.
 
 \subsection{OOB spectral receiver bias}
-Physical-layer OOB analysis shows a systematic RX2/RX1 OOB energy ratio of $1.44$, supporting receiver front-end spectral bias rather than transmitter-only variation.
+Physical-layer OOB analysis compares mean OOB energy spectra between RX2 and RX1.
+The aggregate RX2/RX1 OOB energy ratio is $1.44$, with per-device mean shift $0.76$ and ratio-spectrum standard deviation $0.17$.
+This supports systematic receiver front-end spectral bias rather than transmitter-only variation and provides a physical explanation for elevated OOB receiver probe accuracy.
 
 \subsection{Embedding distance ratio}
-File-level cosine distance ratios compare same-device cross-receiver similarity against different-device same-receiver similarity.
-CNN-IQ exhibits ratio $> 1$, indicating receiver shift dominates device separation.
-The hybrid fused embedding shows ratio $< 1$, meaning same-device cross-receiver structure is partially preserved, but device probe accuracy on mixed receivers remains low ($\approx 0.29$ for 24 classes).
+Let $d(\cdot,\cdot)$ denote cosine distance between file-level mean embeddings.
+We compare same-device cross-receiver distance against different-device same-receiver distance and report their ratio.
+CNN-IQ exhibits ratio $1.25>1$, indicating that receiver shift dominates device separation in the CNN embedding space.
+The hybrid fused embedding shows ratio $0.22<1$, meaning same-device cross-receiver pairs remain directionally closer than different-device pairs on the same receiver.
+However, mixed-receiver device linear probe accuracy remains only $28.9\%$ for 24 classes, so partial geometric preservation does not imply transferable decision boundaries.
 
 \subsection{Confusion and prediction collapse}
-Under RX1$\rightarrow$RX2, CNN-IQ collapses to one or two dominant predicted classes (top-1 mass up to $95.8\%$).
-The hybrid model performs better but remains near chance for 24-way file-level classification.
-This motivates labeled target calibration rather than unsupervised pseudo-label adaptation alone.
+Under RX1$\rightarrow$RX2, CNN-IQ collapses to one or two dominant predicted classes with top-1 prediction mass up to $95.8\%$ at file level.
+The hybrid model performs better but remains near chance for 24-way file-level classification ($\approx 12$--$21\%$ across seeds).
+RX2$\rightarrow$RX1 is asymmetric, confirming that the two receivers form non-symmetric domains rather than a simple sign flip~\cite{yang2024cross_receiver_da}.
 
 \subsection{Diagnosis conclusion}
 Cross-receiver failure arises from receiver-induced OOB entanglement and non-transferable source decision geometry.
-The frozen hybrid backbone retains partial same-device structure, making lightweight target-receiver prototype calibration a plausible repair mechanism.
+The frozen hybrid backbone retains partial same-device structure, making lightweight target-receiver prototype calibration a plausible repair mechanism rather than full backbone retraining or multi-receiver adversarial retraining~\cite{shen2024receiveragnostic,ma2025cross_receiver_disentangle}.
+Figure~\ref{fig:diagnosis} summarizes the four diagnosis panels used throughout the paper.
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\linewidth]{fig1_diagnosis_summary.pdf}
-  \caption{Diagnosis summary: (a) receiver probe by path, (b) OOB spectral bias, (c) distance ratio, (d) collapse.}
+  \includegraphics[width=\linewidth]{fig1_diagnosis_summary}
+  \caption{Cross-receiver failure diagnosis summary: (a) receiver probe accuracy by embedding path; (b) OOB RX2/RX1 energy ratio; (c) same-device cross-RX vs.\ different-device distance ratio; (d) top-1 prediction mass under RX1$\rightarrow$RX2 collapse.}
   \label{fig:diagnosis}
 \end{figure}

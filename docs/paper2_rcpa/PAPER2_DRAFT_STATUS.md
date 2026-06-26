@@ -29,7 +29,7 @@ Overleaf pack: `docs/paper2_rcpa/paper2_overleaf_pack_v0.zip` (re-zip after v1 e
 | `main.tex` | ✅ Complete |
 | Tables 1–3 + **SOTA baseline table** | ✅ |
 | Figures | ✅ diagnosis + shot curve |
-| BibTeX | ⚠️ Verify placeholders before submission |
+| BibTeX | ✅ 38 entries; see `REFERENCE_AUDIT.md` |
 
 ---
 
@@ -39,7 +39,7 @@ Overleaf pack: `docs/paper2_rcpa/paper2_overleaf_pack_v0.zip` (re-zip after v1 e
 |---------|--------|------------|
 | Abstract | ✅ | Unchanged; claims remain non-SOTA |
 | Introduction | ✅ | — |
-| Related Work | ✅ | Apples-to-apples disclaimer + same-protocol baselines |
+| Related Work | ✅ | Expanded to 38 refs; apples-to-apples disclaimer |
 | Diagnosis | ✅ | — |
 | RCPA Method | ✅ | — |
 | Experiments | ✅ | — |
@@ -71,6 +71,7 @@ Overleaf pack: `docs/paper2_rcpa/paper2_overleaf_pack_v0.zip` (re-zip after v1 e
 | Document | Path |
 |----------|------|
 | SOTA baseline report | `experiments/cross_receiver_calibration/SOTA_STYLE_BASELINE_REPORT.md` |
+| Reference audit | `docs/paper2_rcpa/REFERENCE_AUDIT.md` |
 | Overlap audit | `experiments/cross_receiver_calibration/PAPER2_OVERLAP_AUDIT.md` |
 | Overlap self-check | `docs/paper2_rcpa/PAPER2_DRAFT_OVERLAP_CHECK.md` |
 | Cover letter draft | `docs/paper2_rcpa/COVER_LETTER_DISCLOSURE_DRAFT.md` |

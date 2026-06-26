@@ -18,14 +18,20 @@ Same-protocol feature alignment (mean-shift, CORAL) improves over chance only ma
 
 \subsection{RCPA-T vs.\ K-shot parametric calibration}
 Table~\ref{tab:sota_baselines} shows that RCPA-T is not the only viable repair under labeled target windows.
-A K-shot linear probe on frozen embeddings performs similarly at $K{=}5$ and slightly lower at $K{=}10$.
+A K-shot linear probe on frozen embeddings performs similarly at $K{=}5$ and slightly lower at $K{=}10$~\cite{snell2017prototypical,wen2016center_loss}.
 We therefore frame RCPA-T as a \emph{lightweight non-parametric} calibration choice rather than a claim of universal superiority over all adaptation methods.
 Its practical advantages are: (i) no gradient-based target optimization or learning-rate tuning; (ii) stable performance across split repeats at $K{=}10$ (pooled std $9.7\%$ vs.\ $11.2\%$ for linear probe); and (iii) consistent gains over source-target prototype blending (RCPA-B) and head fine-tuning under the same protocol.
-When optimization is acceptable, K-shot linear calibration can be adopted as a stronger parametric alternative; RCPA-T remains the default when deployment simplicity and non-parametric stability are prioritized.
+When optimization is acceptable, K-shot linear calibration can be adopted as a stronger parametric alternative; RCPA-T remains attractive when deployment simplicity and non-parametric stability are prioritized.
 
-\subsection{Relation to prior/submitted backbone work}
-This paper is complementary to prior OOB-guided RF-HSTU modeling~\cite{paper1_placeholder}.
-That work addresses same-receiver robustness, architecture design, and source-only cross-day evaluation; it reports strict cross-receiver transfer as an open limitation.
+\subsection{Relation to receiver-agnostic, source-free, and few-shot RFFI}
+Receiver-agnostic and disentanglement-based methods address cross-receiver shift by retraining or adapting the backbone with multi-receiver or adversarial objectives~\cite{shen2024receiveragnostic,ma2025cross_receiver_disentangle,ma2025receiver_independent_rffi}.
+Source-free SCRFFI and domain-adaptation methods instead adapt to a new receiver using unlabeled target traffic~\cite{yang2025scrffi,yang2024cross_receiver_da,liang2020shot,wang2021tent}.
+Our results show that such unsupervised repair remains insufficient under severe collapse in our protocol, whereas a small labeled calibration set enables large gains.
+We do not claim receiver-independent or source-free operation; rather, we provide an honest same-protocol comparison against TTA, CORAL, linear probe, and head fine-tuning~\cite{sun2016deepcoral,snell2017prototypical}.
+
+\subsection{Relation to related submitted backbone work}
+This paper is complementary to our related submitted OOB-guided RF-HSTU modeling work~\cite{paper1_placeholder}.
+That manuscript addresses same-receiver robustness, architecture design, and source-only cross-day evaluation; it reports strict cross-receiver transfer as an open limitation.
 The present work uses the same backbone family as a frozen extractor but asks a different question: \emph{why} cross-receiver transfer fails and \emph{how} to recover separability with lightweight target calibration.
 We do not claim improved same-receiver cross-day accuracy and do not propose a new backbone.
 
