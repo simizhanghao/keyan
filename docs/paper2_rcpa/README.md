@@ -18,12 +18,37 @@ docs/paper2_rcpa/
 └── POST_DECISION_PLAN.md
 ```
 
-## Build (optional)
+## Overleaf 编译
 
-```bash
-cd docs/paper2_rcpa
-pdflatex main.tex && bibtex main && pdflatex main.tex && pdflatex main.tex
+**第二篇打包文件（直接上传 Overleaf）：**
+
+```text
+/data1/hcc/llm4RF/docs/paper2_rcpa/paper2_overleaf_pack_v1.zip   ← 当前 v1（含 SOTA baseline 表）
+/data1/hcc/llm4RF/docs/paper2_rcpa/paper2_overleaf_pack_v0.zip   ← 旧版
 ```
+
+**Overleaf 操作：**
+
+1. 打开 [https://www.overleaf.com](https://www.overleaf.com) → **New Project** → **Upload Project**
+2. 上传 `paper2_overleaf_pack_v0.zip`
+3. 确认 **Main document** 设为 `main.tex`（Menu → Main document）
+4. 编译器选 **pdfLaTeX**（Menu → Settings → Compiler）
+5. 点击 **Recompile**；若引用未解析，再点一次 Recompile（或改为 pdfLaTeX + BibTeX 流程）
+
+**对比第一篇：** 第一篇 IoTJ 包在 `docs/iotj_paper/iotj_overleaf_pack_v1_final.zip`；第二篇是独立项目，不要和第一篇混在一个 Overleaf 工程里。
+
+**源码目录（不用 zip 也可手动同步）：**
+
+```text
+/data1/hcc/llm4RF/docs/paper2_rcpa/
+├── main.tex          ← 主文件
+├── refs.bib
+├── sections/
+├── tables/
+└── figures/*.pdf
+```
+
+**Draft status:** see `PAPER2_DRAFT_STATUS.md` and `PAPER2_DRAFT_OVERLAP_CHECK.md`.
 
 ## Frozen result commits
 

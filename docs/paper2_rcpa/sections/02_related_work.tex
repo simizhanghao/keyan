@@ -1,16 +1,58 @@
 \section{Related Work}
 \label{sec:related}
 
-\subsection{LoRa and IoT RFFI}
-% TODO: cite IoTJ/TWC RFFI papers; do not copy Paper 1 related-work paragraphs verbatim
+\subsection{RF Fingerprinting and LoRa RFFI}
+Radio frequency fingerprint identification exploits transmitter-specific hardware impairments for device verification~\cite{brik2008wireless_device_id,jian2020deeplearning_rf_fingerprinting}.
+Surveys summarize datasets, signal representations, and deployment challenges for IoT-oriented RFFI~\cite{ahmed2024lora_rffi_survey,xie2021physical_layer_auth_survey}.
+LoRa RFFI is complicated by chirp spread spectrum modulation and by sensitivity to collection conditions~\cite{shen2021lora_spectrogram_cnn,elmaghbub2021lora_wild}.
+The OSU LoRa corpus systematically exposes cross-day, cross-location, cross-configuration, and cross-receiver degradation~\cite{hamdaoui2022deeplearning,elmaghbub2021lora_wild}.
+Our work adopts the cross-receiver subset of that corpus and evaluates under strict block-disjoint calibration/query splits rather than random window mixing.
 
-\subsection{Cross-receiver and receiver-agnostic RFFI}
-Receiver-agnostic training with adversarial learning has been proposed to reduce receiver sensitivity, often requiring multi-receiver training or collaborative inference~\cite{shen2023receiveragnostic}.
-Source-free cross-receiver adaptation methods instead adapt a pre-trained model using target-receiver unlabeled data and pseudo labels.
-Our work differs by providing an OOB-entanglement diagnosis on a frozen hybrid backbone and showing that minimal \emph{labeled} target calibration windows can be more reliable than unsupervised adaptation under severe collapse.
+\subsection{OOB Evidence in LoRa RFFI}
+WideScan and follow-on studies show that out-of-band distortion can strengthen device signatures caused by power-amplifier nonlinearity and filter roll-off~\cite{elmaghbub2020widescan,hamdaoui2022deeplearning}.
+IoTJ and TIFS studies further emphasize robust fingerprint extraction under variable conditions~\cite{zhou2021robust_rffi_iotj}.
+We do not claim the first use of OOB evidence.
+Instead, we study what happens to OOB-guided representations when the receiver changes: OOB can become receiver-entangled rather than purely device-discriminative, which motivates diagnosis before calibration.
 
-\subsection{Few-shot and prototype classification}
-Prototypical classification is a classical few-shot approach~\cite{snell2017prototypical}.
-We do not claim a new prototype algorithm; rather, we introduce a diagnosis-driven cross-receiver calibration protocol with block-disjoint window splits tailored to LoRa single-file-per-device captures.
+\subsection{Cross-Receiver and Receiver-Agnostic RFFI}
+Receiver mismatch is a known open challenge in LoRa deployment studies~\cite{elmaghbub2021lora_wild}.
+Receiver-agnostic training with adversarial or collaborative objectives has been proposed to reduce receiver sensitivity, often requiring multi-receiver training or coordinated data collection~\cite{shen2023receiveragnostic,ma2025receiver_independent_rffi,shen2022scalable_lora_rffi}.
+Recent cross-receiver generalization work explores feature disentanglement and adversarial training to learn receiver-invariant representations, but typically under different receiver populations, signal regimes, and training protocols than our single indoor RX1/RX2 setup.
+Channel-robust and contrastive LoRa RFFI methods improve embedding compactness under channel variation but typically retrain or adapt the backbone under different enrollment assumptions~\cite{shen2022scalable_lora_rffi,ma2025receiver_independent_rffi}.
+\textbf{Direct numerical comparison with these systems is not apples-to-apples} because they differ in receiver sets, devices, source-data access, target-label availability, and calibration protocols.
+Our experiments instead compare against representative \emph{same-protocol} baselines under identical block-disjoint splits (Table~\ref{tab:sota_baselines}).
 
-% TODO: Table comparing receiver-agnostic / source-free / federated / RCPA (see RELATED_WORK_COMPARISON.md)
+\subsection{Source-Free and Unsupervised Adaptation}
+Test-time adaptation methods such as entropy minimization update normalization or classifier statistics using unlabeled target data~\cite{wang2021tent}.
+Source-free cross-receiver RFFI adapts pre-trained models with contrastive or pseudo-label objectives on target-receiver traffic without source data or target labels.
+These approaches target a different deployment mode from ours: we assume a frozen same-receiver backbone and a small set of labeled target-receiver calibration windows.
+Our TTA negative baselines, threshold sweep, and feature-alignment baselines show that unsupervised repair remains near chance under severe RX1$\rightarrow$RX2 collapse, supporting labeled calibration as the more reliable option under our protocol.
+
+\subsection{Few-Shot and Prototype Classification}
+Prototypical classification represents each class by the mean embedding of a support set and assigns queries by nearest-prototype distance~\cite{snell2017prototypical}.
+Few-shot RFFI and open-set studies often use episodic meta-learning or multiple enrollment captures per device.
+We do not claim a new prototype algorithm.
+Instead, we compare RCPA-T against K-shot logistic regression and classifier-head fine-tuning under a LoRa-specific protocol with one file per device per receiver, where $K$ denotes labeled windows and calibration/support/query blocks are explicitly disjoint.
+Same-protocol results (Table~\ref{tab:sota_baselines}) show that RCPA-T is competitive with linear probe while avoiding gradient-based target adaptation.
+
+\subsection{Positioning of This Work}
+Table~\ref{tab:related_compare} summarizes how RCPA differs from representative directions.
+Prior backbone work~\cite{paper1_placeholder} studies OOB-guided architecture design and source-only same-receiver cross-day robustness; the present paper explains and mitigates the cross-receiver limitation reported there through diagnosis and target-receiver calibration on a frozen model.
+
+\begin{table}[t]
+\caption{Positioning against representative cross-receiver RFFI directions.}
+\label{tab:related_compare}
+\centering
+\small
+\begin{tabular}{p{0.22\linewidth}p{0.68\linewidth}}
+\toprule
+Direction & vs.\ RCPA (this work) \\
+\midrule
+Receiver-agnostic train & Multi-RX retraining; we freeze backbone and calibrate with $K$ target windows \\
+Source-free cross-RX & Unlabeled target only; we show TTA/pseudo insufficient under collapse \\
+Feature disentangle & Retrain/adapt backbone; we use post-hoc diagnosis + prototypes \\
+Few-shot prototype RFFI & Generic episodic few-shot; we add OOB entanglement diagnosis + block-disjoint LoRa protocol \\
+Prior OOB hybrid backbone~\cite{paper1_placeholder} & Architecture + cross-day; we diagnose cross-RX failure + RCPA-T calibration \\
+\bottomrule
+\end{tabular}
+\end{table}

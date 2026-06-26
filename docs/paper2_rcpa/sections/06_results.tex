@@ -4,38 +4,51 @@
 \subsection{Source-only cross-receiver baselines}
 Table~\ref{tab:baseline} summarizes source-only performance.
 Both directions remain near chance for 24-way file-level classification ($\approx 20\%$).
-Unsupervised TTA on unlabeled calibration Block A does not close the gap: entropy-min TTA reaches only $20.8\%$ and pseudo-proto TTA $8.3\%$ on RX1$\rightarrow$RX2 (quick run).
+Source-only prototypes (RCPA-S at $K{=}0$) are similarly weak ($15.3\%\pm 7.3\%$ on RX1$\rightarrow$RX2, $13.0\%\pm 3.1\%$ on RX2$\rightarrow$RX1).
+Unsupervised TTA on unlabeled calibration Block~A does not close the gap: on a controlled RX1$\rightarrow$RX2 quick run, entropy-min TTA reaches $20.8\%$ and pseudo-proto TTA $8.3\%$, compared with $16.7\%$ for the source classifier in that run.
 
 \subsection{RCPA-T main results}
-Table~\ref{tab:rcpa} reports the RCPA-T shot curve.
-Pooled across directions, RCPA-T improves from $33.1\%$ at $K=1$ to $75.0\%$ at $K=20$, with $+38.2$ percentage points over the source classifier at $K=5$.
-Figure~\ref{fig:rcpa_shotcurve} visualizes the shot curve.
+Table~\ref{tab:rcpa} and Fig.~\ref{fig:rcpa_shotcurve} report the RCPA-T shot curve.
+Pooled across directions, RCPA-T improves monotonically from $33.1\%\pm 11.2\%$ at $K{=}1$ to $75.0\%\pm 8.0\%$ at $K{=}20$.
+At $K{=}5$, pooled accuracy is $58.3\%\pm 9.0\%$, a $+38.2$ percentage-point gain over the source classifier ($\approx 20.1\%$ pooled).
+At $K{=}10$, pooled accuracy reaches $69.4\%\pm 9.7\%$.
+Direction asymmetry exists but both directions benefit: RX1$\rightarrow$RX2 reaches $57.4\%\pm 9.4\%$ and RX2$\rightarrow$RX1 $59.3\%\pm 8.5\%$ at $K{=}5$.
 
 \input{tables/table2_rcpa_shotcurve.tex}
 
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=\linewidth]{fig2_rcpa_shotcurve}
-  \caption{RCPA-T file-level accuracy vs.\ $K$ labeled calibration windows per device (frozen full-mode results).}
-  \label{fig:rcpa_shotcurve}
-\end{figure}
-
-\subsection{Diagnosis summary}
-Figure~\ref{fig:diagnosis} summarizes receiver-induced OOB entanglement evidence: path-specific receiver probe, OOB spectral bias, embedding distance ratio, and confusion collapse.
-
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=\linewidth]{fig1_diagnosis_summary}
-  \caption{Cross-receiver failure diagnosis summary (see Section~\ref{sec:diagnosis}).}
-  \label{fig:diagnosis}
-\end{figure}
-
 \subsection{Ablations and auxiliary analyses}
-Table~\ref{tab:ablation} shows that source-only prototypes remain weak, target prototypes (RCPA-T) are strongest, and fixed source-target blending (RCPA-B) underperforms RCPA-T.
-OOB representation equalization reduces OOB receiver probe from $75.1\%$ to $35.6\%$ but does not improve file-level accuracy beyond RCPA-T, supporting its role as mechanism validation rather than a primary method.
+Table~\ref{tab:ablation} compares RCPA variants on RX1$\rightarrow$RX2 at $K{=}5$.
+RCPA-T ($57.4\%\pm 9.4\%$) strongly outperforms RCPA-S ($15.3\%\pm 7.3\%$) and RCPA-B ($33.8\%\pm 4.1\%$).
+Full-mode pooling shows the same pattern at $K{=}10$: RCPA-T $69.4\%$ vs.\ RCPA-B $37.0\%$.
+Blending source and target prototypes reintroduces source-receiver bias under asymmetric shift.
+
+OOB representation equalization reduces OOB-only receiver probe accuracy from $75.1\%$ to $35.6\%$ with CORAL, confirming that OOB embeddings carry substantial receiver information.
+However, this embedding-level alignment does not surpass RCPA-T file-level accuracy in our auxiliary run, supporting its role as mechanism validation rather than a primary method.
+
+\subsection{Unsupervised adaptation and appendix threshold sweep}
+Table~\ref{tab:baseline} shows that unsupervised baselines remain far below RCPA-T.
+An appendix threshold sweep on pseudo-proto TTA with confidence thresholds $\{0.5,0.7,0.8,0.9,0.95\}$ selects between 1 and 231 pseudo-labeled windows and updates at most 10 of 24 classes.
+The best threshold ($0.5$) achieves $16.7\%$ file-level accuracy, still far from RCPA-T $K{=}5$ ($45.8\%$ on the matched quick run, $58.3\%$ pooled in full mode).
+High top-1 prediction mass persists across thresholds, indicating that threshold tuning alone cannot repair severe cross-receiver collapse.
 
 \input{tables/table3_ablation.tex}
 
-\subsection{Appendix: pseudo-proto threshold sweep}
-Thresholds $\{0.5,0.7,0.8,0.9,0.95\}$ on RX1$\rightarrow$RX2 do not approach RCPA-T $K=5$ ($45.8\%$); best pseudo-proto accuracy is $16.7\%$ at threshold $0.5$ with 231 pseudo samples.
-See \texttt{TTA\_THRESHOLD\_SWEEP\_REPORT.md} in the experiment results directory.
+\subsection{Same-protocol baseline comparison}
+Table~\ref{tab:sota_baselines} compares RCPA-T against representative baselines evaluated under the \emph{same} block-disjoint protocol: frozen hybrid embeddings, identical support/query splits, and the same $K$ labeled windows per device.
+Direct numerical comparison with prior cross-receiver RFFI systems is not strictly apples-to-apples because those works differ in receiver sets, device counts, source-data availability, target-label assumptions, and calibration protocols~\cite{shen2023receiveragnostic,ma2025receiver_independent_rffi}.
+We therefore report same-protocol baselines that cover the adaptation modes most likely to be raised by reviewers.
+
+Unsupervised methods remain far below K-shot calibration.
+Feature mean-shift and CORAL alignment on target calibration Block~A, followed by the frozen source classifier, reach only $19.7\%\pm 8.1\%$ and $25.0\%\pm 10.4\%$ pooled file-level accuracy, respectively.
+Entropy-min and pseudo-prototype TTA on the quick RX1$\rightarrow$RX2 run reach $20.8\%$ and $8.3\%$.
+
+Among labeled K-shot methods, RCPA-T is competitive with multinomial logistic regression (linear probe) on frozen embeddings.
+At $K{=}5$, linear probe reaches $59.0\%\pm 12.2\%$ pooled versus $58.3\%\pm 9.0\%$ for RCPA-T---a $0.7$ percentage-point difference within overlapping standard deviations.
+At $K{=}10$, RCPA-T reaches $69.4\%\pm 9.7\%$ versus $65.7\%\pm 11.2\%$ for linear probe, with lower cross-split variance.
+Classifier-head fine-tuning (source-initialized or random) is consistently below both RCPA-T and linear probe at $K{=}5$ and $K{=}10$ (e.g., $53.9\%\pm 12.0\%$ pooled for source-init head FT at $K{=}5$).
+We do \emph{not} claim that RCPA-T comprehensively outperforms all calibration methods; rather, it provides a non-parametric, gradient-free target-receiver calibration option that matches strong K-shot linear baselines while remaining stable at larger $K$.
+
+\input{tables/table_sota_style_baselines.tex}
+
+\subsection{Diagnosis--result link}
+Figure~\ref{fig:diagnosis} connects the diagnosis to the calibration outcome: OOB receiver entanglement and non-transferable source boundaries explain why source-only methods fail, while target-receiver prototypes realign class geometry in the observed receiver space without modifying the backbone.

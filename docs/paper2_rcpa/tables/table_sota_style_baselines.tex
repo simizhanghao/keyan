@@ -1,0 +1,28 @@
+\begin{table*}[t]
+\caption{Same-protocol baseline comparison (file-level accuracy, \%). Mean over 3 seeds$\times$3 splits per direction unless noted. RCPA/TTA rows from frozen full-mode or quick runs; new baselines from \texttt{same\_protocol\_baselines}.}
+\label{tab:sota_baselines}
+\centering
+\small
+\begin{tabular}{llccccc}
+\toprule
+Method & Calib. mode & Trainable & $K$ & RX1$\rightarrow$RX2 & RX2$\rightarrow$RX1 & Pooled \\
+\midrule
+Source classifier & source-only & none & --- & 19.4 ± 3.4 & 20.8 ± 8.8 & 20.1 ± 6.7 \\
+Entropy-min TTA & unlabeled & BN/stats & --- & 20.8$^{\dagger}$ & --- & --- \\
+Pseudo-proto TTA & unlabeled & prototype & --- & 8.3$^{\dagger}$ & --- & --- \\
+Feat mean-shift + src cls & unlabeled & none & 0 & 21.8 ± 4.3 & 17.6 ± 10.2 & 19.7 ± 8.1 \\
+Feat CORAL + src cls & unlabeled & none & 0 & 19.4 ± 5.2 & 30.6 ± 11.3 & 25.0 ± 10.4 \\
+Linear probe & K-shot labeled & logistic & 1 & 35.6 ± 10.0 & 31.0 ± 10.2 & 33.3 ± 10.4 \\
+Head FT (source init) & K-shot labeled & linear head & 1 & 33.3 ± 10.2 & 27.3 ± 10.0 & 30.3 ± 10.6 \\
+RCPA-T & K-shot labeled & prototype & 1 & 36.1 ± 11.9 & 30.1 ± 9.4 & 33.1 ± 11.2 \\
+Linear probe & K-shot labeled & logistic & 5 & 57.4 ± 13.1 & 60.6 ± 11.0 & 59.0 ± 12.2 \\
+Head FT (source init) & K-shot labeled & linear head & 5 & 52.8 ± 13.0 & 55.1 ± 10.7 & 53.9 ± 12.0 \\
+RCPA-T & K-shot labeled & prototype & 5 & 57.4 ± 9.4 & 59.3 ± 8.5 & 58.3 ± 9.0 \\
+Linear probe & K-shot labeled & logistic & 10 & 69.4 ± 13.2 & 62.0 ± 6.9 & 65.7 ± 11.2 \\
+Head FT (source init) & K-shot labeled & linear head & 10 & 65.7 ± 13.0 & 62.0 ± 6.9 & 63.9 ± 10.6 \\
+RCPA-T & K-shot labeled & prototype & 10 & 67.6 ± 10.0 & 71.3 ± 9.1 & 69.4 ± 9.7 \\
+\bottomrule
+\end{tabular}
+\\[2pt]
+{\footnotesize $^{\dagger}$Quick RX1$\rightarrow$RX2 run only (TTA negative baseline).}
+\end{table*}

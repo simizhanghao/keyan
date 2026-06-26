@@ -1,0 +1,73 @@
+method,calibration_mode,trainable_params,direction,seed,split_seed,shot_k,init,file_acc,macro_f1
+feat_mean_shift_source_classifier,unlabeled_target,head frozen (source),rx1_to_rx2,0,0,0,source,0.2916666666666667,0.2111111111111111
+feat_mean_shift_source_prototype,unlabeled_target,none (prototype),rx1_to_rx2,0,0,0,source,0.125,0.08333333333333333
+feat_coral_source_classifier,unlabeled_target,head frozen (source),rx1_to_rx2,0,0,0,source,0.25,0.17361111111111108
+feat_coral_source_prototype,unlabeled_target,none (prototype),rx1_to_rx2,0,0,0,source,0.08333333333333333,0.05555555555555555
+feat_mean_shift_source_classifier,unlabeled_target,head frozen (source),rx1_to_rx2,0,1,0,source,0.25,0.19722222222222222
+feat_mean_shift_source_prototype,unlabeled_target,none (prototype),rx1_to_rx2,0,1,0,source,0.041666666666666664,0.027777777777777776
+feat_coral_source_classifier,unlabeled_target,head frozen (source),rx1_to_rx2,0,1,0,source,0.2916666666666667,0.19444444444444442
+feat_coral_source_prototype,unlabeled_target,none (prototype),rx1_to_rx2,0,1,0,source,0.041666666666666664,0.027777777777777776
+feat_mean_shift_source_classifier,unlabeled_target,head frozen (source),rx1_to_rx2,0,2,0,source,0.20833333333333334,0.15555555555555556
+feat_mean_shift_source_prototype,unlabeled_target,none (prototype),rx1_to_rx2,0,2,0,source,0.041666666666666664,0.027777777777777776
+feat_coral_source_classifier,unlabeled_target,head frozen (source),rx1_to_rx2,0,2,0,source,0.20833333333333334,0.15277777777777776
+feat_coral_source_prototype,unlabeled_target,none (prototype),rx1_to_rx2,0,2,0,source,0.08333333333333333,0.05555555555555555
+feat_mean_shift_source_classifier,unlabeled_target,head frozen (source),rx1_to_rx2,1,0,0,source,0.16666666666666666,0.13194444444444445
+feat_mean_shift_source_prototype,unlabeled_target,none (prototype),rx1_to_rx2,1,0,0,source,0.20833333333333334,0.1597222222222222
+feat_coral_source_classifier,unlabeled_target,head frozen (source),rx1_to_rx2,1,0,0,source,0.125,0.08333333333333333
+feat_coral_source_prototype,unlabeled_target,none (prototype),rx1_to_rx2,1,0,0,source,0.125,0.08333333333333333
+feat_mean_shift_source_classifier,unlabeled_target,head frozen (source),rx1_to_rx2,1,1,0,source,0.16666666666666666,0.13194444444444445
+feat_mean_shift_source_prototype,unlabeled_target,none (prototype),rx1_to_rx2,1,1,0,source,0.16666666666666666,0.13888888888888887
+feat_coral_source_classifier,unlabeled_target,head frozen (source),rx1_to_rx2,1,1,0,source,0.16666666666666666,0.125
+feat_coral_source_prototype,unlabeled_target,none (prototype),rx1_to_rx2,1,1,0,source,0.08333333333333333,0.05555555555555555
+feat_mean_shift_source_classifier,unlabeled_target,head frozen (source),rx1_to_rx2,1,2,0,source,0.16666666666666666,0.13194444444444445
+feat_mean_shift_source_prototype,unlabeled_target,none (prototype),rx1_to_rx2,1,2,0,source,0.16666666666666666,0.13888888888888887
+feat_coral_source_classifier,unlabeled_target,head frozen (source),rx1_to_rx2,1,2,0,source,0.125,0.09722222222222221
+feat_coral_source_prototype,unlabeled_target,none (prototype),rx1_to_rx2,1,2,0,source,0.125,0.08333333333333333
+feat_mean_shift_source_classifier,unlabeled_target,head frozen (source),rx1_to_rx2,2,0,0,source,0.25,0.1486111111111111
+feat_mean_shift_source_prototype,unlabeled_target,none (prototype),rx1_to_rx2,2,0,0,source,0.20833333333333334,0.12777777777777777
+feat_coral_source_classifier,unlabeled_target,head frozen (source),rx1_to_rx2,2,0,0,source,0.16666666666666666,0.09027777777777778
+feat_coral_source_prototype,unlabeled_target,none (prototype),rx1_to_rx2,2,0,0,source,0.20833333333333334,0.1284722222222222
+feat_mean_shift_source_classifier,unlabeled_target,head frozen (source),rx1_to_rx2,2,1,0,source,0.25,0.15277777777777776
+feat_mean_shift_source_prototype,unlabeled_target,none (prototype),rx1_to_rx2,2,1,0,source,0.16666666666666666,0.08829365079365077
+feat_coral_source_classifier,unlabeled_target,head frozen (source),rx1_to_rx2,2,1,0,source,0.20833333333333334,0.10277777777777779
+feat_coral_source_prototype,unlabeled_target,none (prototype),rx1_to_rx2,2,1,0,source,0.20833333333333334,0.11458333333333331
+feat_mean_shift_source_classifier,unlabeled_target,head frozen (source),rx1_to_rx2,2,2,0,source,0.20833333333333334,0.125
+feat_mean_shift_source_prototype,unlabeled_target,none (prototype),rx1_to_rx2,2,2,0,source,0.16666666666666666,0.10416666666666667
+feat_coral_source_classifier,unlabeled_target,head frozen (source),rx1_to_rx2,2,2,0,source,0.20833333333333334,0.10416666666666667
+feat_coral_source_prototype,unlabeled_target,none (prototype),rx1_to_rx2,2,2,0,source,0.16666666666666666,0.10069444444444443
+feat_mean_shift_source_classifier,unlabeled_target,head frozen (source),rx2_to_rx1,0,0,0,source,0.2916666666666667,0.2638888888888889
+feat_mean_shift_source_prototype,unlabeled_target,none (prototype),rx2_to_rx1,0,0,0,source,0.125,0.10416666666666667
+feat_coral_source_classifier,unlabeled_target,head frozen (source),rx2_to_rx1,0,0,0,source,0.4583333333333333,0.3430555555555555
+feat_coral_source_prototype,unlabeled_target,none (prototype),rx2_to_rx1,0,0,0,source,0.125,0.10416666666666667
+feat_mean_shift_source_classifier,unlabeled_target,head frozen (source),rx2_to_rx1,0,1,0,source,0.25,0.2222222222222222
+feat_mean_shift_source_prototype,unlabeled_target,none (prototype),rx2_to_rx1,0,1,0,source,0.125,0.10416666666666667
+feat_coral_source_classifier,unlabeled_target,head frozen (source),rx2_to_rx1,0,1,0,source,0.4166666666666667,0.3452380952380952
+feat_coral_source_prototype,unlabeled_target,none (prototype),rx2_to_rx1,0,1,0,source,0.20833333333333334,0.17361111111111108
+feat_mean_shift_source_classifier,unlabeled_target,head frozen (source),rx2_to_rx1,0,2,0,source,0.375,0.3333333333333333
+feat_mean_shift_source_prototype,unlabeled_target,none (prototype),rx2_to_rx1,0,2,0,source,0.20833333333333334,0.17361111111111108
+feat_coral_source_classifier,unlabeled_target,head frozen (source),rx2_to_rx1,0,2,0,source,0.5,0.42162698412698413
+feat_coral_source_prototype,unlabeled_target,none (prototype),rx2_to_rx1,0,2,0,source,0.20833333333333334,0.17361111111111108
+feat_mean_shift_source_classifier,unlabeled_target,head frozen (source),rx2_to_rx1,1,0,0,source,0.16666666666666666,0.10912698412698411
+feat_mean_shift_source_prototype,unlabeled_target,none (prototype),rx2_to_rx1,1,0,0,source,0.16666666666666666,0.10912698412698413
+feat_coral_source_classifier,unlabeled_target,head frozen (source),rx2_to_rx1,1,0,0,source,0.16666666666666666,0.09523809523809523
+feat_coral_source_prototype,unlabeled_target,none (prototype),rx2_to_rx1,1,0,0,source,0.16666666666666666,0.10912698412698413
+feat_mean_shift_source_classifier,unlabeled_target,head frozen (source),rx2_to_rx1,1,1,0,source,0.125,0.06746031746031746
+feat_mean_shift_source_prototype,unlabeled_target,none (prototype),rx2_to_rx1,1,1,0,source,0.125,0.060515873015873016
+feat_coral_source_classifier,unlabeled_target,head frozen (source),rx2_to_rx1,1,1,0,source,0.25,0.19246031746031744
+feat_coral_source_prototype,unlabeled_target,none (prototype),rx2_to_rx1,1,1,0,source,0.125,0.060515873015873016
+feat_mean_shift_source_classifier,unlabeled_target,head frozen (source),rx2_to_rx1,1,2,0,source,0.125,0.06746031746031746
+feat_mean_shift_source_prototype,unlabeled_target,none (prototype),rx2_to_rx1,1,2,0,source,0.16666666666666666,0.10912698412698413
+feat_coral_source_classifier,unlabeled_target,head frozen (source),rx2_to_rx1,1,2,0,source,0.25,0.19246031746031747
+feat_coral_source_prototype,unlabeled_target,none (prototype),rx2_to_rx1,1,2,0,source,0.16666666666666666,0.10912698412698413
+feat_mean_shift_source_classifier,unlabeled_target,head frozen (source),rx2_to_rx1,2,0,0,source,0.08333333333333333,0.048611111111111105
+feat_mean_shift_source_prototype,unlabeled_target,none (prototype),rx2_to_rx1,2,0,0,source,0.08333333333333333,0.041666666666666664
+feat_coral_source_classifier,unlabeled_target,head frozen (source),rx2_to_rx1,2,0,0,source,0.20833333333333334,0.15277777777777776
+feat_coral_source_prototype,unlabeled_target,none (prototype),rx2_to_rx1,2,0,0,source,0.125,0.08333333333333333
+feat_mean_shift_source_classifier,unlabeled_target,head frozen (source),rx2_to_rx1,2,1,0,source,0.041666666666666664,0.020833333333333332
+feat_mean_shift_source_prototype,unlabeled_target,none (prototype),rx2_to_rx1,2,1,0,source,0.125,0.06944444444444443
+feat_coral_source_classifier,unlabeled_target,head frozen (source),rx2_to_rx1,2,1,0,source,0.25,0.16944444444444443
+feat_coral_source_prototype,unlabeled_target,none (prototype),rx2_to_rx1,2,1,0,source,0.125,0.06944444444444443
+feat_mean_shift_source_classifier,unlabeled_target,head frozen (source),rx2_to_rx1,2,2,0,source,0.125,0.07638888888888888
+feat_mean_shift_source_prototype,unlabeled_target,none (prototype),rx2_to_rx1,2,2,0,source,0.125,0.06944444444444443
+feat_coral_source_classifier,unlabeled_target,head frozen (source),rx2_to_rx1,2,2,0,source,0.25,0.17857142857142852
+feat_coral_source_prototype,unlabeled_target,none (prototype),rx2_to_rx1,2,2,0,source,0.16666666666666666,0.1111111111111111

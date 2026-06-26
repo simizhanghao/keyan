@@ -4,21 +4,47 @@
 \subsection{Why RCPA-T works}
 Target-receiver prototypes re-estimate class geometry in the receiver-observed embedding space without modifying the backbone.
 The diagnosis shows that source decision boundaries are misaligned even when same-device cross-receiver embeddings remain partially close.
+RCPA-T therefore repairs the \emph{decision layer} using minimal labeled target evidence rather than attempting to learn receiver-invariant features from source data alone.
 
 \subsection{Why RCPA-B underperforms}
-Blending source and target prototypes can reintroduce source-receiver bias under asymmetric shift, consistent with our ablation.
+Blending source and target prototypes can reintroduce source-receiver bias under asymmetric shift.
+Our ablation shows RCPA-B consistently below RCPA-T at $K{=}5$ and $K{=}10$, suggesting that target-only prototypes are preferable when the goal is to match the target receiver's observed impairment geometry.
+
+\subsection{Why unsupervised adaptation fails}
+Entropy-min and pseudo-proto TTA rely on confident, class-diverse target predictions to provide useful self-supervision.
+Under RX1$\rightarrow$RX2 collapse, prediction mass concentrates on a small subset of classes and pseudo-label coverage spans at most ten classes even at low thresholds.
+This matches the diagnosis: when receiver entanglement dominates, unlabeled adaptation cannot reliably infer device identity on the target receiver.
+Same-protocol feature alignment (mean-shift, CORAL) improves over chance only marginally and remains far below K-shot labeled calibration (Table~\ref{tab:sota_baselines}).
+
+\subsection{RCPA-T vs.\ K-shot parametric calibration}
+Table~\ref{tab:sota_baselines} shows that RCPA-T is not the only viable repair under labeled target windows.
+A K-shot linear probe on frozen embeddings performs similarly at $K{=}5$ and slightly lower at $K{=}10$.
+We therefore frame RCPA-T as a \emph{lightweight non-parametric} calibration choice rather than a claim of universal superiority over all adaptation methods.
+Its practical advantages are: (i) no gradient-based target optimization or learning-rate tuning; (ii) stable performance across split repeats at $K{=}10$ (pooled std $9.7\%$ vs.\ $11.2\%$ for linear probe); and (iii) consistent gains over source-target prototype blending (RCPA-B) and head fine-tuning under the same protocol.
+When optimization is acceptable, K-shot linear calibration can be adopted as a stronger parametric alternative; RCPA-T remains the default when deployment simplicity and non-parametric stability are prioritized.
 
 \subsection{Relation to prior/submitted backbone work}
 This paper is complementary to prior OOB-guided RF-HSTU modeling~\cite{paper1_placeholder}.
-That work addresses same-receiver robustness and reports cross-receiver limitation; the present work explains and mitigates that limitation via diagnosis and calibration.
+That work addresses same-receiver robustness, architecture design, and source-only cross-day evaluation; it reports strict cross-receiver transfer as an open limitation.
+The present work uses the same backbone family as a frozen extractor but asks a different question: \emph{why} cross-receiver transfer fails and \emph{how} to recover separability with lightweight target calibration.
+We do not claim improved same-receiver cross-day accuracy and do not propose a new backbone.
 
 \subsection{Limitations}
 \begin{itemize}
-  \item Single indoor cross-receiver setup; broader environments not yet validated.
-  \item One file per device per receiver; $K$ is measured in windows, not independent files.
-  \item OOB-Eq v1 is embedding-level, not waveform-level spectral equalization.
-  \item RCPA-T requires labeled target calibration windows; it is not source-only cross-day evaluation.
+  \item \textbf{Single indoor cross-receiver setup.} Results are from one controlled Diff\_Receivers indoor collection; outdoor, multi-gateway, and multi-vendor receivers remain to be tested.
+  \item \textbf{One file per device per receiver.} $K$ is measured in windows, not independent enrollment files; window-level support is necessary because of the dataset structure and must be stated clearly in deployment discussions.
+  \item \textbf{Labeled target windows required for RCPA-T.} This is not source-only cross-receiver authentication; it is a calibration-aware deployment mode suitable when a small labeled enrollment pass is feasible at the target gateway.
+  \item \textbf{OOB-Eq is embedding-level.} CORAL on OOB embeddings validates mechanism but is not waveform-level spectral equalization.
+  \item \textbf{TTA baselines are single-direction quick runs plus appendix sweep.} Full-direction TTA sweeps may be added later but are unlikely to change the conclusion given current collapse evidence.
+  \item \textbf{No cross-day RCPA evaluation.} Target-day calibration is a different shift type from target-receiver calibration and is intentionally left for future companion analysis to avoid mixing narratives with Paper~1 cross-day claims.
 \end{itemize}
 
 \subsection{Deployment interpretation}
-Source-only operation remains appropriate when no target labels exist; labeled calibration windows enable rapid receiver adaptation without retraining the backbone.
+Three deployment modes emerge from our study.
+When no target labels exist, source-only operation remains the honest baseline and should be expected to perform near chance under severe receiver mismatch.
+When unlabeled target traffic is abundant but labels are unavailable, unsupervised adaptation may help under mild shift but is unreliable under the collapse regime documented here.
+When a small labeled calibration pass is feasible, RCPA-T offers a practical middle ground: no backbone retraining, block-disjoint evaluation, and substantial accuracy recovery with modest $K$.
+
+\subsection{Venue and narrative fit}
+The diagnosis-first story fits journals emphasizing IoT security and physical-layer authentication (IoTJ, TIFS) because it connects hardware-level OOB bias to gateway deployment risk.
+The calibration protocol and negative TTA results also align with wireless ML and domain-shift venues (TWC, Sensors) if the narrative emphasizes protocol honesty and failure analysis rather than architecture novelty.
