@@ -1,0 +1,45 @@
+\section{Cross-Receiver Failure Diagnosis}
+\label{sec:diagnosis}
+
+\subsection{Problem formulation}
+We consider closed-set LoRa device identification under cross-receiver transfer.
+A source receiver $r_s$ provides labeled training captures for $C$ devices.
+A target receiver $r_t$ provides unlabeled calibration traffic and a held-out query set for evaluation.
+The goal is to classify each target-receiver device file correctly after minimal target-side calibration.
+
+We use a frozen hybrid RF feature extractor trained on the source receiver~\cite{paper1_placeholder}.
+All diagnosis in this section is performed on extracted embeddings and OOB spectra; we do not retrain the backbone.
+
+\subsection{Receiver-induced feature entanglement}
+Cross-receiver failure is not explained by complete embedding collapse alone.
+File-level cosine analysis shows that same-device cross-receiver pairs can remain relatively close for the hybrid fused embedding, while device separability and decision boundaries degrade.
+We therefore analyze receiver entanglement at three levels: physical OOB spectra, linear probes on embedding paths, and prediction collapse.
+
+\subsection{OOB path receiver probe}
+We train linear receiver probes on file-level mean embeddings mixed across RX1 and RX2.
+For the hybrid model, the OOB-only path yields the highest receiver-probe accuracy ($\approx 0.73$), compared with main ($\approx 0.62$) and fused ($\approx 0.50$).
+This indicates that OOB evidence, although useful under fixed-receiver operation, becomes more receiver-entangled under cross-receiver shift.
+
+\subsection{OOB spectral receiver bias}
+Physical-layer OOB analysis shows a systematic RX2/RX1 OOB energy ratio of $1.44$, supporting receiver front-end spectral bias rather than transmitter-only variation.
+
+\subsection{Embedding distance ratio}
+File-level cosine distance ratios compare same-device cross-receiver similarity against different-device same-receiver similarity.
+CNN-IQ exhibits ratio $> 1$, indicating receiver shift dominates device separation.
+The hybrid fused embedding shows ratio $< 1$, meaning same-device cross-receiver structure is partially preserved, but device probe accuracy on mixed receivers remains low ($\approx 0.29$ for 24 classes).
+
+\subsection{Confusion and prediction collapse}
+Under RX1$\rightarrow$RX2, CNN-IQ collapses to one or two dominant predicted classes (top-1 mass up to $95.8\%$).
+The hybrid model performs better but remains near chance for 24-way file-level classification.
+This motivates labeled target calibration rather than unsupervised pseudo-label adaptation alone.
+
+\subsection{Diagnosis conclusion}
+Cross-receiver failure arises from receiver-induced OOB entanglement and non-transferable source decision geometry.
+The frozen hybrid backbone retains partial same-device structure, making lightweight target-receiver prototype calibration a plausible repair mechanism.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{fig1_diagnosis_summary.pdf}
+  \caption{Diagnosis summary: (a) receiver probe by path, (b) OOB spectral bias, (c) distance ratio, (d) collapse.}
+  \label{fig:diagnosis}
+\end{figure}

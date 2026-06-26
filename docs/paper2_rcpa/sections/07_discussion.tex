@@ -1,0 +1,24 @@
+\section{Discussion and Limitations}
+\label{sec:discussion}
+
+\subsection{Why RCPA-T works}
+Target-receiver prototypes re-estimate class geometry in the receiver-observed embedding space without modifying the backbone.
+The diagnosis shows that source decision boundaries are misaligned even when same-device cross-receiver embeddings remain partially close.
+
+\subsection{Why RCPA-B underperforms}
+Blending source and target prototypes can reintroduce source-receiver bias under asymmetric shift, consistent with our ablation.
+
+\subsection{Relation to prior/submitted backbone work}
+This paper is complementary to prior OOB-guided RF-HSTU modeling~\cite{paper1_placeholder}.
+That work addresses same-receiver robustness and reports cross-receiver limitation; the present work explains and mitigates that limitation via diagnosis and calibration.
+
+\subsection{Limitations}
+\begin{itemize}
+  \item Single indoor cross-receiver setup; broader environments not yet validated.
+  \item One file per device per receiver; $K$ is measured in windows, not independent files.
+  \item OOB-Eq v1 is embedding-level, not waveform-level spectral equalization.
+  \item RCPA-T requires labeled target calibration windows; it is not source-only cross-day evaluation.
+\end{itemize}
+
+\subsection{Deployment interpretation}
+Source-only operation remains appropriate when no target labels exist; labeled calibration windows enable rapid receiver adaptation without retraining the backbone.

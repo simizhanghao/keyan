@@ -1,0 +1,46 @@
+\section{Receiver-Calibrated Prototype Adaptation}
+\label{sec:rcpa}
+
+\subsection{Frozen backbone}
+We use the OOB-guided RF-HSTU hybrid model from prior work as a fixed feature extractor~\cite{paper1_placeholder}.
+No backbone parameters are updated in this paper.
+All calibration operates on fused embeddings extracted from target-receiver windows.
+
+\subsection{Baselines}
+\textbf{Source classifier.} The source-trained softmax head applied directly to target-query embeddings.
+
+\textbf{Source prototype (RCPA-S).} Class prototypes computed from source-receiver labeled embeddings; query devices are classified by nearest prototype.
+
+\subsection{Target-receiver prototype calibration}
+For each device class $c$, we form a target prototype $\mu_t^{(c)}$ by averaging fused embeddings of $K$ labeled support windows sampled uniformly from a dedicated support block.
+Query device files are represented by the mean fused embedding of query-block windows and classified by cosine distance to prototypes.
+
+\textbf{RCPA-T (primary).} Use target prototypes only ($\alpha=0$).
+
+\textbf{RCPA-B (ablation).} Fixed blend $\mu = \alpha \mu_s + (1-\alpha)\mu_t$ with $\alpha=0.5$; included as ablation only.
+
+\subsection{Block-disjoint split protocol}
+Each target file contributes 256 deterministic windows partitioned into four blocks of 64 windows:
+Block A (calibration, unlabeled), Block B (support, labeled), Blocks C+D (query, evaluation only).
+Three split repeats rotate block roles.
+We assert zero overlap among calibration, support, and query window sets per device.
+
+\subsection{Leakage prevention}
+Query windows are never used for prototype construction, pseudo-label selection, or equalization-statistic estimation.
+Support labels are used only for RCPA-T/RCPA-B prototype construction.
+
+\subsection{Deployment modes}
+\begin{itemize}
+  \item \textbf{Source-only:} no target labels; source classifier or source prototype.
+  \item \textbf{Unlabeled target calibration:} entropy-min or pseudo-proto TTA on Block A only.
+  \item \textbf{$K$-shot labeled target calibration:} RCPA-T using Block B support windows.
+\end{itemize}
+
+\textbf{Important:} RCPA-T is post-hoc target-receiver calibration, not a new RF-HSTU architecture and not a retraining method.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{fig2_rcpa_shotcurve.pdf}
+  \caption{RCPA-T file-level accuracy versus $K$ labeled calibration windows per device.}
+  \label{fig:rcpa_curve}
+\end{figure}

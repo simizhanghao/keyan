@@ -1,0 +1,41 @@
+\section{Results}
+\label{sec:results}
+
+\subsection{Source-only cross-receiver baselines}
+Table~\ref{tab:baseline} summarizes source-only performance.
+Both directions remain near chance for 24-way file-level classification ($\approx 20\%$).
+Unsupervised TTA on unlabeled calibration Block A does not close the gap: entropy-min TTA reaches only $20.8\%$ and pseudo-proto TTA $8.3\%$ on RX1$\rightarrow$RX2 (quick run).
+
+\subsection{RCPA-T main results}
+Table~\ref{tab:rcpa} reports the RCPA-T shot curve.
+Pooled across directions, RCPA-T improves from $33.1\%$ at $K=1$ to $75.0\%$ at $K=20$, with $+38.2$ percentage points over the source classifier at $K=5$.
+Figure~\ref{fig:rcpa_shotcurve} visualizes the shot curve.
+
+\input{tables/table2_rcpa_shotcurve.tex}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{fig2_rcpa_shotcurve}
+  \caption{RCPA-T file-level accuracy vs.\ $K$ labeled calibration windows per device (frozen full-mode results).}
+  \label{fig:rcpa_shotcurve}
+\end{figure}
+
+\subsection{Diagnosis summary}
+Figure~\ref{fig:diagnosis} summarizes receiver-induced OOB entanglement evidence: path-specific receiver probe, OOB spectral bias, embedding distance ratio, and confusion collapse.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{fig1_diagnosis_summary}
+  \caption{Cross-receiver failure diagnosis summary (see Section~\ref{sec:diagnosis}).}
+  \label{fig:diagnosis}
+\end{figure}
+
+\subsection{Ablations and auxiliary analyses}
+Table~\ref{tab:ablation} shows that source-only prototypes remain weak, target prototypes (RCPA-T) are strongest, and fixed source-target blending (RCPA-B) underperforms RCPA-T.
+OOB representation equalization reduces OOB receiver probe from $75.1\%$ to $35.6\%$ but does not improve file-level accuracy beyond RCPA-T, supporting its role as mechanism validation rather than a primary method.
+
+\input{tables/table3_ablation.tex}
+
+\subsection{Appendix: pseudo-proto threshold sweep}
+Thresholds $\{0.5,0.7,0.8,0.9,0.95\}$ on RX1$\rightarrow$RX2 do not approach RCPA-T $K=5$ ($45.8\%$); best pseudo-proto accuracy is $16.7\%$ at threshold $0.5$ with 231 pseudo samples.
+See \texttt{TTA\_THRESHOLD\_SWEEP\_REPORT.md} in the experiment results directory.

@@ -1,0 +1,17 @@
+\section{Experimental Setup}
+\label{sec:experiments}
+
+\subsection{Dataset and protocol}
+We use the OSU LoRa 24-device corpus with the Diff\_Receivers indoor same-transmitter setup.
+Cross-receiver evaluation uses RX1$\rightarrow$RX2 and RX2$\rightarrow$RX1 directions with Phase5-clean hybrid checkpoints (three seeds).
+Each target device has one capture file per receiver; therefore $K$ denotes labeled windows per device.
+
+\subsection{Implementation}
+Embeddings are extracted once per direction/seed and reused across split repeats.
+RCPA evaluation uses cosine-distance prototype classification with file-level mean embedding voting.
+Full-mode experiments aggregate $3$ seeds $\times$ $3$ split repeats per direction.
+
+\subsection{Baselines and auxiliary analyses}
+We report source classifier, source prototype, entropy-min TTA, pseudo-proto TTA (appendix threshold sweep), RCPA-S/T/B, alpha-sensitivity, and OOB representation equalization as mechanism validation only.
+
+\input{tables/table1_baseline.tex}

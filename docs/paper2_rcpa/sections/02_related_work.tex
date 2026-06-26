@@ -1,0 +1,16 @@
+\section{Related Work}
+\label{sec:related}
+
+\subsection{LoRa and IoT RFFI}
+% TODO: cite IoTJ/TWC RFFI papers; do not copy Paper 1 related-work paragraphs verbatim
+
+\subsection{Cross-receiver and receiver-agnostic RFFI}
+Receiver-agnostic training with adversarial learning has been proposed to reduce receiver sensitivity, often requiring multi-receiver training or collaborative inference~\cite{shen2023receiveragnostic}.
+Source-free cross-receiver adaptation methods instead adapt a pre-trained model using target-receiver unlabeled data and pseudo labels.
+Our work differs by providing an OOB-entanglement diagnosis on a frozen hybrid backbone and showing that minimal \emph{labeled} target calibration windows can be more reliable than unsupervised adaptation under severe collapse.
+
+\subsection{Few-shot and prototype classification}
+Prototypical classification is a classical few-shot approach~\cite{snell2017prototypical}.
+We do not claim a new prototype algorithm; rather, we introduce a diagnosis-driven cross-receiver calibration protocol with block-disjoint window splits tailored to LoRa single-file-per-device captures.
+
+% TODO: Table comparing receiver-agnostic / source-free / federated / RCPA (see RELATED_WORK_COMPARISON.md)

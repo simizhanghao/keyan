@@ -1,0 +1,41 @@
+\documentclass[journal]{IEEEtran}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{cite}
+\usepackage{url}
+\usepackage[hidelinks]{hyperref}
+
+\graphicspath{{figures/}}
+
+\title{Diagnosing and Mitigating Receiver-Induced OOB Feature Entanglement in LoRa Radio-Frequency Fingerprinting}
+
+\author{Author Names TBD%
+\thanks{Affiliations TBD.}}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+% TODO: 150--250 words, rewrite from scratch (do NOT copy Paper 1 abstract)
+Low-power LoRa networks rely on lightweight physical-layer authentication, but cross-receiver deployment breaks source-trained radio frequency fingerprint identification (RFFI) models.
+% Placeholder — fill after Paper 1 decision
+\end{abstract}
+
+\begin{IEEEkeywords}
+LoRa, radio frequency fingerprint identification, cross-receiver transfer, out-of-band features, prototype calibration, Internet of Things security.
+\end{IEEEkeywords}
+
+\input{sections/01_introduction}
+\input{sections/02_related_work}
+\input{sections/03_diagnosis}
+\input{sections/04_method_rcpa}
+\input{sections/05_experiments}
+\input{sections/06_results}
+\input{sections/07_discussion}
+\input{sections/08_conclusion}
+
+\bibliographystyle{IEEEtran}
+\bibliography{refs}
+
+\end{document}

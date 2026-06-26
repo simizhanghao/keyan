@@ -1,0 +1,32 @@
+\section{Introduction}
+\label{sec:intro}
+
+Low-power wide-area Internet-of-Things (IoT) networks increasingly rely on LoRa and LoRaWAN for long-range, low-cost connectivity.
+Because many IoT endpoints are resource-constrained, physical-layer radio frequency fingerprint identification (RFFI) provides a lightweight complement to cryptographic authentication at the gateway, enabling device-level verification from over-the-air IQ captures~\cite{paper1_placeholder}.
+
+Cross-receiver deployment is a critical practical challenge for LoRa RFFI.
+Transmitter hardware impairments are observed through a specific receiver front-end; when the receiving radio changes, the observed fingerprint can be distorted by receiver-specific spectral response, gain imbalance, and filtering.
+As a result, models trained on one receiver often fail on another even when the transmitter set and environment remain unchanged.
+
+Out-of-band (OOB) evidence has been shown to strengthen same-receiver LoRa RFFI when fused with in-band representations in a strong hybrid backbone~\cite{paper1_placeholder}.
+However, our diagnosis reveals a dual role of OOB features: under a fixed receiver they can carry device-discriminative hardware evidence, whereas under cross-receiver shift the OOB path becomes more receiver-entangled than the main path.
+This receiver-induced OOB feature entanglement helps explain why source-only transfer remains poor despite a strong same-receiver backbone.
+
+Motivated by this diagnosis, we study lightweight target-receiver calibration rather than redesigning the backbone.
+We show that a source-trained classifier and a source-only prototype are not transferable under cross-receiver shift, whereas target-receiver local prototypes built from a small number of labeled calibration windows per device can restore transmitter separability.
+Unsupervised target adaptation baselines, including entropy minimization and pseudo-label prototype updates on an unlabeled calibration pool, remain insufficient under severe cross-receiver collapse.
+
+This paper proposes a diagnosis-first framework and Receiver-Calibrated Prototype Adaptation (RCPA).
+We use a frozen OOB-guided RF-HSTU hybrid model from prior work only as a feature extractor; \textbf{we do not claim a new backbone architecture}.
+Our focus is cross-receiver failure analysis and post-hoc target-receiver calibration.
+
+\subsection{Contributions}
+The main contributions are:
+\begin{enumerate}
+  \item We diagnose receiver-induced OOB feature entanglement in LoRa cross-receiver RFFI using OOB spectral profiling, receiver/device linear probes, embedding-distance analysis, and confusion-collapse analysis.
+  \item We show that source-trained classifier boundaries and source-only prototypes are not transferable across receivers, and propose RCPA-T, which constructs target-receiver class prototypes from $K$ labeled calibration windows per device.
+  \item We validate RCPA under a block-disjoint calibration/support/query protocol across two transfer directions, three checkpoint seeds, and three split repeats, with auxiliary analyses on OOB representation equalization and unsupervised test-time adaptation baselines.
+\end{enumerate}
+
+\textbf{Scope note:} $K$ denotes the number of labeled calibration \emph{windows} per device, not independent capture files.
+All calibration, support, and query windows are block-disjoint; query windows are never used for prototype construction or adaptation-statistic estimation.
