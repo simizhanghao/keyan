@@ -1,0 +1,2 @@
+direction,method,mean_file_acc,std_file_acc,n_runs
+rx2_to_rx1,source_classifier,0.20833333333333334,0.08784104611578832,9

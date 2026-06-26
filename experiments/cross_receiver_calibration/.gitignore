@@ -1,0 +1,8 @@
+results/**/*.npy
+results/**/*.npz
+results/**/embeddings/
+*.npy
+*.npz
+*.pt
+*.pth
+outputs/
