@@ -1,0 +1,5 @@
+scorer,auroc_mean,auroc_std,eer_mean,far_mean,frr_mean,known_acc_mean_pct
+energy,0.575,0.1177,0.0167,0.5833,0.3333,81.67
+mahalanobis,0.9125,0.0621,0.0,0.25,0.1333,81.67
+msp,0.425,0.221,0.0333,0.5833,0.5167,81.67
+proto_dist,0.9167,0.0589,0.0,0.1667,0.1333,81.67

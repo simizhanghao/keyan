@@ -1,0 +1,8 @@
+perturbation_family,clean_file_acc_pct,avg_robust_acc_pct,min_file_acc_pct,accuracy_drop_pp,mean_drop_pp,n_levels
+AWGN,83.33,31.25,4.17,79.17,52.08,8
+CFO,83.33,6.25,4.17,79.17,77.08,8
+Mixed stress,83.33,6.94,4.17,79.17,76.39,3
+Phase noise,83.33,40.62,16.67,66.67,42.71,4
+Filter drift,83.33,63.89,50.0,33.33,19.44,3
+IQ imbalance (amp),83.33,65.28,50.0,33.33,18.06,3
+Narrowband,83.33,82.29,75.0,8.33,1.04,4
