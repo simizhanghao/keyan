@@ -1,0 +1,40 @@
+model,perturbation_family,perturb_type,strength,file_acc_pct
+CNN-IQ,AWGN,awgn_snr_db,100.0,62.5
+CNN-IQ,AWGN,awgn_snr_db,40.0,62.5
+CNN-IQ,AWGN,awgn_snr_db,30.0,62.5
+CNN-IQ,AWGN,awgn_snr_db,25.0,58.33
+CNN-IQ,AWGN,awgn_snr_db,20.0,50.0
+CNN-IQ,AWGN,awgn_snr_db,15.0,8.33
+CNN-IQ,AWGN,awgn_snr_db,10.0,4.17
+CNN-IQ,AWGN,awgn_snr_db,5.0,4.17
+CNN-IQ,AWGN,awgn_snr_db,0.0,4.17
+CNN-IQ,CFO,cfo_norm,0.0,62.5
+CNN-IQ,CFO,cfo_norm,0.001,20.83
+CNN-IQ,CFO,cfo_norm,0.003,4.17
+CNN-IQ,CFO,cfo_norm,0.005,4.17
+CNN-IQ,CFO,cfo_norm,0.01,4.17
+CNN-IQ,CFO,cfo_norm,0.02,4.17
+CNN-IQ,CFO,cfo_norm,0.03,4.17
+CNN-IQ,CFO,cfo_norm,0.05,4.17
+CNN-IQ,CFO,cfo_norm,0.1,4.17
+CNN-IQ,Narrowband,narrowband_sir_db,30.0,62.5
+CNN-IQ,Narrowband,narrowband_sir_db,20.0,62.5
+CNN-IQ,Narrowband,narrowband_sir_db,10.0,29.17
+CNN-IQ,Narrowband,narrowband_sir_db,5.0,12.5
+CNN-IQ,Narrowband,narrowband_sir_db,0.0,8.33
+CNN-IQ,Phase noise,phase_noise_std,0.0,62.5
+CNN-IQ,Phase noise,phase_noise_std,0.01,54.17
+CNN-IQ,Phase noise,phase_noise_std,0.03,8.33
+CNN-IQ,Phase noise,phase_noise_std,0.05,4.17
+CNN-IQ,Phase noise,phase_noise_std,0.1,4.17
+CNN-IQ,IQ imbalance (amp),iq_amp_db,0.0,62.5
+CNN-IQ,IQ imbalance (amp),iq_amp_db,1.0,54.17
+CNN-IQ,IQ imbalance (amp),iq_amp_db,3.0,50.0
+CNN-IQ,IQ imbalance (amp),iq_amp_db,5.0,8.33
+CNN-IQ,Filter drift,filter_tilt_norm,0.0,62.5
+CNN-IQ,Filter drift,filter_tilt_norm,0.1,58.33
+CNN-IQ,Filter drift,filter_tilt_norm,0.2,50.0
+CNN-IQ,Filter drift,filter_tilt_norm,0.4,20.83
+CNN-IQ,Mixed stress,awgn_cfo,awgn_cfo,4.17
+CNN-IQ,Mixed stress,awgn_nbi,awgn_nbi,4.17
+CNN-IQ,Mixed stress,cfo_iq,cfo_iq,4.17

@@ -1,0 +1,100 @@
+% Chapter 5 — thesis draft (not journal submission)
+% 复杂电磁扰动与开放集 LoRa 射频指纹认证
+
+\section{复杂电磁扰动与开放集认证问题定义}
+\label{sec:ch5_problem}
+
+真实网关侧 LoRa 设备认证需在复杂电磁环境下同时完成两项任务：
+（1）对已知注册设备进行闭集识别；
+（2）对未注册或伪装设备执行开放集拒识。
+本章在第三章 OOB RF-HSTU 表征基础上，构建电磁扰动评估协议，并扩展至未知设备认证场景。
+\textbf{本章主贡献}为系统 benchmark 与 embedding-based open-set scoring，而非新的鲁棒训练主方法。
+
+\section{复杂电磁扰动建模}
+\label{sec:ch5_perturb}
+
+对 IQ 窗口 $x$ 施加物理合理扰动 $A_{\mathrm{em}}(\cdot)$，覆盖以下类型。
+
+\subsection{加性白高斯噪声（AWGN)}
+模拟信道噪声与接收机底噪，以 SNR (dB) 参数化。
+
+\subsection{载波频偏（CFO)}
+模拟发射机/接收机频率失配，以归一化频偏参数化；实验表明其为当前系统最强破坏源之一。
+
+\subsection{窄带干扰（NBI)}
+在 LoRa 带宽内注入窄带干扰，以信干比 SIR (dB) 参数化；相对 AWGN/CFO 更为温和。
+
+\subsection{相位噪声}
+对相位施加随机游走/高斯扰动，以 $\sigma$ 参数化。
+
+\subsection{I/Q 不平衡}
+幅度与相位失衡，分别以 dB 与 degree 参数化。
+
+\subsection{接收机滤波器漂移}
+模拟前端频响倾斜，以归一化 tilt 参数化。
+
+\subsection{混合电磁应力（Mixed Stress)}
+组合 AWGN+CFO、AWGN+NBI、CFO+IQ 等 preset，用于评估复合恶劣环境。
+
+\section{闭集识别下的电磁鲁棒性评估}
+\label{sec:ch5_closed}
+
+\subsection{实验协议}
+在 Day5 测试集上，每文件 256 窗口，file-level mean-logits voting。
+对比 OOB RF-HSTU（Ours）与第三章 CNN-IQ baseline。
+
+\subsection{OOB RF-HSTU 的扰动退化曲线}
+Clean 准确率 83.3\%。AWGN 在 30\,dB 降至 70.8\%，25\,dB 以下急剧崩溃。
+CFO norm=0.001 降至 20.8\%，$\geq 0.003$ 约 4.2\%。
+窄带 SIR 10--30\,dB 仍维持 83--87.5\%。
+
+\subsection{CNN-IQ 与 OOB RF-HSTU 对比}
+Clean：62.5\% vs 83.3\%；AWGN 30\,dB：62.5\% vs 70.8\%；NBI 10\,dB：29.2\% vs 87.5\%。
+CFO 0.003 下两者均约 4.2\%，表明 CFO 是当前方法共同短板。
+
+\subsection{扰动敏感性分析}
+按平均鲁棒准确率与最大降幅排序：AWGN/CFO（$\sim$79\,pp）$>$ 相位噪声 $>$ IQ/滤波器漂移 $>$ 窄带干扰（$\sim$8\,pp）。
+
+\section{开放集未知设备认证}
+\label{sec:ch5_openset}
+
+\subsection{Known/Unknown 划分}
+从 24 台设备中划分 20 台已知、4 台未知；训练仅使用已知设备；3 个 split seed。
+
+\subsection{评分方法}
+MSP、Energy（softmax 置信度）；Prototype distance、Mahalanobis distance（embedding 几何距离）。
+阈值在验证集选取，不使用测试集调参。
+
+\subsection{Clean open-set 结果}
+Prototype AUROC $0.917 \pm 0.059$，EER $0.0$；Mahalanobis $0.913 \pm 0.062$。
+MSP $0.425$，Energy $0.575$。Embedding-space scoring 显著优于置信度方法。
+
+\subsection{EM stress 下的 open-set 结果}
+AWGN 30\,dB：Prototype AUROC 0.896，known acc 70.0\%。
+CFO 0.003：AUROC 0.492，known acc 3.3\% — 同时破坏已知分类与未知拒识。
+NBI 10\,dB 相对温和（AUROC 0.908）。复杂电磁下开放集认证比 clean open-set 更困难。
+
+\section{扰动一致性训练的初步分析}
+\label{sec:ch5_emcr}
+
+\subsection{EM-CR 设计}
+对 clean 与扰动样本可联合优化 CE 与 KL 一致性；意图在不破坏 clean 表征的前提下提升鲁棒性。
+
+\subsection{Debug 实验}
+四组保守 3-epoch 实验：clean-only FT、EM-Aug CE、weak CFO aug、stop-gradient KL；
+冻结 classifier head，小样本子集，lr=$10^{-5}$。
+
+\subsection{失败原因分析与未来改进}
+\textbf{扰动一致性训练未作为本章主方法。}
+原始 smoke：强 CFO + 全主干更新 + 过长训练导致 clean 83.3\%$\to$20.8\%。
+保守 debug：clean-only 不崩（约 79.2\%，64 win 协议），但 EM-Aug / stopgrad KL 无实质鲁棒增益；
+weak CFO 在 AWGN 30\,dB 与 init 持平，未修复 CFO failure。
+后续更适合：冻结主干、课程式扰动、teacher-student 稳定训练、receiver/statistics-level augmentation（如 MixStyle）。
+
+\section{本章小结}
+\label{sec:ch5_summary}
+
+本章构建了 LoRa RFFI 复杂电磁扰动评估协议，揭示 CFO 与强 AWGN 为最主要 failure mode；
+证明 OOB RF-HSTU 在 clean、AWGN 与窄带干扰下优于 CNN-IQ，但 CFO 下二者均接近失效；
+在开放集认证中，Prototype/Mahalanobis 明显优于 MSP/Energy，且 CFO 会同时摧毁已知识别与未知拒识。
+扰动一致性微调作为初步探索，未达主方法标准，留作 future work。

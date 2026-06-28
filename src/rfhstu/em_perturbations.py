@@ -321,6 +321,39 @@ def sample_emcr_training_perturb_config(
     return cfg
 
 
+def sample_emaug_training_perturb_config(
+    sample_rate: float = 1e6,
+    lora_bw: float = 125e3,
+    rng: torch.Generator | None = None,
+) -> EmPerturbConfig:
+    """AWGN 20–30 dB or NBI 10–30 dB (no CFO)."""
+    g = rng or torch.Generator()
+    cfg = EmPerturbConfig(sample_rate=sample_rate, lora_bandwidth=lora_bw)
+    if int(torch.randint(0, 2, (1,), generator=g).item()) == 0:
+        cfg.awgn_snr_db = float(torch.randint(20, 31, (1,), generator=g).item())
+    else:
+        cfg.narrowband_sir_db = float(torch.randint(10, 31, (1,), generator=g).item())
+    return cfg
+
+
+def sample_weak_cfo_perturb_config(
+    sample_rate: float = 1e6,
+    lora_bw: float = 125e3,
+    rng: torch.Generator | None = None,
+) -> EmPerturbConfig:
+    """AWGN / NBI / very weak CFO 0.0005–0.001."""
+    g = rng or torch.Generator()
+    pick = int(torch.randint(0, 3, (1,), generator=g).item())
+    cfg = EmPerturbConfig(sample_rate=sample_rate, lora_bandwidth=lora_bw)
+    if pick == 0:
+        cfg.awgn_snr_db = float(torch.randint(20, 31, (1,), generator=g).item())
+    elif pick == 1:
+        cfg.narrowband_sir_db = float(torch.randint(10, 31, (1,), generator=g).item())
+    else:
+        cfg.cfo_norm = 0.0005 if int(torch.randint(0, 2, (1,), generator=g).item()) == 0 else 0.001
+    return cfg
+
+
 def sample_training_perturb_config(
     sample_rate: float = 1e6,
     lora_bw: float = 125e3,

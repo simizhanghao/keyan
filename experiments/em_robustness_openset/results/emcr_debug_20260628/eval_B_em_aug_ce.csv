@@ -1,0 +1,8 @@
+model_label,condition,perturb_type,strength,file_acc,file_acc_pct
+B_em_aug_ce,clean,awgn_snr_db,100.0,0.7916666666666666,79.17
+B_em_aug_ce,awgn_30db,awgn_snr_db,30.0,0.625,62.5
+B_em_aug_ce,awgn_20db,awgn_snr_db,20.0,0.3333333333333333,33.33
+B_em_aug_ce,cfo_0.003,cfo_norm,0.003,0.041666666666666664,4.17
+B_em_aug_ce,cfo_0.01,cfo_norm,0.01,0.041666666666666664,4.17
+B_em_aug_ce,nbi_20db,narrowband_sir_db,20.0,0.7916666666666666,79.17
+B_em_aug_ce,nbi_10db,narrowband_sir_db,10.0,0.8333333333333334,83.33

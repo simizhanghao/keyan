@@ -153,3 +153,31 @@ def information_maximization_loss(logits: torch.Tensor, eps: float = 1e-8) -> to
     mean_prob = probs.mean(dim=0)
     marginal_entropy = -(mean_prob * torch.log(mean_prob.clamp_min(eps))).sum()
     return cond_entropy - marginal_entropy
+
+
+def focal_loss(
+    logits: torch.Tensor,
+    labels: torch.Tensor,
+    gamma: float = 2.0,
+    weight: torch.Tensor | None = None,
+    label_smoothing: float = 0.0,
+) -> torch.Tensor:
+    ce = F.cross_entropy(logits, labels, weight=weight, label_smoothing=label_smoothing, reduction="none")
+    pt = torch.exp(-ce)
+    return ((1 - pt) ** gamma * ce).mean()
+
+
+def macro_f1_from_logits(logits: torch.Tensor, labels: torch.Tensor, num_classes: int) -> float:
+    pred = logits.argmax(dim=-1)
+    tp = torch.zeros(num_classes, device=logits.device)
+    fp = torch.zeros(num_classes, device=logits.device)
+    fn = torch.zeros(num_classes, device=logits.device)
+    for c in range(num_classes):
+        tp[c] = ((pred == c) & (labels == c)).sum()
+        fp[c] = ((pred == c) & (labels != c)).sum()
+        fn[c] = ((pred != c) & (labels == c)).sum()
+    f1 = (2 * tp) / (2 * tp + fp + fn + 1e-8)
+    support = tp + fn
+    if support.sum() <= 0:
+        return 0.0
+    return float((f1 * support).sum() / support.sum().clamp_min(1.0))

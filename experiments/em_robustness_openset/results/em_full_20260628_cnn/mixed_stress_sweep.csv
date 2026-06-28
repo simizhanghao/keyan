@@ -1,0 +1,4 @@
+perturb_type,preset,strength,window_acc,file_acc
+mixed_stress,awgn_cfo,awgn_cfo,0.0419921875,0.041666666666666664
+mixed_stress,awgn_nbi,awgn_nbi,0.051106770833333336,0.041666666666666664
+mixed_stress,cfo_iq,cfo_iq,0.042154947916666664,0.041666666666666664

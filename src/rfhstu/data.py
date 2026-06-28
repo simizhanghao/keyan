@@ -36,14 +36,18 @@ def load_manifest(
     root: str | Path | None = None,
     split: str | None = None,
     setup: str | None = None,
+    fold: str | None = None,
     max_files: int | None = None,
 ) -> list[ManifestRow]:
     manifest_path = Path(manifest_path)
     root_path = Path(root) if root is not None else manifest_path.parents[3] if len(manifest_path.parents) >= 4 else Path.cwd()
+    fold_key = str(fold) if fold is not None else None
     rows: list[ManifestRow] = []
     with manifest_path.open("r", encoding="utf-8-sig", newline="") as f:
         for item in csv.DictReader(f):
             if split is not None and item.get("split") != split:
+                continue
+            if fold_key is not None and str(item.get("fold", "")) != fold_key:
                 continue
             if setup is not None and item.get("setup") != setup:
                 continue

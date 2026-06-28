@@ -68,7 +68,7 @@ def add_common_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--use-oob-cross-attention", action="store_true")
     parser.add_argument(
         "--oob-fusion-type",
-        choices=["no_oob", "concat_oob", "cross_attn_oob"],
+        choices=["no_oob", "concat_oob", "cross_attn_oob", "gated_oob"],
         default="concat_oob",
     )
     parser.add_argument("--oob-num-heads", type=int, default=4)
@@ -91,6 +91,61 @@ def add_common_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--num-workers", type=int, default=0)
     parser.add_argument("--device", default="auto")
     parser.add_argument("--seed", type=int, default=1234)
+    parser.add_argument(
+        "--train-split",
+        default="train",
+        help="Manifest split name for training rows (default: train).",
+    )
+    parser.add_argument(
+        "--val-split",
+        default="val",
+        help="Manifest split for early-stopping / best checkpoint (default: val).",
+    )
+    parser.add_argument(
+        "--eval-split",
+        default=None,
+        help="Manifest split for final evaluation (evaluate.py). Defaults to val-split.",
+    )
+    parser.add_argument(
+        "--fold",
+        default=None,
+        help="LOCO fold id (must match manifest fold column, e.g. 1 or 5m).",
+    )
+    parser.add_argument(
+        "--checkpoint-metric",
+        choices=["acc", "macro_f1"],
+        default="acc",
+        help="Metric for best.pt selection on val split.",
+    )
+    parser.add_argument(
+        "--loss-type",
+        choices=["ce", "focal"],
+        default="ce",
+        help="Classification loss (focal helps class imbalance / low macro-F1).",
+    )
+    parser.add_argument("--focal-gamma", type=float, default=2.0)
+    parser.add_argument(
+        "--class-balanced-ce",
+        action="store_true",
+        help="Inverse-frequency class weights in CE/focal loss.",
+    )
+    parser.add_argument(
+        "--oob-dropout",
+        type=float,
+        default=0.0,
+        help="Train-only: drop OOB branch with this probability (forces IQ path robustness).",
+    )
+    parser.add_argument(
+        "--mixstyle",
+        action="store_true",
+        help="Train-only MixStyle on encoder tokens (domain style randomization).",
+    )
+    parser.add_argument("--mixstyle-alpha", type=float, default=0.1)
+    parser.add_argument(
+        "--use-swa",
+        action="store_true",
+        help="Stochastic Weight Averaging over last 20%% of epochs.",
+    )
 
 
 def resolve_device(name: str) -> torch.device:
@@ -108,10 +163,30 @@ def seed_everything(seed: int) -> None:
 
 
 def make_datasets(args: argparse.Namespace) -> tuple[SigMFIQDataset, SigMFIQDataset]:
-    train_rows = load_manifest(args.manifest, root=args.root, split="train", setup=args.setup, max_files=args.max_files)
-    val_rows = load_manifest(args.manifest, root=args.root, split="val", setup=args.setup, max_files=args.max_files)
+    train_split = getattr(args, "train_split", "train")
+    val_split = getattr(args, "val_split", "val")
+    fold = getattr(args, "fold", None)
+    train_rows = load_manifest(
+        args.manifest,
+        root=args.root,
+        split=train_split,
+        setup=args.setup,
+        fold=fold,
+        max_files=args.max_files,
+    )
+    val_rows = load_manifest(
+        args.manifest,
+        root=args.root,
+        split=val_split,
+        setup=args.setup,
+        fold=fold,
+        max_files=args.max_files,
+    )
     if not val_rows:
-        val_rows = load_manifest(args.manifest, root=args.root, split=None, setup=args.setup, max_files=args.max_files)
+        raise ValueError(
+            f"No val rows for manifest={args.manifest} split={val_split} fold={fold}. "
+            "Regenerate manifest with val split or pick a different --val-split."
+        )
     val_samples_per_file = args.eval_samples_per_file
     if val_samples_per_file is None:
         val_samples_per_file = max(1, min(args.samples_per_file, 32))
@@ -138,7 +213,8 @@ def make_datasets(args: argparse.Namespace) -> tuple[SigMFIQDataset, SigMFIQData
 def make_target_unlabeled_dataset(args: argparse.Namespace) -> SigMFIQDataset:
     """Target-receiver windows for unsupervised alignment (val split, labels not used in loss)."""
     manifest = args.target_manifest or args.manifest
-    rows = load_manifest(manifest, root=args.root, split="val", setup=args.setup, max_files=args.max_files)
+    fold = getattr(args, "fold", None)
+    rows = load_manifest(manifest, root=args.root, split="val", setup=args.setup, fold=fold, max_files=args.max_files)
     if not rows:
         raise ValueError(f"No target unlabeled rows (val split) in manifest={manifest}")
     input_norm = getattr(args, "input_norm", "iq_rms")

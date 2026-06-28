@@ -27,3 +27,26 @@ class OOBCrossAttentionFusion(nn.Module):
         fused = x_main + gate * self.out_proj(attended)
         return self.norm_out(fused)
 
+
+class OOBGatedFusion(nn.Module):
+    """Scalar-gated OOB injection: simpler and often more stable than full cross-attention."""
+
+    def __init__(self, dim: int, dropout: float = 0.0) -> None:
+        super().__init__()
+        self.norm_main = nn.LayerNorm(dim)
+        self.norm_oob = nn.LayerNorm(dim)
+        self.oob_proj = nn.Linear(dim, dim)
+        self.gate = nn.Sequential(nn.Linear(dim * 2, dim), nn.Sigmoid())
+        self.dropout = nn.Dropout(dropout)
+        self.norm_out = nn.LayerNorm(dim)
+
+    def forward(self, x_main: torch.Tensor, x_oob: torch.Tensor) -> torch.Tensor:
+        main = self.norm_main(x_main)
+        oob = self.norm_oob(x_oob)
+        oob_proj = self.oob_proj(oob)
+        main_pool = main.mean(dim=1)
+        oob_pool = oob.mean(dim=1)
+        gate = self.gate(torch.cat([main_pool, oob_pool], dim=-1)).unsqueeze(1)
+        fused = x_main + gate * self.dropout(oob_proj)
+        return self.norm_out(fused)
+

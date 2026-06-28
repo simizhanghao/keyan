@@ -1,0 +1,8 @@
+model_label,condition,perturb_type,strength,file_acc,file_acc_pct
+C_weak_cfo,clean,awgn_snr_db,100.0,0.7916666666666666,79.17
+C_weak_cfo,awgn_30db,awgn_snr_db,30.0,0.7083333333333334,70.83
+C_weak_cfo,awgn_20db,awgn_snr_db,20.0,0.2916666666666667,29.17
+C_weak_cfo,cfo_0.003,cfo_norm,0.003,0.041666666666666664,4.17
+C_weak_cfo,cfo_0.01,cfo_norm,0.01,0.041666666666666664,4.17
+C_weak_cfo,nbi_20db,narrowband_sir_db,20.0,0.7916666666666666,79.17
+C_weak_cfo,nbi_10db,narrowband_sir_db,10.0,0.7916666666666666,79.17

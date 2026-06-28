@@ -1,0 +1,5 @@
+scorer,perturb,perturb_strength,auroc,eer,fpr_at_95tpr,far,frr,known_acc,threshold
+msp,clean,,0.2625,0.0,0.75,0.75,0.75,0.8,0.4260183572769165
+energy,clean,,0.5125,0.0,0.75,0.5,0.55,0.8,5.562541484832764
+proto_dist,clean,,1.0,0.0,0.0,0.0,0.0,0.8,-0.37284815311431885
+mahalanobis,clean,,1.0,0.0,0.0,0.25,0.0,0.8,-33.09814367881424

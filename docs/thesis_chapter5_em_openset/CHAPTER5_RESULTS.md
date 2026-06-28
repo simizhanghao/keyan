@@ -73,12 +73,60 @@
 
 ## 第三创新点主结果状态
 
-已具备：**EM perturbation benchmark（full 曲线）+ open-set authentication（full，3 seeds）**  
-待完成：EM-CR 训练、open-set under EM、CNN-IQ EM baseline（checkpoint 路径已有候选）
+**主线（已定稿雏形）：**
+- EM perturbation benchmark（Ours full + CNN-IQ baseline）
+- Open-set authentication（clean + under EM，3 seeds）
+
+**辅助 / negative：**
+- EM-CR debug suite：保守 head-only 3-epoch **未通过 full 门槛**；原 smoke 灾难性遗忘来自非冻结主干 + 强 CFO + 过长训练。见 `emcr_debug_20260628/EMCR_DEBUG_REPORT.md`
 
 ---
 
-## EM-CR 推荐训练扰动（来自 full 曲线）
+## CNN-IQ EM baseline (`em_full_20260628_cnn`)
+
+| Condition | CNN-IQ | Ours |
+|-----------|--------|------|
+| Clean | 62.5% | 83.3% |
+| AWGN 30 dB | 62.5% | 70.8% |
+| CFO 0.003 | 4.2% | 4.2% |
+| NBI 10 dB | 29.2% | 87.5% |
+
+Ours 在 clean 与多数 EM 应力下优于 CNN-IQ；窄带干扰优势最大（+58.3 pp at SIR 10 dB）。
+
+---
+
+## EM-CR debug suite (`emcr_debug_20260628`)
+
+| Experiment | Clean (64 win) | AWGN 30 dB |
+|------------|----------------|------------|
+| A clean-only FT | 79.2% | 62.5% |
+| B EM-Aug CE | 79.2% | 62.5% |
+| C weak CFO | 79.2% | 70.8% |
+| D stopgrad KL | 79.2% | 62.5% |
+
+**决策：** 不进入 EM-CR full；论文中作为 preliminary negative result。
+
+---
+
+## 待完成
+
+- ~~Open-set under EM~~ ✅ `openset_under_em_20260628/`
+
+## Open-set under EM (`openset_under_em_20260628`)
+
+Clean-trained Ours，3 seeds，Prototype / Mahalanobis。
+
+| Condition | Proto AUROC | Known acc |
+|-----------|-------------|-----------|
+| clean | 0.917±0.059 | 81.7% |
+| AWGN 30 dB | 0.896±0.106 | 70.0% |
+| CFO 0.003 | 0.492±0.126 | 3.3% |
+| NBI 10 dB | 0.908±0.068 | 85.0% |
+| Mixed AWGN+CFO | 0.429±0.133 | 8.3% |
+
+CFO / mixed stress 同时摧毁 known acc 与 open-set AUROC；NBI 相对温和。
+
+---
 
 | 扰动 | Moderate（训练） | 禁止（仅测试） |
 |------|------------------|----------------|

@@ -9,7 +9,7 @@ from .cnn_stem import CNNStemPatchEmbed
 from .features import build_patch_features, patchify, torch_rf_views
 from .losses import DomainAdversarialHead
 from .multiscale import MultiScaleTokenFusion, parse_ratios
-from .oob_fusion import OOBCrossAttentionFusion
+from .oob_fusion import OOBCrossAttentionFusion, OOBGatedFusion
 
 
 class RFHSTUBlock(nn.Module):
@@ -54,6 +54,7 @@ class RFHSTUEncoder(nn.Module):
         spreading_factor: int = 7,
         use_chirp_embedding: bool = False,
         use_oob_cross_attention: bool = False,
+        use_oob_gated: bool = False,
         oob_num_heads: int = 4,
         dim: int = 128,
         depth: int = 4,
@@ -66,11 +67,14 @@ class RFHSTUEncoder(nn.Module):
         self.pool = pool
         self.use_chirp_embedding = use_chirp_embedding
         self.use_oob_cross_attention = use_oob_cross_attention
+        self.use_oob_gated = use_oob_gated
         self.input_proj = nn.Linear(input_dim, dim)
-        self.oob_proj = nn.Linear(oob_input_dim, dim) if use_oob_cross_attention and oob_input_dim is not None else None
+        self.oob_proj = nn.Linear(oob_input_dim, dim) if (use_oob_cross_attention or use_oob_gated) and oob_input_dim is not None else None
         self.oob_fusion = (
             OOBCrossAttentionFusion(dim, num_heads=oob_num_heads, dropout=dropout)
             if use_oob_cross_attention and oob_input_dim is not None
+            else OOBGatedFusion(dim, dropout=dropout)
+            if use_oob_gated and oob_input_dim is not None
             else None
         )
         self.position = nn.Parameter(torch.zeros(1, num_patches, dim))
@@ -107,9 +111,9 @@ class RFHSTUEncoder(nn.Module):
             chirp = self.chirp_id_embedding(self.chirp_ids).unsqueeze(0)
             patch_in_chirp = self.patch_in_chirp_embedding(self.patch_in_chirp_ids).unsqueeze(0)
             x = x + chirp + patch_in_chirp
-        if self.use_oob_cross_attention:
+        if self.use_oob_cross_attention or self.use_oob_gated:
             if oob_features is None or self.oob_proj is None or self.oob_fusion is None:
-                raise RuntimeError("OOB cross-attention is enabled but OOB features are missing.")
+                raise RuntimeError("OOB fusion is enabled but OOB features are missing.")
             x_oob = self.oob_proj(oob_features)
             x_oob = self._add_structure_embeddings(x_oob)
             x = self.oob_fusion(x, x_oob)
@@ -180,6 +184,7 @@ class RFPatchEmbedder(nn.Module):
             print("WARNING: oob_fusion_type=cross_attn_oob requires use_oob_cross_attention=True; falling back to concat_oob.")
             self.oob_fusion_type = "concat_oob"
         self.use_oob_cross_attention = use_oob_cross_attention and self.oob_fusion_type == "cross_attn_oob"
+        self.use_oob_gated = self.oob_fusion_type == "gated_oob"
         self.use_oob = self.oob_fusion_type != "no_oob"
         self.cnn_stem = (
             CNNStemPatchEmbed(
@@ -211,9 +216,9 @@ class RFPatchEmbedder(nn.Module):
 
     @property
     def oob_input_dim(self) -> int | None:
-        if self.oob_fusion_type != "cross_attn_oob":
-            return None
-        return self.patch_size
+        if self.oob_fusion_type in {"cross_attn_oob", "gated_oob"}:
+            return self.patch_size
+        return None
 
     def forward(self, iq: torch.Tensor) -> tuple[torch.Tensor, dict[str, torch.Tensor]]:
         if self.patch_embed_type == "cnn_stem":
@@ -233,6 +238,8 @@ class RFPatchEmbedder(nn.Module):
             main_tokens = self.cnn_stem(x_main)
             if self.oob_fusion_type == "concat_oob":
                 return torch.cat([main_tokens, views["oob"]], dim=-1), views
+            if self.oob_fusion_type in {"cross_attn_oob", "gated_oob"}:
+                return main_tokens, views
             return main_tokens, views
         _, views = build_patch_features(
             iq,
@@ -324,6 +331,9 @@ class DeviceClassifier(nn.Module):
         use_cfo_feature: bool = False,
         cfo_feature_type: str = "both",
         cfo_feature_norm: str = "train_zscore",
+        oob_dropout: float = 0.0,
+        mixstyle: bool = False,
+        mixstyle_alpha: float = 0.1,
     ) -> None:
         super().__init__()
         self.embedder = embedder
@@ -331,6 +341,10 @@ class DeviceClassifier(nn.Module):
         self.use_cfo_feature = use_cfo_feature
         self.cfo_feature_type = cfo_feature_type
         self.cfo_feature_norm = cfo_feature_norm
+        self.oob_dropout = oob_dropout
+        from .mixstyle import MixStyle
+
+        self.mixstyle = MixStyle(mixstyle_alpha) if mixstyle else None
         self.num_cfo_features = 0
         self.cfo_norm: nn.Module | None = None
         if use_cfo_feature:
@@ -350,6 +364,7 @@ class DeviceClassifier(nn.Module):
             spreading_factor=embedder.spreading_factor,
             use_chirp_embedding=use_chirp_embedding,
             use_oob_cross_attention=embedder.use_oob_cross_attention,
+            use_oob_gated=embedder.use_oob_gated,
             oob_num_heads=oob_num_heads,
             dim=dim,
             depth=depth,
@@ -399,13 +414,25 @@ class DeviceClassifier(nn.Module):
         return_supcon_features: bool = False,
     ) -> dict[str, torch.Tensor | dict[str, torch.Tensor]]:
         features, views = self.embedder(iq)
+        if self.training and self.oob_dropout > 0.0 and views.get("oob") is not None:
+            if torch.rand(1).item() < self.oob_dropout:
+                views = dict(views)
+                views["oob"] = torch.zeros_like(views["oob"])
         if self.use_multiscale:
             if self.multiscale is None:
                 raise RuntimeError("Multi-scale is enabled but fusion module is missing.")
             tokens = self.encoder.prepare_tokens(features, oob_features=views.get("oob"))
+            if self.mixstyle is not None:
+                tokens = self.mixstyle(tokens)
             z = self.multiscale(tokens)
         else:
-            z = self.encoder(features, oob_features=views.get("oob"))
+            tokens = self.encoder.prepare_tokens(features, oob_features=views.get("oob"))
+            if self.mixstyle is not None:
+                tokens = self.mixstyle(tokens)
+            for block in self.encoder.blocks:
+                tokens = block(tokens)
+            tokens = self.encoder.final_norm(tokens)
+            z = tokens.mean(dim=1) if self.encoder.pool == "mean" else tokens[:, 0]
         if self.use_cfo_feature and self.cfo_norm is not None:
             cfo = self._compute_cfo_features(iq)
             cfo = self.cfo_norm(cfo)
