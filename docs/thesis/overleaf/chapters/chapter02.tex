@@ -1,0 +1,29 @@
+\chapter{相关理论与数据集}
+\label{ch:background}
+
+\section{LoRa CSS 基本原理}
+
+LoRa 采用线性调频 chirp 扩频：发射端在带宽 $B$ 内调制 chirp，接收端 de-chirp 后 FFT 解扩。CSS 结构为 chirp-aware 深度模型提供先验。本文样本为固定长度复基带 IQ 窗口，可同步提取带外（OOB）功率谱。
+
+\section{射频指纹的物理来源}
+
+设备可区分性来自 PA 非线性（谐波与带外再生）、I/Q 不平衡（镜像频率）、CFO（相位旋转）、相位噪声（谱线展宽）及滤波器滚降差异。接收机前端同样引入频率响应与噪声，在跨接收机场景中与设备指纹耦合。
+
+\section{闭集识别与开放集认证}
+
+闭集识别假设测试类与训练类相同，常用准确率和 Macro-F1。开放集认证需拒绝未知设备，评价 AUROC、EER、FAR、FRR 及 FPR@95TPR。阈值须在验证集选定，不得用测试集调参。
+
+\section{OSU LoRa 数据集与实验协议}
+
+采用 OSU LoRa 公开数据集：多台发射机、多采集日、双接收机（RX1/RX2）。主要协议包括：
+
+\begin{itemize}
+  \item \textbf{Cross-day}：Train Day1--3，Val Day4，Test Day5；
+  \item \textbf{Cross-receiver}：源 RX 训练，目标 RX 测试；RCPA-T 采用 block-disjoint support/query；
+  \item \textbf{EM perturbation}：测试阶段合成 AWGN、CFO、窄带干扰等；
+  \item \textbf{Open-set}：20 known + 4 unknown 设备，3 seeds。
+\end{itemize}
+
+\section{本章小结}
+
+本章介绍了 LoRa 物理层、射频指纹来源、闭集与开放集指标，以及本文采用的 split 协议，为后续三章实验提供统一术语与边界说明。

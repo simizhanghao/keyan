@@ -1,0 +1,12 @@
+\chapter*{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
+
+\sloppy
+In low-power wide-area IoT networks, massive LoRa deployments make device authentication a critical security requirement. Radio-frequency fingerprint identification (RFFI) exploits transmitter hardware impairments for physical-layer identity and can complement cryptographic authentication. Practical LoRa RFFI, however, suffers from cross-day drift, cross-receiver mismatch, complex electromagnetic (EM) perturbations, and unknown devices not seen during training.
+
+This thesis addresses these challenges through modeling, target-domain calibration, and rigorous evaluation. First, we propose an out-of-band (OOB) guided cross-attentive RF-HSTU hybrid model that fuses in-band IQ and OOB spectral evidence, achieving $75.0\pm5.3\%$ file-level accuracy under same-receiver cross-day evaluation, outperforming a CNN-IQ baseline ($54.2\pm14.2\%$) by 20.8 percentage points. Second, we diagnose cross-receiver transfer failure and reveal receiver-induced OOB feature entanglement; we introduce RCPA-T target-receiver prototype calibration, reaching $75.0\%$ at $K{=}20$ labeled windows per device under a block-disjoint protocol, far above source-only near-chance performance. Third, we build an EM perturbation benchmark and extend open-set unknown-device authentication; embedding-space Prototype/Mahalanobis scoring ($0.917\pm0.059$ AUROC) clearly outperforms MSP/Energy; carrier frequency offset (CFO) is identified as the strongest failure mode, degrading both known-class classification and unknown rejection. Perturbation-consistency training (EM-CR) is reported as preliminary exploration rather than the main contribution.
+
+The thesis provides reproducible protocols, diagnostic evidence, and honest performance boundaries for LoRa RFFI under complex deployment conditions.
+
+\vspace{1em}
+\noindent\textbf{Keywords:} LoRa; radio-frequency fingerprinting; device authentication; out-of-band spectrum; cross-receiver calibration; open-set authentication; electromagnetic robustness

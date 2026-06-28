@@ -1,0 +1,53 @@
+\chapter{跨接收机失配诊断与 RCPA-T 校准}
+\label{ch:ch4}
+
+本章对应 Paper 2，协议为 \textbf{block-disjoint cross-receiver}，与第\ref{ch:ch3}章 cross-day 不同。
+
+\section{跨接收机问题定义}
+
+源接收机 $R_s$ 训练、目标接收机 $R_t$ 测试。Source-only 闭集约 19--21\%，接近 chance。目标：在少量目标域标签下恢复可用识别性能。
+
+\section{接收机诱导的 OOB 特征纠缠}
+
+跨接收机时，OOB 同时承载设备与接收机信息。诊断证据（图~\ref{fig:ch4_diag}）：
+
+\begin{itemize}
+  \item OOB 接收机探针准确率 \textbf{72.7\%}；
+  \item 跨 RX fused 嵌入距离比 collapse（约 0.22）；
+  \item 预测分布高度集中（top-1 mass 约 95.8\%）。
+\end{itemize}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.95\linewidth]{fig1_diagnosis_summary.pdf}
+  \caption{跨接收机诊断：谱偏置、probe、距离比与预测 collapse}
+  \label{fig:ch4_diag}
+\end{figure}
+
+\section{RCPA-T 方法}
+
+冻结第\ref{ch:ch3}章主干与源分类器；用每设备 $K$ 个 labeled target windows 估计目标接收机类原型 $\mu_c^{(t)}$；推理时最近原型分类。Support/query 在块级不重叠。
+
+\section{主实验结果}
+
+表~\ref{tab:ch4_baseline}：source-only near chance。表~\ref{tab:ch4_rcpa} 与图~\ref{fig:ch4_shot}：RCPA-T pooled $K{=}5/10/20$ 为 \textbf{58.3\% / 69.4\% / 75.0\%}。
+
+\input{tables/ch4_table_baseline}
+\input{tables/ch4_table_rcpa}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.85\linewidth]{fig2_rcpa_shotcurve.pdf}
+  \caption{RCPA-T K-shot 曲线}
+  \label{fig:ch4_shot}
+\end{figure}
+
+同协议 K=5 时 linear probe 59.0\% 略高于 RCPA-T 58.3\%（约 0.7 pp，在 seed 方差内）。无标签对齐 baseline 约 20--25\%，无效。
+
+\section{局限}
+
+需 labeled target windows；非 source-free；仅 RX1/RX2；未覆盖第\ref{ch:ch5}章 EM 与 open-set。
+
+\section{本章小结}
+
+本章诊断 OOB 纠缠并提出 RCPA-T，在少样本目标校准下显著优于 source-only，引出复杂电磁与开放集场景的第\ref{ch:ch5}章。

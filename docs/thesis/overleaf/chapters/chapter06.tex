@@ -1,0 +1,22 @@
+\chapter{总结与展望}
+\label{ch:conclusion}
+
+\section{全文工作总结}
+
+本文围绕 LoRa 设备射频指纹在复杂部署条件下的认证可靠性，从跨日建模、跨接收机校准与复杂电磁/open-set 评估三条主线展开，强调可复现协议与诚实失效分析。
+
+\section{创新点回顾}
+
+\textbf{创新点一}：OOB-guided RF-HSTU，cross-day $75.0\pm5.3\%$ vs CNN $54.2\pm14.2\%$。
+
+\textbf{创新点二}：OOB 纠缠诊断 + RCPA-T，$K{=}20$ 时 $75.0\%$ vs source-only $\sim$20\%。
+
+\textbf{创新点三}：EM benchmark + open-set；Proto AUROC $0.917$；CFO 双崩溃；EM-CR 为 future work。
+
+\section{不足与展望}
+
+数据集规模与接收机数量有限；open-set unknown 为 hold-out 设备；CFO 鲁棒性不足；EM-CR 未形成稳定方法。展望：多接收机采集、波形级 CFO 补偿、receiver-statistics 校准、开放集阈值自适应及与 LoRaWAN 认证融合。
+
+\section{本章小结}
+
+本文提供了 LoRa RFFI 从建模到评估的完整链条与性能边界，为后续物理层安全研究提供基准与经验参考。

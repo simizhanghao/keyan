@@ -1,0 +1,16 @@
+\begin{table}[htbp]
+  \centering
+  \caption{EM-CR debug suite（非主方法，head-only 3 epoch）}
+  \label{tab:ch5_emcr}
+  \begin{tabular}{lcc}
+    \toprule
+    变体 & Clean (\%) & AWGN 30\,dB (\%) \\
+    \midrule
+    A clean-only FT & $\sim$79.2 & -- \\
+    B EM-Aug CE & $\sim$79.2 & $\sim$62.5 \\
+    C weak CFO aug & -- & 70.8 \\
+    D stopgrad KL & $\sim$79.2 & $\sim$62.5 \\
+    Smoke（强 CFO+全主干） & \multicolumn{2}{c}{clean 83.3$\rightarrow$20.8（崩溃）} \\
+    \bottomrule
+  \end{tabular}
+\end{table}

@@ -1,0 +1,69 @@
+% !TEX program = xelatex
+% 硕士学位论文 Overleaf 初稿 — 需 XeLaTeX 编译（Overleaf 菜单选 XeLaTeX）
+% 编译: xelatex main.tex（两遍，生成目录）
+% 对应 Markdown 写作包: https://github.com/hanCChan/lora-rffi-thesis
+% 实验代码: https://github.com/hanCChan/rf-hstu-lora (branch thesis-em-openset)
+
+\documentclass[12pt,a4paper,openany,fontset=fandol]{ctexbook}
+
+\usepackage{geometry}
+\geometry{left=3.0cm,right=2.5cm,top=2.5cm,bottom=2.5cm}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{setspace}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage[hidelinks]{hyperref}
+\usepackage{cleveref}
+
+\onehalfspacing
+\setlength{\parindent}{2em}
+\graphicspath{{figures/ch3/}{figures/ch4/}{figures/ch5/}}
+
+% 图表编号按章
+\renewcommand{\thefigure}{\thechapter.\arabic{figure}}
+\renewcommand{\thetable}{\thechapter.\arabic{table}}
+
+\title{面向复杂部署环境的 LoRa 设备射频指纹鲁棒认证方法研究}
+\author{韩成成}
+\date{2026年}
+
+\begin{document}
+
+% ===== 封面信息（请按学院模板替换） =====
+\begin{titlepage}
+  \centering
+  \vspace*{2cm}
+  {\LARGE 硕士学位论文}\\[1.5cm]
+  {\Huge\bfseries 面向复杂部署环境的\\LoRa 设备射频指纹鲁棒认证方法研究}\\[2cm]
+  {\Large 作者：韩成成}\\[0.5cm]
+  {\Large 指导教师：王子阳}\\[0.5cm]
+  {\Large 学科专业：电磁场与微波技术}\\[0.5cm]
+  {\Large 北京航空航天大学}\\[0.5cm]
+  {\Large 2026年6月}
+  \vfill
+\end{titlepage}
+
+\frontmatter
+\input{frontmatter/abstract_cn}
+\input{frontmatter/abstract_en}
+\tableofcontents
+\listoffigures
+\listoftables
+
+\mainmatter
+\input{chapters/chapter01}
+\input{chapters/chapter02}
+\input{chapters/chapter03}
+\input{chapters/chapter04}
+\input{chapters/chapter05}
+\input{chapters/chapter06}
+
+\backmatter
+\bibliographystyle{plain}
+\bibliography{refs}
+
+\end{document}

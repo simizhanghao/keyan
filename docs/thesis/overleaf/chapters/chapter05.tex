@@ -1,0 +1,95 @@
+\chapter{复杂电磁扰动与开放集未知设备认证}
+\label{ch:ch5}
+
+本章第三创新点定位为：\textbf{评估协议 + 开放集认证 + embedding scorer + 失效分析}，而非 EM-CR 新模型成功。
+
+\section{问题定义}
+
+真实部署需同时完成闭集识别与未知设备拒识。在第\ref{ch:ch3}章 Ours 模型（无 EM 训练）上构建 benchmark。协议：Day5 test，256 windows/file，mean-logits voting；open-set 20 known + 4 unknown，阈值在 val 选取。
+
+\section{复杂电磁扰动建模}
+
+对 IQ 施加 AWGN、CFO、窄带干扰（NBI）、相位噪声、I/Q imbalance、滤波器漂移及 mixed stress。图~\ref{fig:ch5_em} 为 Ours 闭集退化曲线。
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.9\linewidth]{fig5_1_em_robustness_curves.pdf}
+  \caption{闭集 EM 鲁棒性退化曲线（Ours）}
+  \label{fig:ch5_em}
+\end{figure}
+
+\section{闭集电磁鲁棒性}
+
+Clean \textbf{83.3\%}；AWGN 30\,dB 70.8\%；CFO norm $\geq 0.003$ 约 \textbf{4.2\%}；NBI SIR 10\,dB \textbf{87.5\%}（相对温和）。图~\ref{fig:ch5_rank} 为敏感性排序：CFO/强 AWGN 最强。
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.75\linewidth]{fig5_3_em_stress_ranking.pdf}
+  \caption{扰动敏感性排序}
+  \label{fig:ch5_rank}
+\end{figure}
+
+\section{CNN-IQ 与 Ours 对比}
+
+表~\ref{tab:ch5_cnn}。Clean 62.5 vs 83.3（+20.8 pp）；NBI 10 dB 29.2 vs 87.5（+58.3 pp）；CFO 0.003 均为 4.2\%——共同失效。
+
+\input{tables/ch5_table_cnn}
+
+\begin{figure}[htbp]
+  \centering
+  \begin{subfigure}{0.32\linewidth}
+    \includegraphics[width=\linewidth]{fig5_cnn_vs_ours_awgn.pdf}
+    \caption{AWGN}
+  \end{subfigure}
+  \begin{subfigure}{0.32\linewidth}
+    \includegraphics[width=\linewidth]{fig5_cnn_vs_ours_cfo.pdf}
+    \caption{CFO}
+  \end{subfigure}
+  \begin{subfigure}{0.32\linewidth}
+    \includegraphics[width=\linewidth]{fig5_cnn_vs_ours_narrowband.pdf}
+    \caption{NBI}
+  \end{subfigure}
+  \caption{CNN-IQ 与 Ours 在 EM 下的对比}
+  \label{fig:ch5_cnn}
+\end{figure}
+
+\section{开放集未知设备认证}
+
+Prototype AUROC \textbf{$0.917\pm0.059$}，Mahalanobis $0.913\pm0.062$；MSP $0.425$，Energy $0.575$。图~\ref{fig:ch5_os_clean}。
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.8\linewidth]{fig5_2_openset_clean.pdf}
+  \caption{Clean open-set 各 scorer 对比}
+  \label{fig:ch5_os_clean}
+\end{figure}
+
+\section{EM stress 下的 open-set}
+
+图~\ref{fig:ch5_os_em}：AWGN 30 dB Proto AUROC 0.896；CFO 0.003 AUROC \textbf{0.492}，known acc \textbf{3.3\%}——同时摧毁分类与拒识。
+
+\begin{figure}[htbp]
+  \centering
+  \begin{subfigure}{0.48\linewidth}
+    \includegraphics[width=\linewidth]{fig5_4_auroc_under_em.pdf}
+    \caption{AUROC under EM}
+  \end{subfigure}
+  \begin{subfigure}{0.48\linewidth}
+    \includegraphics[width=\linewidth]{fig5_6_known_acc_under_em.pdf}
+    \caption{Known acc under EM}
+  \end{subfigure}
+  \caption{开放集在 EM 应力下的退化}
+  \label{fig:ch5_os_em}
+\end{figure}
+
+\section{EM-CR 初步分析（非主方法）}
+
+扰动一致性微调（EM-CR）为初步探索。强 CFO + 全主干训练致 clean 83.3\%$\rightarrow$20.8\% 崩溃；保守设置（冻结主干、弱扰动）无稳定鲁棒增益。\textbf{不作为第三创新点核心}；后续宜采用课程式增强、teacher-student 等。
+
+表~\ref{tab:ch5_emcr} 为 debug suite 摘要。
+
+\input{tables/ch5_table_emcr}
+
+\section{本章小结}
+
+本章构建 EM benchmark 与 open-set 协议；CFO 为最强 failure mode；Prototype/Mahalanobis 优于 MSP/Energy；EM-CR 未达主方法标准。

@@ -1,0 +1,36 @@
+\chapter{绪论}
+\label{ch:intro}
+
+\section{研究背景}
+
+低功耗广域网络（LPWAN）是物联网大规模连接的重要基础设施。LoRa 基于 chirp spread spectrum（CSS）物理层，在 Sub-GHz 频段以较低发射功率实现公里级通信，已广泛应用于智能抄表、环境监测与资产追踪等场景。随着终端数量增长，\textbf{设备身份认证}成为网络安全与业务可信的前提。
+
+传统认证依赖预置密钥与数字证书。对于成本敏感、算力与存储受限的 LoRa 终端，纯密码方案在密钥分发与侧信道防护方面面临持续压力。射频指纹识别（RFFI）通过区分发射机硬件非理想性实现「设备即身份」，可作为逻辑层认证的物理层补充。
+
+\section{射频指纹认证与 LoRa 场景挑战}
+
+射频指纹源于功率放大器非线性、I/Q 不平衡、载波频偏（CFO）、相位噪声与滤波器响应等。LoRa RFFI 在真实部署中面临三类挑战：
+
+\begin{enumerate}
+  \item \textbf{跨日期/环境变化}：同接收机不同采集日之间的信道与前端漂移；
+  \item \textbf{跨接收机部署失配}：换用网关或接收机后观测分布系统性偏移；
+  \item \textbf{复杂电磁扰动与未知设备}：现场干扰与未登记设备使闭集假设失效。
+\end{enumerate}
+
+本文目标是在可复现协议下\textbf{提高鲁棒性}、\textbf{提供评估框架}并\textbf{分析失效模式}，而非声称已完全解决认证问题。
+
+\section{本文研究内容与创新点}
+
+\textbf{创新点一（第\ref{ch:ch3}章）}：OOB-guided cross-attentive RF-HSTU，提升 same-receiver cross-day 闭集识别。
+
+\textbf{创新点二（第\ref{ch:ch4}章）}：跨接收机失配诊断与 RCPA-T 少样本目标接收机原型校准。
+
+\textbf{创新点三（第\ref{ch:ch5}章）}：复杂电磁扰动 benchmark、开放集未知设备认证与 CFO 失效分析；EM-CR 为初步探索。
+
+\section{论文结构安排}
+
+第\ref{ch:background}章介绍 LoRa CSS、指纹来源、评价指标与 OSU 数据集协议；第\ref{ch:ch3}--\ref{ch:ch5}章分别对应三项创新点；第\ref{ch:conclusion}章总结全文并展望。
+
+\section{本章小结}
+
+本章阐述了 LoRa 物联网设备认证背景、RFFI 思路及三类部署挑战，概述研究内容与创新点，并说明章节安排。

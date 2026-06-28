@@ -8,6 +8,14 @@
 
 ---
 
+## Overleaf LaTeX 包
+
+| 项 | 路径 |
+|----|------|
+| Overleaf 工程 | [overleaf/](overleaf/) |
+| 上传 ZIP | [thesis_overleaf_pack.zip](thesis_overleaf_pack.zip) |
+| 编译 | XeLaTeX，`main.tex`，见 `overleaf/README.md` |
+
 ## 文档索引
 
 | 文件 | 说明 |
