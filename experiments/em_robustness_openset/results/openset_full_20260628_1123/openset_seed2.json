@@ -1,0 +1,4 @@
+{
+  "manifest": "experiments/em_robustness_openset/results/openset_splits/openset_split_seed2.csv",
+  "checkpoint": "outputs/paper_ready_v3/step1_phase7_clean/runs/F_cross_attn_chirp_plain/seed_0/best.pt"
+}

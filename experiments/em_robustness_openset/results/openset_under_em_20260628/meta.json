@@ -1,0 +1,15 @@
+{
+  "checkpoint": "outputs/paper_ready_v3/step1_phase7_clean/runs/F_cross_attn_chirp_plain/seed_0/best.pt",
+  "conditions": [
+    "clean",
+    "awgn_30db",
+    "awgn_20db",
+    "cfo_0.001",
+    "cfo_0.003",
+    "nbi_10db",
+    "phase_0.03",
+    "iq_3db_5deg",
+    "filter_0.2",
+    "mixed_awgn_cfo"
+  ]
+}

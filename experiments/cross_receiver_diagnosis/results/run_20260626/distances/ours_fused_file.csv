@@ -1,0 +1,2 @@
+path,level,metric,same_device_cross_rx_mean,same_device_cross_rx_std,same_device_cross_rx_median,diff_device_same_rx_mean,diff_device_same_rx_std,diff_device_same_rx_median,diff_device_cross_rx_mean,distance_ratio_mean,distance_ratio_median,ratio_gt_1,num_same_device_pairs,num_diff_device_same_rx_pairs
+fused,file,cosine,0.1687694862484932,0.14804069789774854,0.11191454529762268,0.7642071409069974,0.5167370082409009,0.716619998216629,0.7669778572044511,0.22084259255702524,0.1561700002457812,False,24,552

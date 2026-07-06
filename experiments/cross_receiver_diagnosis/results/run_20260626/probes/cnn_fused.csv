@@ -1,0 +1,2 @@
+path,receiver_probe_cv_acc_mean,receiver_probe_cv_acc_std,receiver_probe_train_acc,device_probe_cv_acc_mean,device_probe_cv_acc_std,device_probe_train_acc,receiver_discriminability_ratio
+fused,0.7266666666666666,0.16932691734709993,0.8125,0.10856171222322566,0.0034728903725319655,0.120849609375,6.693581482691498

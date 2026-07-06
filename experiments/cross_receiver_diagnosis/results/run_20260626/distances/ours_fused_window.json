@@ -1,0 +1,17 @@
+{
+  "path": "fused",
+  "level": "window",
+  "metric": "cosine",
+  "same_device_cross_rx_mean": 0.16538655757904053,
+  "same_device_cross_rx_std": 0.14413812268684303,
+  "same_device_cross_rx_median": 0.11038011312484741,
+  "diff_device_same_rx_mean": 0.8384857006510958,
+  "diff_device_same_rx_std": 0.46589081589457587,
+  "diff_device_same_rx_median": 0.8709239959716797,
+  "diff_device_cross_rx_mean": 0.8129536615333696,
+  "distance_ratio_mean": 0.1972443387533211,
+  "distance_ratio_median": 0.12673908818150958,
+  "ratio_gt_1": false,
+  "num_same_device_pairs": 24,
+  "num_diff_device_same_rx_pairs": 36175872
+}

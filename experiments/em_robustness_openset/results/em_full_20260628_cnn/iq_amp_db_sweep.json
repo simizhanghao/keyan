@@ -1,0 +1,17 @@
+{
+  "manifest": "data/paper/cross_day_day1to5_source_only.csv",
+  "checkpoint": "outputs/paper_ready_v3/step1_phase7_clean/runs/A_cnn_iq/seed_0/best.pt",
+  "perturb_type": "iq_amp_db",
+  "strengths": [
+    0.0,
+    1.0,
+    3.0,
+    5.0
+  ],
+  "robustness_summary": {
+    "clean_file_acc": 0.625,
+    "avg_robust_acc": 0.43749999999999994,
+    "robustness_auc": 0.43749999999999994,
+    "max_drop": 0.5416666666666666
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "path": "fused",
+  "same_device_cross_rx_mean": 0.9277017133620878,
+  "same_device_cross_rx_std": 2.6148103867031165,
+  "same_device_cross_rx_median": 0.20065195858478546,
+  "diff_device_same_rx_mean": 0.9694217830108465,
+  "diff_device_same_rx_std": 2.9285272503888646,
+  "diff_device_same_rx_median": 0.15277010202407837,
+  "diff_device_cross_rx_mean": 0.9227560935300159,
+  "distance_ratio_mean": 0.956963965138906,
+  "distance_ratio_median": 1.3134242625115242,
+  "ratio_gt_1": false,
+  "num_same_device_pairs": 24,
+  "num_diff_device_same_rx_pairs": 552
+}

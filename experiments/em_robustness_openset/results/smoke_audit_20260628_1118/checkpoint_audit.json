@@ -1,0 +1,17 @@
+{
+  "checkpoint": "/data1/hcc/llm4RF/outputs/paper_ready_v3/step1_phase7_clean/runs/F_cross_attn_chirp_plain/seed_0/best.pt",
+  "manifest": "data/paper/cross_day_day1to5_source_only.csv",
+  "eval_split": "test",
+  "samples_per_file": 32,
+  "seed": 0,
+  "file_vote_mode": "mean_logits",
+  "input_norm": "iq_rms",
+  "num_classes": 24,
+  "num_test_files": 24,
+  "awgn_power_audit": {
+    "snr_target_db": 30.0,
+    "snr_measured_mean_db": 32.99181365966797,
+    "snr_measured_std_db": 0.051845572888851166,
+    "note": "Measured on per-window iq_rms-like normalized tensor"
+  }
+}

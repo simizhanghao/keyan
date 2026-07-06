@@ -1,0 +1,3 @@
+results/**/*.npy
+results/**/*.npz
+results/**/embeddings/

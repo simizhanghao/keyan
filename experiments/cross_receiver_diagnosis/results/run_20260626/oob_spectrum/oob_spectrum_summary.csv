@@ -1,0 +1,6 @@
+metric,value
+mean_rx1_oob_energy,0.7073994874954224
+mean_rx2_oob_energy,1.0201016664505005
+rx2_rx1_energy_ratio,1.442044734954834
+mean_ratio_spectrum_std,0.17261210083961487
+mean_per_device_oob_shift,0.7550534425924221
