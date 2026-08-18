@@ -229,6 +229,11 @@ def make_target_unlabeled_dataset(args: argparse.Namespace) -> SigMFIQDataset:
 
 
 def make_loader(dataset: SigMFIQDataset, args: argparse.Namespace, shuffle: bool) -> DataLoader:
+    pin_memory = str(getattr(args, "device", "cpu")) != "cpu"
+    worker_kwargs = {}
+    if args.num_workers > 0:
+        worker_kwargs["persistent_workers"] = True
+        worker_kwargs["prefetch_factor"] = 4
     if shuffle and args.balanced_batch:
         sampler = DeviceBalancedBatchSampler(
             dataset,
@@ -240,15 +245,17 @@ def make_loader(dataset: SigMFIQDataset, args: argparse.Namespace, shuffle: bool
             dataset,
             batch_sampler=sampler,
             num_workers=args.num_workers,
-            pin_memory=False,
+            pin_memory=pin_memory,
+            **worker_kwargs,
         )
     return DataLoader(
         dataset,
         batch_size=args.batch_size,
         shuffle=shuffle,
         num_workers=args.num_workers,
-        pin_memory=False,
+        pin_memory=pin_memory,
         drop_last=False,
+        **worker_kwargs,
     )
 
 
