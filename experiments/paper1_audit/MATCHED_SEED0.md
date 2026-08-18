@@ -43,3 +43,27 @@ Registered in `EXPECTED_FAILURES.md`: GREEN needs Full > Main on ≥4/5 seeds. T
 **Status: HOLD — continue 5 seeds on Day4. Not GREEN. Not YELLOW. Not RED. Experiment 2 closed.**
 
 Do not treat these Day4 seed0 numbers as Paper 1 Day5 5-seed means. Do not open Day5, 1D, 1E, or RCOF from this table.
+
+## Locked next step — Day4 seeds 1–4 (no new experiment)
+
+Question this step is allowed to answer:
+
+```text
+Is seed0 Full > Main a stable paired effect, or one-seed noise?
+```
+
+Recipe freeze (copy seed0; change only `--seed`):
+
+```text
+manifest     data/paper/cross_day_day1to5_source_only.csv
+split        Day1–3 train / Day4 val / Day5 unused
+models       A_cnn_iq, B_exact_main_no_oob, C_full_zscore, C_full_ratio
+epochs / lr / bs / dim   80 / 3e-3 / 128 / 64
+checkpoint   Day4 val acc
+vote / K     mean_logits / 256
+oob_norm     none | zscore | ratio   (per model, unchanged)
+```
+
+Forbidden while this step runs: Day5 eval, 1D, 1E, RCOF, Hann/guard, new K, new lr/epoch, picking a “winning” Full after peeking.
+
+After seeds 1–4 exist, run `scripts/audit_matched_5seed.py`, then **stop**. Do not treat a 4/5 count as permission to open Day5 or RCOF. Seed0 CNN 75.0 vs C' 70.8 is one file and does not decide H3.

@@ -21,7 +21,17 @@ from rfhstu.data import DOMAIN_FIELDS, SigMFIQDataset, load_manifest
 from rfhstu.features import patchify, torch_rf_views
 from rfhstu.models import DeviceClassifier, RFPatchEmbedder
 from rfhstu.prototype import build_prototypes
-from rfhstu.train_utils import add_common_args, format_metrics, load_checkpoint, make_datasets, make_loader, resolve_device, seed_everything
+from rfhstu.train_utils import (
+    add_common_args,
+    apply_receiver_style,
+    format_metrics,
+    forward_with_batch,
+    load_checkpoint,
+    make_datasets,
+    make_loader,
+    resolve_device,
+    seed_everything,
+)
 
 
 def parse_args() -> argparse.Namespace:
@@ -52,6 +62,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--cfo-consistency-weight", type=float, default=1.0)
     parser.add_argument("--oob-consistency-weight", type=float, default=1.0)
     parser.add_argument("--eval-seed", type=int, default=None)
+    parser.add_argument(
+        "--rx-style-eval",
+        action="store_true",
+        help="Eval-only RX-style corruption: lock in-band scale, perturb OOB/tilt/gain/phase/noise.",
+    )
     parser.add_argument("--out-dir", default=None)
     return parser.parse_args()
 
@@ -309,7 +324,7 @@ def bn_adapt_model(model: torch.nn.Module, loader, device: torch.device, args: a
     for _ in range(steps):
         for batch in tqdm(loader, leave=False, desc="bn_adapt"):
             iq = batch["iq"].to(device)
-            _ = model(prepare_model_input(iq, args, ckpt_args))
+            _ = forward_with_batch(model, prepare_model_input(iq, args, ckpt_args), batch)
     model.eval()
     return num_bn
 
@@ -320,7 +335,7 @@ def collect_train_embeddings(model: torch.nn.Module, loader, device: torch.devic
     labels = []
     for batch in tqdm(loader, leave=False, desc="prototype_train"):
         iq = batch["iq"].to(device)
-        out = model(prepare_model_input(iq, args, ckpt_args))
+        out = forward_with_batch(model, prepare_model_input(iq, args, ckpt_args), batch)
         embeddings.append(out["embedding"].cpu())
         labels.append(batch["label"].cpu())
     return torch.cat(embeddings), torch.cat(labels)
@@ -340,7 +355,7 @@ def collect_unlabeled_target_embeddings(
     model.eval()
     for batch in tqdm(loader, leave=False, desc="pseudo_target"):
         iq = batch["iq"].to(device)
-        out = model(prepare_model_input(iq, args, ckpt_args))
+        out = forward_with_batch(model, prepare_model_input(iq, args, ckpt_args), batch)
         probs = F.softmax(out["logits"], dim=-1)
         conf, pred = probs.max(dim=-1)
         embeddings.append(F.normalize(out["embedding"].detach().cpu(), dim=-1))
@@ -442,7 +457,7 @@ def collect_rf_adapt_features(
     model.eval()
     for batch in tqdm(loader, leave=False, desc="rf_adapt_features"):
         iq = batch["iq"].to(device)
-        out = model(prepare_model_input(iq, args, ckpt_args))
+        out = forward_with_batch(model, prepare_model_input(iq, args, ckpt_args), batch)
         embeddings.append(F.normalize(out["embedding"].detach().cpu(), dim=-1))
         logits.append(out["logits"].detach().cpu())
         cfo.append(compute_cfo_features(model, iq).detach().cpu())
@@ -596,12 +611,14 @@ def collect_predictions(
     for batch in tqdm(loader, leave=False, desc="eval"):
         labels = batch["label"]
         iq = batch["iq"].to(device)
+        if getattr(args, "rx_style_eval", False):
+            iq = apply_receiver_style(iq, args, lock_inband=True)
         model_input = prepare_model_input(iq, args, ckpt_args)
         if tta_mode == "entropy_min":
             restore_model_state(model, episodic_state)
             tent_adapt_batch(model, model_input, args, tta_optimizer)
         with torch.no_grad():
-            out = model(model_input)
+            out = forward_with_batch(model, model_input, batch)
         if args.score_fusion:
             if ckpt_args.get("model_type", args.model_type) == "osu_cnn":
                 raise RuntimeError("--score-fusion is only supported for RF-HSTU/hybrid checkpoints.")
@@ -640,6 +657,9 @@ def collect_predictions(
             }
             for col, field in enumerate(DOMAIN_FIELDS):
                 row[field] = int(domains[idx, col].item())
+            if "oob_donor_label" in batch:
+                row["oob_donor_label"] = int(batch["oob_donor_label"][idx].item())
+                row["oob_donor_device"] = int(batch["oob_donor_device"][idx].item())
             row["_scores"] = scores[idx]
             rows.append(row)
         if tta_mode == "entropy_min" and args.tent_episodic:
@@ -769,6 +789,9 @@ def main() -> None:
     args.input_norm = ckpt_args_for_norm.get("input_norm", "iq_rms")
     args.fft_norm = ckpt_args_for_norm.get("fft_norm", "log_zscore")
     args.oob_norm = ckpt_args_for_norm.get("oob_norm", "zscore")
+    args.oob_identity_shuffle = bool(
+        getattr(args, "oob_identity_shuffle", False) or ckpt_args_for_norm.get("oob_identity_shuffle", False)
+    )
     model = build_model(args, ckpt, device)
     eval_split = args.eval_split or getattr(args, "val_split", "val")
     train_split = getattr(args, "train_split", "train")
@@ -787,6 +810,7 @@ def main() -> None:
             random_windows=False,
             seed=args.seed,
             input_norm=input_norm,
+            oob_identity_shuffle=bool(args.oob_identity_shuffle),
         )
     if args.eval_seed is not None:
         eval_ds.random_windows = True
@@ -798,6 +822,7 @@ def main() -> None:
         random_windows=False,
         seed=args.seed,
         input_norm=input_norm,
+        oob_identity_shuffle=bool(args.oob_identity_shuffle),
     )
     train_loader = make_loader(train_ds, args, shuffle=False)
     val_loader = make_loader(eval_ds, args, shuffle=False)
@@ -885,6 +910,12 @@ def main() -> None:
 
     window_acc = sum(row["correct"] for row in window_rows) / max(1, len(window_rows))
     file_acc = sum(row["correct"] for row in file_rows) / max(1, len(file_rows))
+    donor_rows = [row for row in window_rows if "oob_donor_label" in row]
+    donor_mismatch = (
+        sum(int(row["oob_donor_label"]) != int(row["label"]) for row in donor_rows) / len(donor_rows)
+        if donor_rows
+        else ""
+    )
     window_macro_f1 = macro_f1(window_labels, window_preds, num_classes)
     file_macro_f1 = macro_f1(file_labels, file_preds, num_classes)
     ckpt_path = Path(args.checkpoint)
@@ -903,6 +934,11 @@ def main() -> None:
         "file_macro_f1": file_macro_f1,
         "num_windows": len(window_rows),
         "num_files": len(file_rows),
+        "oob_identity_shuffle": bool(args.oob_identity_shuffle),
+        "oob_donor_windows": len(donor_rows) if donor_rows else 0,
+        "oob_donor_mismatch_rate": donor_mismatch,
+        "rx_style_eval": bool(getattr(args, "rx_style_eval", False)),
+        "rx_inband_locked": bool(getattr(args, "rx_style_eval", False)),
         "num_classes": num_classes,
         "eval_mode": mode,
         "file_vote_mode": args.file_vote_mode,
@@ -1016,6 +1052,8 @@ def main() -> None:
         *DOMAIN_FIELDS,
         "confidence",
     ]
+    if window_rows and "oob_donor_label" in window_rows[0]:
+        prediction_fields.extend(["oob_donor_label", "oob_donor_device"])
     write_csv(out_dir / "predictions.csv", clean_prediction_rows(window_rows), prediction_fields)
     file_prediction_fields = [
         "file_path",

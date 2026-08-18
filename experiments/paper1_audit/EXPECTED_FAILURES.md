@@ -25,12 +25,105 @@ Day5 accuracy is forbidden as a selection metric here.
 
 ## 1C Matched retraining
 
+Seed0 is **candidate evidence only**. Do not rewrite the story, move this table, or open Day5 / 1D / 1E / RCOF from one seed.
+
+Seeds 1–4 must reuse the seed0 recipe with **zero** knob changes: same split, preprocessing, architecture, 80 ep, lr 3e-3, bs 128, Day4 checkpoint on val acc, K=256, mean-logits. Do not add Hann/guard, do not retune K/lr/epoch.
+
+Do not collapse C (zscore) and C' (ratio) into one “Full”. Report both. Do not pick the better Full after seeing the seeds.
+
+Required 5-seed artifacts (file **and** window):
+
+| Quantity | Why |
+|----------|-----|
+| per-seed File-Acc and Window-Acc for A/B/C/C' | aggregation can inflate File-Acc |
+| `Δ_file(C−B)` and `Δ_file(C'−B)` per seed | registered H3 is paired, not mean-vs-mean |
+| `Δ_window(C−B)` and `Δ_window(C'−B)` per seed | seed0 zscore was +5.6pp window vs +25pp file |
+| `Δ(C−A)` and `Δ(C'−A)` per seed | H3 Full>CNN; seed0 CNN vs C' is 1 file, not a finding |
+| count `C>B` and `C'>B` over 5 seeds | GREEN uses this count, not a post-hoc p-value |
+
 | Result | Decision |
 |--------|----------|
-| Full > Main on ≥4/5 seeds; mean gain stable and positive | **GREEN** for OOB mechanism |
-| Full ≈ Main | **YELLOW**: Paper 1 gain is RF-HSTU, not OOB. Do not sell RCOF as “OOB fingerprint” |
-| Hann/guard Full collapses vs legacy 75% | **RED**: stop Paper 2 |
-| matched Main stays collapsed (~C’s 8.3%) while Full is high | OOB may be a training crutch; report honestly; RCOF still possible but story changes |
+| C > B on ≥4/5 seeds, mean Δ_file > 0, and window Δ is not opposite in sign | **GREEN** for Paper 1 zscore OOB on this backbone |
+| C' > B on ≥4/5 seeds, same window-sign check | **GREEN** for the 1B ratio candidate |
+| C>B (or C'>B) on only 2/5 or 3/5, or mean near 0 with large std | **YELLOW**: seed-dependent; do not sell OOB as a stable main effect |
+| Hann/guard Full collapses vs legacy 75% | **RED**: stop Paper 2 (not in the current 1C grid) |
+| matched Main stays collapsed (~8.3%) while Full is high | OOB may be a training crutch; report honestly |
+| Full>Main GREEN, but Full < CNN on ≥4/5 seeds | OOB helps this backbone; **not** “OOB is the uniquely dominant fingerprint”; do not open RCOF as if H3 Full>CNN passed |
+
+Count threshold is frozen at **4/5**. Do not move it after seeing seeds 1–4.
+
+These rows classify the **Day4 matched 5-seed table only**. They do not schedule Day5, 1D, 1E, or RCOF. Experiment 2 stays closed until a later human GO.
+
+## 1C.mech Day4 mechanism audit
+
+Opened after 1C triggered the **crutch clause**. Still Day4 only. Do not rescue Main. Do not change K=256.
+
+Order (one step at a time):
+
+```text
+1. Label-oracle headroom   ← done; not DROP
+2. OOB identity shuffle    ← done; C' only
+3. RX-style corruption     ← done; mean window drop 30.3±2.0pp; RX-entangled
+```
+
+### Oracle (label oracle)
+
+Not the forbidden `*_oracle_target_val.csv` protocol. This uses frozen 1C predictions only.
+
+Primary pair: `B_exact_main_no_oob` vs `C_full_ratio`. Secondary: B vs `C_full_zscore`.
+
+Per window (and separately per file): `oracle_correct = Main correct OR Full correct`.
+
+```text
+Δ = Acc_oracle − max(Acc_Main, Acc_Full)
+```
+
+Frozen stop rule, **not moved**: if window `Δ < 5pp` on the primary pair, subsequent **utility gate is DROPPED**. This is an upper bound on any learned gate. `Δ ≥ 5pp` only means headroom exists, not that a gate will recover it.
+
+**Independence note (do not turn into a new threshold):** Main collapsed to chance on seeds 2–4, so `max(Main, Full) ≈ Full` and `Δ` is almost automatically small. The 5pp number stays 5pp. The report must show **all 5 seeds** and the **Main-trained subset {0,1}** as diagnostics. Do not DROP solely because collapsed seeds have tiny Δ. Do not ignore the subset if it is also <5pp.
+
+Mechanism judgement uses **window** Δ. File Δ is recorded because K=256 can inflate File-Acc.
+
+### Shuffle (done)
+
+Shuffle trains a new Full **C'** (`C_full_ratio_oob_shuffle`) with the frozen 1C recipe. Main IQ, label, architecture, OOB marginals, and `torch_rf_views` stay the same. Only the OOB↔device pairing is broken:
+
+- donor = **same day, different device**
+- train: donor is redrawn every epoch (no stationary OOB identity)
+- eval Day4: donor is frozen per window (reproducible)
+- not a fixed 24-class derangement (that would still be a 1–1 identity map)
+
+Primary comparison: window `drop = Acc(C') − Acc(C'_shuffle)`. File-Acc is recorded, not the gate. All 5 C' seeds are used (C' did not collapse). C zscore shuffle is **not** this step.
+
+Frozen rule, **not moved**:
+
+| Result | Decision |
+|--------|----------|
+| mean window drop < 5pp | identity claim shrinks; OOB was not a stable device identity for this Full |
+| mean window drop ≥ 5pp | OOB carried predictive identity under this protocol; still may be RX-entangled |
+
+`drop ≥ 5pp` does **not** open RCOF, Day5, 1D, or a utility gate.
+
+**Independence note (do not turn into a new threshold):** Shuffled C' collapsed to chance on seeds 2–3, so those window drops (~41.5pp) are almost `C' − chance`. The 5pp number stays 5pp. The report must show **all 5 seeds** and the **trained subset {0,1,4}**. Do not claim “OOB identity confirmed” solely because collapsed seeds have huge drop. Do not ignore the subset if its mean drop is also <5pp.
+
+RX-style is the next diagnostic and is not skipped. Small or negative shuffle drop still leaves crutch vs shared-RX-style open.
+
+### RX-style (this step)
+
+Eval-only on **frozen 1C C'** checkpoints. No retraining. Day4 only.
+
+Reuse existing operators (`apply_receiver_style`): spectral tilt, OOB scale, gain, phase, noise. **In-band scale locked at 1** so Main-band content is kept as far as those operators allow. Hann/guard stay closed.
+
+Primary: window `drop = Acc(C') − Acc(C'_rx)`. File-Acc is recorded, not the gate. All 5 C' seeds (C' did not collapse).
+
+Frozen rule, **not moved**:
+
+| Result | Decision |
+|--------|----------|
+| mean window drop < 5pp | not strongly RX-entangled at inference |
+| mean window drop ≥ 5pp | predictive but receiver-entangled OOB |
+
+Neither row opens RCOF, Day5, 1D, a utility gate, or Hann/guard. Hann/guard open only if a later human reading says the drop is band-edge.
 
 ## 1D File voting
 

@@ -30,7 +30,9 @@ from rfhstu.models import DeviceClassifier, RFPatchEmbedder
 from rfhstu.train_utils import (
     accuracy,
     add_common_args,
+    apply_receiver_style,
     format_metrics,
+    forward_with_batch,
     load_checkpoint,
     make_datasets,
     make_loader,
@@ -156,53 +158,10 @@ def augment_iq(iq: torch.Tensor, args: argparse.Namespace) -> torch.Tensor:
 
 
 def augment_receiver_style(iq: torch.Tensor, args: argparse.Namespace) -> torch.Tensor:
-    """Train-only receiver-style augmentation.
-
-    Models receiver-induced style shift WITHOUT using any target-receiver label:
-      - spectral tilt (linear-in-frequency dB gain)
-      - independent in-band / out-of-band magnitude scaling
-      - overall gain (dB)
-      - global phase rotation
-      - additive noise floor (AWGN)
-    Spectral operations are applied in the frequency domain and inverted back to IQ,
-    so all downstream views (FFT / OOB / amp-phase) reflect the augmented signal.
-    """
+    """Train-only receiver-style augmentation. Off unless --augment-receiver-style."""
     if not getattr(args, "augment_receiver_style", False):
         return iq
-    x = iq
-    bsz, _, length = x.shape
-    device, dtype = x.device, x.dtype
-
-    def rand(lo: float, hi: float, shape) -> torch.Tensor:
-        return torch.empty(shape, device=device).uniform_(float(lo), float(hi))
-
-    z = torch.complex(x[:, 0].float(), x[:, 1].float())
-    spectrum = torch.fft.fftshift(torch.fft.fft(z, dim=-1), dim=-1)  # [B, T]
-    freq = torch.fft.fftshift(torch.fft.fftfreq(length, d=1.0 / args.sample_rate)).to(device)
-    in_band = (freq.abs() <= (args.lora_bandwidth / 2.0)).view(1, -1)
-    fmax = freq.abs().max().clamp_min(1.0)
-
-    # spectral tilt: dB slope across the band, linear in normalized frequency
-    tilt_db = rand(args.rx_spectral_tilt_db_min, args.rx_spectral_tilt_db_max, (bsz, 1))
-    gain = 10.0 ** ((tilt_db * (freq / fmax).view(1, -1)) / 20.0)  # [B, T]
-    # independent in-band / OOB magnitude scaling
-    inband_scale = rand(args.rx_inband_scale_min, args.rx_inband_scale_max, (bsz, 1))
-    oob_scale = rand(args.rx_oob_scale_min, args.rx_oob_scale_max, (bsz, 1))
-    gain = gain * torch.where(in_band, inband_scale, oob_scale)
-    # overall gain (dB)
-    gain_db = rand(args.rx_gain_db_min, args.rx_gain_db_max, (bsz, 1))
-    gain = gain * (10.0 ** (gain_db / 20.0))
-
-    spectrum = spectrum * gain.to(spectrum.dtype)
-    z_aug = torch.fft.ifft(torch.fft.ifftshift(spectrum, dim=-1), dim=-1)
-    # global phase rotation
-    phi = rand(-math.pi, math.pi, (bsz, 1))
-    z_aug = z_aug * torch.complex(torch.cos(phi), torch.sin(phi)).to(z_aug.dtype)
-    x = torch.stack([z_aug.real, z_aug.imag], dim=1).to(dtype)
-    # additive noise floor
-    noise_std = rand(args.rx_noise_std_min, args.rx_noise_std_max, (bsz, 1, 1)).to(dtype)
-    x = x + torch.randn_like(x) * noise_std
-    return x
+    return apply_receiver_style(iq, args, lock_inband=False)
 
 
 def hard_negative_margin_loss(features: torch.Tensor, labels: torch.Tensor, classifier: nn.Module, margin: float) -> torch.Tensor:
@@ -245,7 +204,9 @@ def run_epoch(
         labels = batch["label"].to(device)
         domains = batch["domains"].to(device)
         with torch.set_grad_enabled(train):
-            out = model(model_input, adv_lambda=args.adv_lambda, return_features=args.use_supcon)
+            out = forward_with_batch(
+                model, model_input, batch, adv_lambda=args.adv_lambda, return_features=args.use_supcon
+            )
             logits = out["logits"]
             z = out.get("features", out["embedding"])
             loss = classification_loss(logits, labels, args, class_weights)
@@ -310,7 +271,13 @@ def run_epoch_aligned(
         labels = batch["label"].to(device)
         domains = batch["domains"].to(device)
         with torch.set_grad_enabled(train):
-            out_s = model(prepare_model_input(iq_s, args), adv_lambda=args.adv_lambda, return_features=args.use_supcon)
+            out_s = forward_with_batch(
+                model,
+                prepare_model_input(iq_s, args),
+                batch,
+                adv_lambda=args.adv_lambda,
+                return_features=args.use_supcon,
+            )
             logits = out_s["logits"]
             z_s = out_s.get("features", out_s["embedding"])
             loss = classification_loss(logits, labels, args, class_weights)
@@ -322,7 +289,13 @@ def run_epoch_aligned(
                 for _ in range(max(1, args.target_loader_ratio)):
                     t_batch = next(target_iter)
                     iq_t = t_batch["iq"].to(device)
-                    out_t = model(prepare_model_input(iq_t, args), adv_lambda=args.adv_lambda, return_features=args.use_supcon)
+                    out_t = forward_with_batch(
+                        model,
+                        prepare_model_input(iq_t, args),
+                        t_batch,
+                        adv_lambda=args.adv_lambda,
+                        return_features=args.use_supcon,
+                    )
                     z_t_list.append(out_t.get("features", out_t["embedding"]))
                     logits_t_list.append(out_t["logits"])
                 z_t = torch.cat(z_t_list, dim=0)
@@ -386,7 +359,7 @@ def update_bn_from_loader(model: torch.nn.Module, loader, device: torch.device, 
     with torch.no_grad():
         for batch in loader:
             iq = batch["iq"].to(device)
-            model(prepare_model_input(iq, args))
+            forward_with_batch(model, prepare_model_input(iq, args), batch)
     model.eval()
 
 
@@ -395,6 +368,9 @@ def main() -> None:
     enabled_metric_losses = sum(bool(flag) for flag in [args.use_hard_margin, args.use_supcon, args.use_center_loss])
     if enabled_metric_losses > 1:
         raise ValueError("Enable only one of --use-hard-margin, --use-supcon, or --use-center-loss in this first version.")
+    if args.oob_identity_shuffle:
+        if args.model_type == "osu_cnn" or args.no_oob or args.oob_fusion_type == "no_oob":
+            raise ValueError("OOB identity shuffle requires a Full model with an OOB branch.")
     seed_everything(args.seed)
     device = resolve_device(args.device)
     train_ds, val_ds = make_datasets(args)

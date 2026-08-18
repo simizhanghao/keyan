@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import math
 import random
 from pathlib import Path
 from typing import Any
@@ -65,6 +66,11 @@ def add_common_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--spreading-factor", type=int, default=7)
     parser.add_argument("--use-chirp-embedding", action="store_true")
     parser.add_argument("--no-oob", action="store_true")
+    parser.add_argument(
+        "--oob-identity-shuffle",
+        action="store_true",
+        help="Negative control: keep Main IQ/label, replace OOB with a same-day different-device donor.",
+    )
     parser.add_argument("--use-oob-cross-attention", action="store_true")
     parser.add_argument(
         "--oob-fusion-type",
@@ -191,6 +197,7 @@ def make_datasets(args: argparse.Namespace) -> tuple[SigMFIQDataset, SigMFIQData
     if val_samples_per_file is None:
         val_samples_per_file = max(1, min(args.samples_per_file, 32))
     input_norm = getattr(args, "input_norm", "iq_rms")
+    oob_identity_shuffle = bool(getattr(args, "oob_identity_shuffle", False))
     train_ds = SigMFIQDataset(
         train_rows,
         window_size=args.window_size,
@@ -198,6 +205,7 @@ def make_datasets(args: argparse.Namespace) -> tuple[SigMFIQDataset, SigMFIQData
         random_windows=True,
         seed=args.seed,
         input_norm=input_norm,
+        oob_identity_shuffle=oob_identity_shuffle,
     )
     val_ds = SigMFIQDataset(
         val_rows,
@@ -206,6 +214,7 @@ def make_datasets(args: argparse.Namespace) -> tuple[SigMFIQDataset, SigMFIQData
         random_windows=False,
         seed=args.seed,
         input_norm=input_norm,
+        oob_identity_shuffle=oob_identity_shuffle,
     )
     return train_ds, val_ds
 
@@ -225,7 +234,55 @@ def make_target_unlabeled_dataset(args: argparse.Namespace) -> SigMFIQDataset:
         random_windows=True,
         seed=args.seed + 17,
         input_norm=input_norm,
+        oob_identity_shuffle=bool(getattr(args, "oob_identity_shuffle", False)),
     )
+
+
+def forward_with_batch(model: torch.nn.Module, iq: torch.Tensor, batch: dict[str, Any], **kwargs):
+    """Call classifier; if the batch has a donor OOB IQ, swap only the OOB branch."""
+    oob_iq = batch.get("oob_iq") if isinstance(batch, dict) else None
+    if oob_iq is not None:
+        kwargs["oob_iq"] = oob_iq.to(iq.device, non_blocking=True)
+    return model(iq, **kwargs)
+
+
+def apply_receiver_style(iq: torch.Tensor, args: argparse.Namespace, *, lock_inband: bool = False) -> torch.Tensor:
+    """Perturb receiver/OOB style in the frequency domain, then invert to IQ.
+
+    lock_inband=True keeps in-band magnitude scale at 1 (eval audit). Tilt, OOB
+    scale, gain, phase, and noise still follow the existing operator ranges.
+    """
+    x = iq
+    bsz, _, length = x.shape
+    device, dtype = x.device, x.dtype
+
+    def rand(lo: float, hi: float, shape) -> torch.Tensor:
+        return torch.empty(shape, device=device).uniform_(float(lo), float(hi))
+
+    z = torch.complex(x[:, 0].float(), x[:, 1].float())
+    spectrum = torch.fft.fftshift(torch.fft.fft(z, dim=-1), dim=-1)
+    freq = torch.fft.fftshift(torch.fft.fftfreq(length, d=1.0 / args.sample_rate)).to(device)
+    in_band = (freq.abs() <= (args.lora_bandwidth / 2.0)).view(1, -1)
+    fmax = freq.abs().max().clamp_min(1.0)
+
+    tilt_db = rand(args.rx_spectral_tilt_db_min, args.rx_spectral_tilt_db_max, (bsz, 1))
+    gain = 10.0 ** ((tilt_db * (freq / fmax).view(1, -1)) / 20.0)
+    if lock_inband:
+        inband_scale = torch.ones((bsz, 1), device=device, dtype=gain.dtype)
+    else:
+        inband_scale = rand(args.rx_inband_scale_min, args.rx_inband_scale_max, (bsz, 1))
+    oob_scale = rand(args.rx_oob_scale_min, args.rx_oob_scale_max, (bsz, 1))
+    gain = gain * torch.where(in_band, inband_scale, oob_scale)
+    gain_db = rand(args.rx_gain_db_min, args.rx_gain_db_max, (bsz, 1))
+    gain = gain * (10.0 ** (gain_db / 20.0))
+
+    spectrum = spectrum * gain.to(spectrum.dtype)
+    z_aug = torch.fft.ifft(torch.fft.ifftshift(spectrum, dim=-1), dim=-1)
+    phi = rand(-math.pi, math.pi, (bsz, 1))
+    z_aug = z_aug * torch.complex(torch.cos(phi), torch.sin(phi)).to(z_aug.dtype)
+    x = torch.stack([z_aug.real, z_aug.imag], dim=1).to(dtype)
+    noise_std = rand(args.rx_noise_std_min, args.rx_noise_std_max, (bsz, 1, 1)).to(dtype)
+    return x + torch.randn_like(x) * noise_std
 
 
 def make_loader(dataset: SigMFIQDataset, args: argparse.Namespace, shuffle: bool) -> DataLoader:

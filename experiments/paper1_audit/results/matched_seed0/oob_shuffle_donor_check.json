@@ -1,0 +1,21 @@
+{
+  "day5_used": false,
+  "no_training": true,
+  "checks": [
+    {
+      "split": "train",
+      "n": 256,
+      "donor_mismatch_rate": 1.0,
+      "same_day_rate": 1.0,
+      "train_epoch_donor_change_rate": 0.96484375
+    },
+    {
+      "split": "val",
+      "n": 192,
+      "donor_mismatch_rate": 1.0,
+      "same_day_rate": 1.0,
+      "train_epoch_donor_change_rate": null
+    }
+  ],
+  "ok": true
+}

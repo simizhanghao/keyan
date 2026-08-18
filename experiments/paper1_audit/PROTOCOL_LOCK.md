@@ -144,14 +144,19 @@ Do not rewrite these numbers. Audit writes only under `experiments/paper1_audit/
 ## 8. Experiment 1 order (do not skip)
 
 ```text
-1A  this file + machine audit          ← current
-1B  spectral audit, no training        ← next, after user GO
-1C  CNN / Main / Full, seed0 then 5
-1D  file-vote K sweep on frozen ckpt
-1E  LODO after full freeze
-    → PAPER1_AUDIT_REPORT.md  GREEN/YELLOW/RED
-    → human GO before any RCOF
+1A  this file + machine audit          ← done
+1B  spectral audit, no training        ← done (GO_TWO_CANDIDATES)
+1C  CNN / Main / Full, 5 seeds Day4    ← done; HOLD / crutch clause
+1C.mech  Day4 mechanism audit (no Day5)
+    oracle headroom                    ← done; utility gate not DROP
+    OOB identity shuffle               ← done; C' only; collapse-dominated mean
+    RX-style corruption                ← done; eval-only; RX-entangled 30.3±2.0pp
+1D  file-vote K sweep                  ← not opened
+1E  LODO                               ← not opened
+    → Experiment 2 / RCOF closed
 ```
+
+Do not rescue Main, retune lr/epoch, open Day5, 1D, Hann/guard, or RCOF from 1C File-Acc.
 
 ---
 

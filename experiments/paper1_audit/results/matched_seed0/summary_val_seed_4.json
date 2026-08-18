@@ -1,0 +1,39 @@
+{
+  "day5_used": false,
+  "seed": 4,
+  "batch_size": 128,
+  "rows": [
+    {
+      "model": "A_cnn_iq",
+      "split": "val_day4",
+      "file_acc_pct": 58.3,
+      "window_acc_pct": 47.9,
+      "file_macro_f1_pct": 49.3,
+      "n_files": 24
+    },
+    {
+      "model": "B_exact_main_no_oob",
+      "split": "val_day4",
+      "file_acc_pct": 4.2,
+      "window_acc_pct": 4.3,
+      "file_macro_f1_pct": 0.3,
+      "n_files": 24
+    },
+    {
+      "model": "C_full_zscore",
+      "split": "val_day4",
+      "file_acc_pct": 66.7,
+      "window_acc_pct": 36.8,
+      "file_macro_f1_pct": 57.6,
+      "n_files": 24
+    },
+    {
+      "model": "C_full_ratio",
+      "split": "val_day4",
+      "file_acc_pct": 87.5,
+      "window_acc_pct": 46.7,
+      "file_macro_f1_pct": 83.3,
+      "n_files": 24
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
@@ -109,6 +110,7 @@ class SigMFIQDataset(Dataset):
         random_windows: bool = True,
         seed: int = 1234,
         input_norm: str = "iq_rms",
+        oob_identity_shuffle: bool = False,
     ) -> None:
         if not rows:
             raise ValueError("No usable manifest rows found.")
@@ -120,9 +122,20 @@ class SigMFIQDataset(Dataset):
         self.random_windows = random_windows
         self.seed = seed
         self.input_norm = input_norm
+        self.oob_identity_shuffle = oob_identity_shuffle
         self.epoch = 0
+        # Shared so persistent DataLoader workers see set_epoch() during identity shuffle.
+        self._epoch_shared = torch.zeros(1, dtype=torch.int32)
+        try:
+            self._epoch_shared.share_memory_()
+        except RuntimeError:
+            pass
         self._memmaps: dict[Path, np.memmap] = {}
         self._lengths = {row.path: row.path.stat().st_size // np.dtype(np.complex64).itemsize for row in rows}
+        self._donor_pools: dict[tuple[int, int], list[int]] = {}
+        self._labels_by_day: dict[int, tuple[int, ...]] = {}
+        if oob_identity_shuffle:
+            self._index_donors()
 
     def __len__(self) -> int:
         return len(self.rows) * self.samples_per_file
@@ -136,7 +149,27 @@ class SigMFIQDataset(Dataset):
         return infer_domain_sizes(self.rows)
 
     def set_epoch(self, epoch: int) -> None:
-        self.epoch = epoch
+        self.epoch = int(epoch)
+        self._epoch_shared.fill_(int(epoch))
+
+    def _current_epoch(self) -> int:
+        if self.oob_identity_shuffle:
+            return int(self._epoch_shared.item())
+        return int(self.epoch)
+
+    def _index_donors(self) -> None:
+        pools: dict[tuple[int, int], list[int]] = defaultdict(list)
+        labels_by_day: dict[int, set[int]] = defaultdict(set)
+        for row_index, row in enumerate(self.rows):
+            day = int(row.domains["day"])
+            label = int(row.label)
+            pools[(day, label)].append(row_index)
+            labels_by_day[day].add(label)
+        self._donor_pools = dict(pools)
+        self._labels_by_day = {day: tuple(sorted(labels)) for day, labels in labels_by_day.items()}
+        for day, labels in self._labels_by_day.items():
+            if len(labels) < 2:
+                raise ValueError(f"OOB identity shuffle needs ≥2 devices on day={day}, got {len(labels)}")
 
     def _open(self, path: Path) -> np.memmap:
         mm = self._memmaps.get(path)
@@ -150,14 +183,13 @@ class SigMFIQDataset(Dataset):
         if max_offset == 0:
             return 0
         if self.random_windows:
-            rng = np.random.default_rng(self.seed + self.epoch * 10_000_019 + row_index * 1_000_003 + sample_index)
+            epoch = self._current_epoch()
+            rng = np.random.default_rng(self.seed + epoch * 10_000_019 + row_index * 1_000_003 + sample_index)
             return int(rng.integers(0, max_offset + 1))
         stride = max(1, max_offset // max(1, self.samples_per_file - 1))
         return min(sample_index * stride, max_offset)
 
-    def __getitem__(self, index: int) -> dict[str, torch.Tensor]:
-        row_index = index // self.samples_per_file
-        sample_index = index % self.samples_per_file
+    def _read_channels(self, row_index: int, sample_index: int) -> tuple[np.ndarray, int]:
         row = self.rows[row_index]
         length = self._lengths[row.path]
         if length < self.window_size:
@@ -167,10 +199,32 @@ class SigMFIQDataset(Dataset):
         channels = complex_iq_to_channels(iq)
         if self.input_norm == "iq_rms":
             channels = normalize_iq(channels)
-        else:  # "none": raw IQ, no per-window RMS normalization
+        else:
             channels = channels.astype(np.float32, copy=False)
+        return channels, offset
+
+    def _donor_row_index(self, index: int, row_index: int) -> int:
+        row = self.rows[row_index]
+        day = int(row.domains["day"])
+        label = int(row.label)
+        others = [lab for lab in self._labels_by_day[day] if lab != label]
+        if not others:
+            raise ValueError(f"OOB identity shuffle has no other device on day={day} label={label}")
+        if self.random_windows:
+            rng = np.random.default_rng([self.seed, 91_000_003, self._current_epoch(), index])
+        else:
+            rng = np.random.default_rng([self.seed, 77_000_003, index])
+        donor_label = int(others[int(rng.integers(0, len(others)))])
+        pool = self._donor_pools[(day, donor_label)]
+        return int(pool[int(rng.integers(0, len(pool)))])
+
+    def __getitem__(self, index: int) -> dict[str, torch.Tensor]:
+        row_index = index // self.samples_per_file
+        sample_index = index % self.samples_per_file
+        row = self.rows[row_index]
+        channels, offset = self._read_channels(row_index, sample_index)
         domains = torch.tensor([row.domains[field] for field in DOMAIN_FIELDS], dtype=torch.long)
-        return {
+        item = {
             "iq": torch.from_numpy(channels.copy()),
             "label": torch.tensor(row.label, dtype=torch.long),
             "device": torch.tensor(row.device, dtype=torch.long),
@@ -181,3 +235,13 @@ class SigMFIQDataset(Dataset):
             "split": row.split,
             "setup": row.setup,
         }
+        if self.oob_identity_shuffle:
+            donor_row_index = self._donor_row_index(index, row_index)
+            donor_channels, _ = self._read_channels(donor_row_index, sample_index)
+            donor = self.rows[donor_row_index]
+            if int(donor.label) == int(row.label):
+                raise RuntimeError("OOB identity shuffle drew a same-label donor")
+            item["oob_iq"] = torch.from_numpy(donor_channels.copy())
+            item["oob_donor_label"] = torch.tensor(donor.label, dtype=torch.long)
+            item["oob_donor_device"] = torch.tensor(donor.device, dtype=torch.long)
+        return item

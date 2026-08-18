@@ -412,8 +412,21 @@ class DeviceClassifier(nn.Module):
         adv_lambda: float = 1.0,
         return_features: bool = False,
         return_supcon_features: bool = False,
+        oob_iq: torch.Tensor | None = None,
     ) -> dict[str, torch.Tensor | dict[str, torch.Tensor]]:
         features, views = self.embedder(iq)
+        if oob_iq is not None:
+            if views.get("oob") is None:
+                raise RuntimeError("OOB identity shuffle requires an OOB branch")
+            _, _, oob_view, _ = torch_rf_views(
+                oob_iq,
+                self.embedder.sample_rate,
+                self.embedder.lora_bandwidth,
+                fft_norm=self.embedder.fft_norm,
+                oob_norm=self.embedder.oob_norm,
+            )
+            views = dict(views)
+            views["oob"] = patchify(oob_view, self.embedder.patch_size)
         if self.training and self.oob_dropout > 0.0 and views.get("oob") is not None:
             if torch.rand(1).item() < self.oob_dropout:
                 views = dict(views)

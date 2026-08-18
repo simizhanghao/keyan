@@ -1,0 +1,85 @@
+{
+  "day5_used": false,
+  "primary": "C_full_ratio vs C_full_ratio_oob_shuffle",
+  "delta_drop_pp": 5.0,
+  "note": "Window drop = true Full \u2212 shuffled Full. Mean drop < 5pp shrinks the identity claim. Threshold is not moved. C zscore shuffle is not this step. RX is not opened here.",
+  "missing_seeds": [],
+  "per_seed": [
+    {
+      "seed": 0,
+      "true_window_pct": 43.8,
+      "shuffle_window_pct": 53.2,
+      "drop_window_pp": -9.4,
+      "true_file_pct": 70.8,
+      "shuffle_file_pct": 75.0,
+      "drop_file_pp": -4.2,
+      "below_5pp_window": true,
+      "n_files": 24,
+      "donor_mismatch_rate": 1.0
+    },
+    {
+      "seed": 1,
+      "true_window_pct": 44.3,
+      "shuffle_window_pct": 39.8,
+      "drop_window_pp": 4.4,
+      "true_file_pct": 87.5,
+      "shuffle_file_pct": 66.7,
+      "drop_file_pp": 20.8,
+      "below_5pp_window": true,
+      "n_files": 24,
+      "donor_mismatch_rate": 1.0
+    },
+    {
+      "seed": 2,
+      "true_window_pct": 46.1,
+      "shuffle_window_pct": 4.6,
+      "drop_window_pp": 41.5,
+      "true_file_pct": 70.8,
+      "shuffle_file_pct": 4.2,
+      "drop_file_pp": 66.7,
+      "below_5pp_window": false,
+      "n_files": 24,
+      "donor_mismatch_rate": 1.0
+    },
+    {
+      "seed": 3,
+      "true_window_pct": 46.5,
+      "shuffle_window_pct": 5.0,
+      "drop_window_pp": 41.5,
+      "true_file_pct": 79.2,
+      "shuffle_file_pct": 4.2,
+      "drop_file_pp": 75.0,
+      "below_5pp_window": false,
+      "n_files": 24,
+      "donor_mismatch_rate": 1.0
+    },
+    {
+      "seed": 4,
+      "true_window_pct": 46.7,
+      "shuffle_window_pct": 59.4,
+      "drop_window_pp": -12.7,
+      "true_file_pct": 87.5,
+      "shuffle_file_pct": 70.8,
+      "drop_file_pp": 16.7,
+      "below_5pp_window": true,
+      "n_files": 24,
+      "donor_mismatch_rate": 1.0
+    }
+  ],
+  "window_drop_pp": [
+    -9.4,
+    4.4,
+    41.5,
+    41.5,
+    -12.7
+  ],
+  "file_drop_pp": [
+    -4.2,
+    20.8,
+    66.7,
+    75.0,
+    16.7
+  ],
+  "window_drop_mean_pp": 13.1,
+  "identity_claim_shrinks": false
+}

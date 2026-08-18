@@ -1,0 +1,138 @@
+{
+  "day5_used": false,
+  "k": 256,
+  "file_vote": "mean_logits",
+  "recipe_frozen": true,
+  "green_count_threshold": 4,
+  "seeds_present": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "complete_5_seeds": true,
+  "missing": [],
+  "file_acc_pct": {
+    "A_cnn_iq": [
+      75.0,
+      75.0,
+      58.3,
+      62.5,
+      58.3
+    ],
+    "B_exact_main_no_oob": [
+      41.7,
+      62.5,
+      4.2,
+      4.2,
+      4.2
+    ],
+    "C_full_zscore": [
+      66.7,
+      70.8,
+      58.3,
+      66.7,
+      66.7
+    ],
+    "C_full_ratio": [
+      70.8,
+      87.5,
+      70.8,
+      79.2,
+      87.5
+    ]
+  },
+  "window_acc_pct": {
+    "A_cnn_iq": [
+      52.2,
+      52.8,
+      46.6,
+      50.1,
+      47.9
+    ],
+    "B_exact_main_no_oob": [
+      22.2,
+      49.2,
+      5.7,
+      4.6,
+      4.3
+    ],
+    "C_full_zscore": [
+      27.9,
+      31.8,
+      31.2,
+      28.0,
+      36.8
+    ],
+    "C_full_ratio": [
+      43.8,
+      44.3,
+      46.1,
+      46.5,
+      46.7
+    ]
+  },
+  "delta_file_pct": {
+    "C_minus_B": [
+      25.0,
+      8.299999999999997,
+      54.099999999999994,
+      62.5,
+      62.5
+    ],
+    "Cp_minus_B": [
+      29.099999999999994,
+      25.0,
+      66.6,
+      75.0,
+      83.3
+    ],
+    "C_minus_A": [
+      -8.299999999999997,
+      -4.200000000000003,
+      0.0,
+      4.200000000000003,
+      8.400000000000006
+    ],
+    "Cp_minus_A": [
+      -4.200000000000003,
+      12.5,
+      12.5,
+      16.700000000000003,
+      29.200000000000003
+    ]
+  },
+  "delta_window_pct": {
+    "C_minus_B": [
+      5.699999999999999,
+      -17.400000000000002,
+      25.5,
+      23.4,
+      32.5
+    ],
+    "Cp_minus_B": [
+      21.599999999999998,
+      -4.900000000000006,
+      40.4,
+      41.9,
+      42.400000000000006
+    ]
+  },
+  "counts": {
+    "C_gt_B_file": "5/5",
+    "Cp_gt_B_file": "5/5",
+    "C_gt_A_file": "2/5",
+    "Cp_gt_A_file": "4/5"
+  },
+  "registered_count_gate": {
+    "C_zscore_full_gt_main": true,
+    "Cp_ratio_full_gt_main": true
+  },
+  "window_sign_not_opposite_mean": {
+    "C_zscore": true,
+    "Cp_ratio": true
+  },
+  "verdict": "COMPUTED_COUNTS_ONLY",
+  "note": "Do not treat count-gate True as a paper GREEN until window/file tables are read. Do not move the 4/5 threshold. Experiment 2 closed."
+}

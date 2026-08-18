@@ -1,0 +1,81 @@
+{
+  "day5_used": false,
+  "no_training": true,
+  "primary": "C_full_ratio vs C_full_ratio_rx_style",
+  "delta_drop_pp": 5.0,
+  "note": "Eval-only RX-style on frozen 1C C'. In-band scale locked. Window drop = clean C' \u2212 RX C'. Mean drop < 5pp \u2192 not strongly RX-entangled at inference. Threshold is not moved. RCOF stays closed.",
+  "missing_seeds": [],
+  "per_seed": [
+    {
+      "seed": 0,
+      "true_window_pct": 43.8,
+      "rx_window_pct": 15.3,
+      "drop_window_pp": 28.5,
+      "true_file_pct": 70.8,
+      "rx_file_pct": 29.2,
+      "drop_file_pp": 41.7,
+      "below_5pp_window": false,
+      "n_files": 24
+    },
+    {
+      "seed": 1,
+      "true_window_pct": 44.3,
+      "rx_window_pct": 14.9,
+      "drop_window_pp": 29.3,
+      "true_file_pct": 87.5,
+      "rx_file_pct": 41.7,
+      "drop_file_pp": 45.8,
+      "below_5pp_window": false,
+      "n_files": 24
+    },
+    {
+      "seed": 2,
+      "true_window_pct": 46.1,
+      "rx_window_pct": 12.6,
+      "drop_window_pp": 33.5,
+      "true_file_pct": 70.8,
+      "rx_file_pct": 29.2,
+      "drop_file_pp": 41.7,
+      "below_5pp_window": false,
+      "n_files": 24
+    },
+    {
+      "seed": 3,
+      "true_window_pct": 46.5,
+      "rx_window_pct": 16.9,
+      "drop_window_pp": 29.6,
+      "true_file_pct": 79.2,
+      "rx_file_pct": 45.8,
+      "drop_file_pp": 33.3,
+      "below_5pp_window": false,
+      "n_files": 24
+    },
+    {
+      "seed": 4,
+      "true_window_pct": 46.7,
+      "rx_window_pct": 15.8,
+      "drop_window_pp": 30.8,
+      "true_file_pct": 87.5,
+      "rx_file_pct": 37.5,
+      "drop_file_pp": 50.0,
+      "below_5pp_window": false,
+      "n_files": 24
+    }
+  ],
+  "window_drop_pp": [
+    28.5,
+    29.3,
+    33.5,
+    29.6,
+    30.8
+  ],
+  "file_drop_pp": [
+    41.7,
+    45.8,
+    41.7,
+    33.3,
+    50.0
+  ],
+  "window_drop_mean_pp": 30.3,
+  "rx_entangled": true
+}

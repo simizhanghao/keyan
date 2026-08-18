@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-# Paper 1 Audit 1C seed0: matched CNN / Main-only / Full-zscore / Full-ratio.
-# Keep Paper 1 batch=128, lr=3e-3. Speed comes from 4-GPU parallel + DataLoader workers.
+# Paper 1 Audit 1C matched CNN / Main-only / Full-zscore / Full-ratio.
+# Keep Paper 1 batch=128, lr=3e-3. Speed comes from GPU waves + DataLoader workers.
 # Checkpoint and reported metrics use Day4 val only. Day5 is not evaluated.
+# Default SEED=0. Set SEEDS=1,2,3,4 to fill the remaining Day4 matched seeds.
 set -euo pipefail
 
 KEYAN="${KEYAN:-/data1/hcc/llm4RF/new_phase}"
@@ -9,6 +10,7 @@ DATA_ROOT="${DATA_ROOT:-/data1/hcc/llm4RF}"
 PY="${PY:-/new_nfs/liuyida/anaconda3/envs/qwen3_lf/bin/python}"
 GPUS="${GPUS:-4,5}"
 SEED="${SEED:-0}"
+SEEDS="${SEEDS:-${SEED}}"
 NUM_WORKERS="${NUM_WORKERS:-8}"
 MANIFEST="${KEYAN}/data/paper/cross_day_day1to5_source_only.csv"
 OUT_ROOT="${KEYAN}/experiments/paper1_audit/results/matched_seed0"
@@ -27,25 +29,7 @@ if [[ ${#GPU_ARR[@]} -lt 1 ]]; then
   echo "GPUS is empty" >&2
   exit 1
 fi
-
-COMMON=(
-  --manifest "${MANIFEST}"
-  --root "${DATA_ROOT}"
-  --batch-size 128
-  --samples-per-file 256
-  --eval-samples-per-file 256
-  --dim 64
-  --depth 2
-  --device cuda
-  --train-split train
-  --val-split val
-  --eval-split val
-  --input-norm iq_rms
-  --fft-norm log_zscore
-  --window-size 8192
-  --num-workers "${NUM_WORKERS}"
-  --seed "${SEED}"
-)
+IFS=',' read -r -a SEED_ARR <<< "${SEEDS}"
 
 TRAIN_ONLY=(
   --epochs 80
@@ -71,6 +55,10 @@ run_one() {
   local eval_dir="${OUT_ROOT}/eval_val/${name}/seed_${SEED}"
   local log="${LOG_DIR}/${name}_seed${SEED}.log"
   mkdir -p "${run_dir}" "${eval_dir}"
+  if [[ -f "${eval_dir}/metrics.json" ]]; then
+    echo "SKIP ${name} seed=${SEED} (metrics exist; recipe freeze)"
+    return 0
+  fi
   {
     echo "=== TRAIN ${name} seed=${SEED} GPU=${gpu} batch=128 workers=${NUM_WORKERS} ==="
     CUDA_VISIBLE_DEVICES="${gpu}" "${PY}" scripts/finetune.py \
@@ -104,31 +92,16 @@ start_job() {
   esac
 }
 
-echo "python=${PY}"
-echo "gpus=${GPUS}  (4 jobs, ${#GPU_ARR[@]} concurrent)"
-echo "batch=128 (Paper 1 matched; not filling 80GB)"
-echo "day5_eval=FORBIDDEN"
-
-N_GPU=${#GPU_ARR[@]}
-for ((i = 0; i < 4; i += N_GPU)); do
-  pids=()
-  echo "=== wave $((i / N_GPU + 1)): jobs ${i}..$((i + N_GPU < 4 ? i + N_GPU - 1 : 3)) ==="
-  for ((j = 0; j < N_GPU && i + j < 4; j++)); do
-    start_job "$((i + j))" "${GPU_ARR[j]}" &
-    pids+=("$!")
-  done
-  for pid in "${pids[@]}"; do
-    wait "${pid}"
-  done
-done
-
-"${PY}" - <<'PY'
+write_seed_summary() {
+  local seed="$1"
+  "${PY}" - <<PY
 import json
 from pathlib import Path
-root = Path("/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/matched_seed0/eval_val")
+seed = ${seed}
+root = Path("${OUT_ROOT}") / "eval_val"
 rows = []
 for name in ["A_cnn_iq", "B_exact_main_no_oob", "C_full_zscore", "C_full_ratio"]:
-    m = json.loads((root / name / "seed_0" / "metrics.json").read_text())
+    m = json.loads((root / name / f"seed_{seed}" / "metrics.json").read_text())
     rows.append({
         "model": name,
         "split": "val_day4",
@@ -137,10 +110,63 @@ for name in ["A_cnn_iq", "B_exact_main_no_oob", "C_full_zscore", "C_full_ratio"]
         "file_macro_f1_pct": round(100 * m["file_macro_f1"], 1),
         "n_files": m["num_files"],
     })
-out = Path("/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/matched_seed0/summary_val.json")
-out.write_text(json.dumps({"day5_used": False, "seed": 0, "batch_size": 128, "rows": rows}, indent=2) + "\n")
+out = Path("${OUT_ROOT}") / f"summary_val_seed_{seed}.json"
+payload = {"day5_used": False, "seed": seed, "batch_size": 128, "rows": rows}
+out.write_text(json.dumps(payload, indent=2) + "\n")
+if seed == 0:
+    (Path("${OUT_ROOT}") / "summary_val.json").write_text(json.dumps(payload, indent=2) + "\n")
 print(json.dumps(rows, indent=2))
 print("wrote", out)
 PY
+}
 
-echo "1C seed0 finished. Day5 was not evaluated."
+echo "python=${PY}"
+echo "gpus=${GPUS}  (4 jobs per seed, ${#GPU_ARR[@]} concurrent)"
+echo "seeds=${SEEDS}"
+echo "batch=128 (Paper 1 matched; not filling 80GB)"
+echo "day5_eval=FORBIDDEN"
+
+N_GPU=${#GPU_ARR[@]}
+for SEED in "${SEED_ARR[@]}"; do
+  COMMON=(
+    --manifest "${MANIFEST}"
+    --root "${DATA_ROOT}"
+    --batch-size 128
+    --samples-per-file 256
+    --eval-samples-per-file 256
+    --dim 64
+    --depth 2
+    --device cuda
+    --train-split train
+    --val-split val
+    --eval-split val
+    --input-norm iq_rms
+    --fft-norm log_zscore
+    --window-size 8192
+    --num-workers "${NUM_WORKERS}"
+    --seed "${SEED}"
+  )
+  echo "======== seed=${SEED} ========"
+  for ((i = 0; i < 4; i += N_GPU)); do
+    pids=()
+    echo "=== seed ${SEED} wave $((i / N_GPU + 1)): jobs ${i}..$((i + N_GPU < 4 ? i + N_GPU - 1 : 3)) ==="
+    for ((j = 0; j < N_GPU && i + j < 4; j++)); do
+      start_job "$((i + j))" "${GPU_ARR[j]}" &
+      pids+=("$!")
+    done
+    status=0
+    for pid in "${pids[@]}"; do
+      if ! wait "${pid}"; then
+        status=1
+      fi
+    done
+    if [[ "${status}" -ne 0 ]]; then
+      echo "a job failed in seed=${SEED}; see ${LOG_DIR}" >&2
+      exit 1
+    fi
+  done
+  write_seed_summary "${SEED}"
+done
+
+echo "1C matched seeds finished (${SEEDS}). Day5 was not evaluated."
+"${PY}" "${KEYAN}/experiments/paper1_audit/scripts/audit_matched_5seed.py" || true

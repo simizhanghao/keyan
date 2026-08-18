@@ -1,0 +1,387 @@
+{
+  "day5_used": false,
+  "no_training": true,
+  "oracle_type": "label_oracle",
+  "delta_drop_pp": 5.0,
+  "primary_pair": "B_exact_main_no_oob vs C_full_ratio",
+  "secondary_pair": "B_exact_main_no_oob vs C_full_zscore",
+  "main_trained_seeds": [
+    0,
+    1
+  ],
+  "note": "Label oracle is an upper bound on any utility gate. Collapsed Main seeds make max(Main,Full)\u2248Full; report them but do not let them alone DROP the 5pp gate. Threshold stays 5pp.",
+  "primary": {
+    "full_model": "C_full_ratio",
+    "per_seed": [
+      {
+        "seed": 0,
+        "main_collapsed": false,
+        "window": {
+          "n": 6144,
+          "main_acc_pct": 22.2,
+          "full_acc_pct": 43.8,
+          "best_expert_pct": 43.8,
+          "oracle_acc_pct": 52.5,
+          "delta_pp": 8.7,
+          "below_5pp": false,
+          "both_correct": 828,
+          "main_only": 534,
+          "full_only": 1862,
+          "neither": 2920,
+          "main_only_pct": 8.7,
+          "full_only_pct": 30.3
+        },
+        "file": {
+          "n": 24,
+          "main_acc_pct": 41.7,
+          "full_acc_pct": 70.8,
+          "best_expert_pct": 70.8,
+          "oracle_acc_pct": 75.0,
+          "delta_pp": 4.2,
+          "below_5pp": true,
+          "both_correct": 9,
+          "main_only": 1,
+          "full_only": 8,
+          "neither": 6,
+          "main_only_pct": 4.2,
+          "full_only_pct": 33.3
+        }
+      },
+      {
+        "seed": 1,
+        "main_collapsed": false,
+        "window": {
+          "n": 6144,
+          "main_acc_pct": 49.2,
+          "full_acc_pct": 44.3,
+          "best_expert_pct": 49.2,
+          "oracle_acc_pct": 67.9,
+          "delta_pp": 18.7,
+          "below_5pp": false,
+          "both_correct": 1573,
+          "main_only": 1450,
+          "full_only": 1147,
+          "neither": 1974,
+          "main_only_pct": 23.6,
+          "full_only_pct": 18.7
+        },
+        "file": {
+          "n": 24,
+          "main_acc_pct": 62.5,
+          "full_acc_pct": 87.5,
+          "best_expert_pct": 87.5,
+          "oracle_acc_pct": 91.7,
+          "delta_pp": 4.2,
+          "below_5pp": true,
+          "both_correct": 14,
+          "main_only": 1,
+          "full_only": 7,
+          "neither": 2,
+          "main_only_pct": 4.2,
+          "full_only_pct": 29.2
+        }
+      },
+      {
+        "seed": 2,
+        "main_collapsed": true,
+        "window": {
+          "n": 6144,
+          "main_acc_pct": 5.7,
+          "full_acc_pct": 46.1,
+          "best_expert_pct": 46.1,
+          "oracle_acc_pct": 49.2,
+          "delta_pp": 3.1,
+          "below_5pp": true,
+          "both_correct": 158,
+          "main_only": 191,
+          "full_only": 2673,
+          "neither": 3122,
+          "main_only_pct": 3.1,
+          "full_only_pct": 43.5
+        },
+        "file": {
+          "n": 24,
+          "main_acc_pct": 4.2,
+          "full_acc_pct": 70.8,
+          "best_expert_pct": 70.8,
+          "oracle_acc_pct": 70.8,
+          "delta_pp": 0.0,
+          "below_5pp": true,
+          "both_correct": 1,
+          "main_only": 0,
+          "full_only": 16,
+          "neither": 7,
+          "main_only_pct": 0.0,
+          "full_only_pct": 66.7
+        }
+      },
+      {
+        "seed": 3,
+        "main_collapsed": true,
+        "window": {
+          "n": 6144,
+          "main_acc_pct": 4.6,
+          "full_acc_pct": 46.5,
+          "best_expert_pct": 46.5,
+          "oracle_acc_pct": 48.2,
+          "delta_pp": 1.7,
+          "below_5pp": true,
+          "both_correct": 179,
+          "main_only": 105,
+          "full_only": 2676,
+          "neither": 3184,
+          "main_only_pct": 1.7,
+          "full_only_pct": 43.6
+        },
+        "file": {
+          "n": 24,
+          "main_acc_pct": 4.2,
+          "full_acc_pct": 79.2,
+          "best_expert_pct": 79.2,
+          "oracle_acc_pct": 79.2,
+          "delta_pp": 0.0,
+          "below_5pp": true,
+          "both_correct": 1,
+          "main_only": 0,
+          "full_only": 18,
+          "neither": 5,
+          "main_only_pct": 0.0,
+          "full_only_pct": 75.0
+        }
+      },
+      {
+        "seed": 4,
+        "main_collapsed": true,
+        "window": {
+          "n": 6144,
+          "main_acc_pct": 4.3,
+          "full_acc_pct": 46.7,
+          "best_expert_pct": 46.7,
+          "oracle_acc_pct": 48.2,
+          "delta_pp": 1.6,
+          "below_5pp": true,
+          "both_correct": 167,
+          "main_only": 97,
+          "full_only": 2700,
+          "neither": 3180,
+          "main_only_pct": 1.6,
+          "full_only_pct": 43.9
+        },
+        "file": {
+          "n": 24,
+          "main_acc_pct": 4.2,
+          "full_acc_pct": 87.5,
+          "best_expert_pct": 87.5,
+          "oracle_acc_pct": 87.5,
+          "delta_pp": 0.0,
+          "below_5pp": true,
+          "both_correct": 1,
+          "main_only": 0,
+          "full_only": 20,
+          "neither": 3,
+          "main_only_pct": 0.0,
+          "full_only_pct": 83.3
+        }
+      }
+    ]
+  },
+  "secondary": {
+    "full_model": "C_full_zscore",
+    "per_seed": [
+      {
+        "seed": 0,
+        "main_collapsed": false,
+        "window": {
+          "n": 6144,
+          "main_acc_pct": 22.2,
+          "full_acc_pct": 27.9,
+          "best_expert_pct": 27.9,
+          "oracle_acc_pct": 40.9,
+          "delta_pp": 13.0,
+          "below_5pp": false,
+          "both_correct": 564,
+          "main_only": 798,
+          "full_only": 1149,
+          "neither": 3633,
+          "main_only_pct": 13.0,
+          "full_only_pct": 18.7
+        },
+        "file": {
+          "n": 24,
+          "main_acc_pct": 41.7,
+          "full_acc_pct": 66.7,
+          "best_expert_pct": 66.7,
+          "oracle_acc_pct": 70.8,
+          "delta_pp": 4.2,
+          "below_5pp": true,
+          "both_correct": 9,
+          "main_only": 1,
+          "full_only": 7,
+          "neither": 7,
+          "main_only_pct": 4.2,
+          "full_only_pct": 29.2
+        }
+      },
+      {
+        "seed": 1,
+        "main_collapsed": false,
+        "window": {
+          "n": 6144,
+          "main_acc_pct": 49.2,
+          "full_acc_pct": 31.8,
+          "best_expert_pct": 49.2,
+          "oracle_acc_pct": 62.4,
+          "delta_pp": 13.2,
+          "below_5pp": false,
+          "both_correct": 1148,
+          "main_only": 1875,
+          "full_only": 808,
+          "neither": 2313,
+          "main_only_pct": 30.5,
+          "full_only_pct": 13.2
+        },
+        "file": {
+          "n": 24,
+          "main_acc_pct": 62.5,
+          "full_acc_pct": 70.8,
+          "best_expert_pct": 70.8,
+          "oracle_acc_pct": 87.5,
+          "delta_pp": 16.7,
+          "below_5pp": false,
+          "both_correct": 11,
+          "main_only": 4,
+          "full_only": 6,
+          "neither": 3,
+          "main_only_pct": 16.7,
+          "full_only_pct": 25.0
+        }
+      },
+      {
+        "seed": 2,
+        "main_collapsed": true,
+        "window": {
+          "n": 6144,
+          "main_acc_pct": 5.7,
+          "full_acc_pct": 31.2,
+          "best_expert_pct": 31.2,
+          "oracle_acc_pct": 35.3,
+          "delta_pp": 4.2,
+          "below_5pp": true,
+          "both_correct": 93,
+          "main_only": 256,
+          "full_only": 1821,
+          "neither": 3974,
+          "main_only_pct": 4.2,
+          "full_only_pct": 29.6
+        },
+        "file": {
+          "n": 24,
+          "main_acc_pct": 4.2,
+          "full_acc_pct": 58.3,
+          "best_expert_pct": 58.3,
+          "oracle_acc_pct": 62.5,
+          "delta_pp": 4.2,
+          "below_5pp": true,
+          "both_correct": 0,
+          "main_only": 1,
+          "full_only": 14,
+          "neither": 9,
+          "main_only_pct": 4.2,
+          "full_only_pct": 58.3
+        }
+      },
+      {
+        "seed": 3,
+        "main_collapsed": true,
+        "window": {
+          "n": 6144,
+          "main_acc_pct": 4.6,
+          "full_acc_pct": 28.0,
+          "best_expert_pct": 28.0,
+          "oracle_acc_pct": 30.9,
+          "delta_pp": 2.9,
+          "below_5pp": true,
+          "both_correct": 107,
+          "main_only": 177,
+          "full_only": 1615,
+          "neither": 4245,
+          "main_only_pct": 2.9,
+          "full_only_pct": 26.3
+        },
+        "file": {
+          "n": 24,
+          "main_acc_pct": 4.2,
+          "full_acc_pct": 66.7,
+          "best_expert_pct": 66.7,
+          "oracle_acc_pct": 66.7,
+          "delta_pp": 0.0,
+          "below_5pp": true,
+          "both_correct": 1,
+          "main_only": 0,
+          "full_only": 15,
+          "neither": 8,
+          "main_only_pct": 0.0,
+          "full_only_pct": 62.5
+        }
+      },
+      {
+        "seed": 4,
+        "main_collapsed": true,
+        "window": {
+          "n": 6144,
+          "main_acc_pct": 4.3,
+          "full_acc_pct": 36.8,
+          "best_expert_pct": 36.8,
+          "oracle_acc_pct": 39.3,
+          "delta_pp": 2.5,
+          "below_5pp": true,
+          "both_correct": 110,
+          "main_only": 154,
+          "full_only": 2153,
+          "neither": 3727,
+          "main_only_pct": 2.5,
+          "full_only_pct": 35.0
+        },
+        "file": {
+          "n": 24,
+          "main_acc_pct": 4.2,
+          "full_acc_pct": 66.7,
+          "best_expert_pct": 66.7,
+          "oracle_acc_pct": 70.8,
+          "delta_pp": 4.2,
+          "below_5pp": true,
+          "both_correct": 0,
+          "main_only": 1,
+          "full_only": 16,
+          "neither": 7,
+          "main_only_pct": 4.2,
+          "full_only_pct": 66.7
+        }
+      }
+    ]
+  },
+  "window_delta_pp": {
+    "primary_all5": [
+      8.7,
+      18.7,
+      3.1,
+      1.7,
+      1.6
+    ],
+    "primary_main_trained": [
+      8.7,
+      18.7
+    ],
+    "secondary_all5": [
+      13.0,
+      13.2,
+      4.2,
+      2.9,
+      2.5
+    ],
+    "secondary_main_trained": [
+      13.0,
+      13.2
+    ]
+  }
+}
