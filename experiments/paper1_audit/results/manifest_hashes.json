@@ -1,0 +1,52 @@
+{
+  "/data1/hcc/llm4RF/new_phase/data/paper/cross_day_day1to5_source_only.csv": {
+    "exists": true,
+    "bytes": 21574,
+    "sha256": "b4846c7b19f7cc7effad0dbcaf53a3bc310c3f4a6448420945bbd78a5f2e31e5"
+  },
+  "/data1/hcc/llm4RF/new_phase/data/paper/cross_day_day1to5_oracle_target_val.csv": {
+    "exists": true,
+    "bytes": 25307,
+    "sha256": "d3d8793835923ad365dbf672b5b7cad627ea7a8c18400331aec4f53a54567892"
+  },
+  "/data1/hcc/llm4RF/new_phase/data/paper/lodo_source_only/test_day_1.csv": {
+    "exists": true,
+    "bytes": 22294,
+    "sha256": "8206c52ba424afd3ddd2111af53958c9b34d464ebe68675e037346e3775521dd"
+  },
+  "/data1/hcc/llm4RF/new_phase/data/paper/lodo_source_only/test_day_2.csv": {
+    "exists": true,
+    "bytes": 22294,
+    "sha256": "014189919e0548a2c93f0d3bab924cc6e3d2d2e30d30c2969370485a4bae9dd8"
+  },
+  "/data1/hcc/llm4RF/new_phase/data/paper/lodo_source_only/test_day_3.csv": {
+    "exists": true,
+    "bytes": 22294,
+    "sha256": "2dd7c89a61c50cb6a0fbd3434bf385a7629a6799991f3ba39bfbbc779c8f4a5d"
+  },
+  "/data1/hcc/llm4RF/new_phase/data/paper/lodo_source_only/test_day_4.csv": {
+    "exists": true,
+    "bytes": 22294,
+    "sha256": "715087864cebc95dd00dfab6d124f77e149185111fabb2c02346deadee7b2cb2"
+  },
+  "/data1/hcc/llm4RF/new_phase/data/paper/lodo_source_only/test_day_5.csv": {
+    "exists": true,
+    "bytes": 22294,
+    "sha256": "02d505fd02cf5bc601c2cc5be1456d7b1576d988ec0edd70b5eac3a27a30ea28"
+  },
+  "/data1/hcc/llm4RF/outputs/paper_ready_v3/final_tables/table1_cross_day_main.csv": {
+    "exists": true,
+    "bytes": 760,
+    "sha256": "61a0ecdcea6ac2777b072855e3247bcf589209c58badd76f47a0f6288b636398"
+  },
+  "/data1/hcc/llm4RF/new_phase/src/rfhstu/features.py": {
+    "exists": true,
+    "bytes": 5027,
+    "sha256": "709550882ee6f25cba1940baa15b2c0de69a7d50c253718a1ea04454a01c390c"
+  },
+  "/data1/hcc/llm4RF/new_phase/scripts/paper/lib/v3_job_defs.py": {
+    "exists": true,
+    "bytes": 8283,
+    "sha256": "6022f72b9f39f9a3dfeff16c7f1f9aad27604caedb9c55afdfa2cb2c5eba84b1"
+  }
+}

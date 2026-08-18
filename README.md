@@ -46,6 +46,7 @@
 | `experiments/cross_receiver_calibration/` | 4 | RCPA-T + 同协议 baseline |
 | `experiments/em_robustness_openset/` | 5 | EM + open-set（含 EM-CR 负面） |
 | `outputs/paper_ready_v3/` | 3 | 终局表与报告，无权重 |
+| `experiments/paper1_audit/` | 审计 | Paper 1 协议锁定 + OOB 频谱审计；不改冻结数字 |
 
 ---
 

@@ -1,0 +1,19 @@
+{
+  "candidate_legacy": {
+    "norm": "legacy_zscore",
+    "fft_window": "rectangular",
+    "guard_hz": 0.0,
+    "rho_day": 0.9456311588340254,
+    "probe_acc": 0.25
+  },
+  "candidate_corrected": {
+    "norm": "ratio",
+    "fft_window": "rectangular",
+    "guard_hz": 0.0,
+    "rho_day": 0.8035753243638373,
+    "probe_acc": 0.3333333333333333
+  },
+  "n_viable": 25,
+  "leakage_flag": false,
+  "decision": "GO_TWO_CANDIDATES"
+}

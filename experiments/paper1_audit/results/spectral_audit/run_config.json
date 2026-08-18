@@ -1,0 +1,13 @@
+{
+  "days": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "n_files": 96,
+  "windows_per_file": 8,
+  "window_size": 8192,
+  "day5_used": false,
+  "training": false
+}
