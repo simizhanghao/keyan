@@ -3,7 +3,9 @@ from __future__ import annotations
 import argparse
 import copy
 import csv
+import hashlib
 import json
+import math
 import sys
 from collections import defaultdict
 from pathlib import Path
@@ -22,6 +24,7 @@ from rfhstu.features import patchify, torch_rf_views
 from rfhstu.models import DeviceClassifier, RFPatchEmbedder
 from rfhstu.prototype import build_prototypes
 from rfhstu.train_utils import (
+    RX_FACTOR_CHOICES,
     add_common_args,
     apply_receiver_style,
     format_metrics,
@@ -30,6 +33,7 @@ from rfhstu.train_utils import (
     make_datasets,
     make_loader,
     resolve_device,
+    resolve_rx_factor_mask,
     seed_everything,
 )
 
@@ -67,8 +71,46 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Eval-only RX-style corruption: lock in-band scale, perturb OOB/tilt/gain/phase/noise.",
     )
+    parser.add_argument(
+        "--rx-factor",
+        choices=list(RX_FACTOR_CHOICES),
+        default=None,
+        help="Leave-one-in / family mask for --rx-style-eval. Omit to keep the original all-five bundle.",
+    )
     parser.add_argument("--out-dir", default=None)
     return parser.parse_args()
+
+
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def rx_factor_provenance(args: argparse.Namespace) -> dict[str, Any]:
+    enabled = bool(getattr(args, "rx_style_eval", False))
+    factor = getattr(args, "rx_factor", None)
+    mask = resolve_rx_factor_mask(factor) if enabled else frozenset()
+    return {
+        "rx_factor": factor if factor is not None else ("all" if enabled else ""),
+        "rx_tilt_enabled": "tilt" in mask,
+        "rx_oob_scale_enabled": "oob_scale" in mask,
+        "rx_gain_enabled": "gain" in mask,
+        "rx_phase_enabled": "phase" in mask,
+        "rx_noise_enabled": "noise" in mask,
+        "rx_enabled_atoms": sorted(mask),
+        "rx_perturbation": {
+            "lock_inband": enabled,
+            "tilt_db": [args.rx_spectral_tilt_db_min, args.rx_spectral_tilt_db_max],
+            "oob_scale": [args.rx_oob_scale_min, args.rx_oob_scale_max],
+            "gain_db": [args.rx_gain_db_min, args.rx_gain_db_max],
+            "phase_rad": [-math.pi, math.pi],
+            "noise_std": [args.rx_noise_std_min, args.rx_noise_std_max],
+            "inband_scale": [1.0, 1.0] if enabled else [args.rx_inband_scale_min, args.rx_inband_scale_max],
+        },
+    }
 
 
 def build_model(args: argparse.Namespace, ckpt: dict, device: torch.device) -> torch.nn.Module:
@@ -777,6 +819,8 @@ def clean_prediction_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 def main() -> None:
     args = parse_args()
+    if getattr(args, "rx_factor", None) and not getattr(args, "rx_style_eval", False):
+        raise SystemExit("--rx-factor requires --rx-style-eval")
     seed_everything(args.seed)
     device = resolve_device(args.device)
     mode = resolve_mode(args)
@@ -939,6 +983,15 @@ def main() -> None:
         "oob_donor_mismatch_rate": donor_mismatch,
         "rx_style_eval": bool(getattr(args, "rx_style_eval", False)),
         "rx_inband_locked": bool(getattr(args, "rx_style_eval", False)),
+        "training": False,
+        "eval_split": eval_split,
+        "day5_used": eval_split == "test",
+        "k_windows_per_file": int(args.eval_samples_per_file or args.samples_per_file),
+        "checkpoint_path": str(ckpt_path.resolve()),
+        "checkpoint_sha256": sha256_file(ckpt_path),
+        "checkpoint_seed": ckpt_args_saved.get("seed", args.seed),
+        "eval_rng_seed": int(args.seed),
+        **rx_factor_provenance(args),
         "num_classes": num_classes,
         "eval_mode": mode,
         "file_vote_mode": args.file_vote_mode,

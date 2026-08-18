@@ -1,0 +1,57 @@
+{
+  "training": false,
+  "day5_used": false,
+  "real_rx2_used": false,
+  "n_files": 8,
+  "n_windows": 16,
+  "days": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "samples_per_file": 2,
+  "smoke": true,
+  "invariance_relative_l2": {
+    "C0": 0.330846,
+    "C1": 1e-06,
+    "C2": 0.000172
+  },
+  "invariance_cosine_distance": {
+    "C0": 0.0,
+    "C1": -0.0,
+    "C2": 0.0
+  },
+  "separability": {
+    "C0": {
+      "d_same": 0.111252,
+      "d_diff": 0.117803,
+      "rho": 0.944385
+    },
+    "C1": {
+      "d_same": 0.11083,
+      "d_diff": 0.117683,
+      "rho": 0.941767
+    },
+    "C2": {
+      "d_same": 0.155354,
+      "d_diff": 0.154235,
+      "rho": 1.007255
+    }
+  },
+  "day4_nearest_day123_centroid": {
+    "C0": {
+      "n_day4_files": 2,
+      "acc": 0.5
+    },
+    "C1": {
+      "n_day4_files": 2,
+      "acc": 0.5
+    },
+    "C2": {
+      "n_day4_files": 2,
+      "acc": 0.5
+    }
+  },
+  "note": "Invariance is a sanity check. Method selection uses rho / Day4 centroid only. Real target-RX is forbidden here. ratio algebra for C0 is unchanged."
+}

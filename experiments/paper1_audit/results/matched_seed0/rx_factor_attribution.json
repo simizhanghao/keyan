@@ -1,0 +1,678 @@
+{
+  "day5_used": false,
+  "no_training": true,
+  "r0": "C_full_ratio",
+  "r6_window_drop_frozen_pp": 30.3,
+  "r6_not_rerun": true,
+  "primary": "window drop = clean C' \u2212 factor C'",
+  "file_acc_not_deciding": true,
+  "thresholds_pp": {
+    "individually_large": 15.0,
+    "family_majority": 18.2,
+    "spec_weak": 12.1,
+    "d_full": 30.3
+  },
+  "missing": [],
+  "complete": true,
+  "arms": {
+    "tilt": {
+      "per_seed": [
+        {
+          "seed": 0,
+          "clean_window_pct": 43.8,
+          "arm_window_pct": 37.9,
+          "drop_window_pp": 5.9,
+          "clean_file_pct": 70.8,
+          "arm_file_pct": 75.0,
+          "drop_file_pp": -4.2,
+          "flip_rate_pct": 29.2,
+          "rx_factor": "tilt",
+          "checkpoint_sha256": "8899f9187203e84e2c00ba6c4586cc483440a548593bd09843b926ef78d1ce3d",
+          "eval_rng_seed": 0
+        },
+        {
+          "seed": 1,
+          "clean_window_pct": 44.3,
+          "arm_window_pct": 38.7,
+          "drop_window_pp": 5.6,
+          "clean_file_pct": 87.5,
+          "arm_file_pct": 83.3,
+          "drop_file_pp": 4.2,
+          "flip_rate_pct": 32.1,
+          "rx_factor": "tilt",
+          "checkpoint_sha256": "cc361a1791adbcfc8b9590e17d0ac7d9ef50b645df40a7f7f34c2a6dab3038e2",
+          "eval_rng_seed": 1
+        },
+        {
+          "seed": 2,
+          "clean_window_pct": 46.1,
+          "arm_window_pct": 43.0,
+          "drop_window_pp": 3.1,
+          "clean_file_pct": 70.8,
+          "arm_file_pct": 70.8,
+          "drop_file_pp": 0.0,
+          "flip_rate_pct": 23.9,
+          "rx_factor": "tilt",
+          "checkpoint_sha256": "e4e710f1865252dffe47175da1735e885f53165ebff70f4b358f9b52920425ca",
+          "eval_rng_seed": 2
+        },
+        {
+          "seed": 3,
+          "clean_window_pct": 46.5,
+          "arm_window_pct": 40.9,
+          "drop_window_pp": 5.6,
+          "clean_file_pct": 79.2,
+          "arm_file_pct": 79.2,
+          "drop_file_pp": 0.0,
+          "flip_rate_pct": 29.6,
+          "rx_factor": "tilt",
+          "checkpoint_sha256": "b4c79882a1a497ad5c3663841c6b5ddfccac84842e03afc5c6a7b3d95c1680fb",
+          "eval_rng_seed": 3
+        },
+        {
+          "seed": 4,
+          "clean_window_pct": 46.7,
+          "arm_window_pct": 41.0,
+          "drop_window_pp": 5.7,
+          "clean_file_pct": 87.5,
+          "arm_file_pct": 83.3,
+          "drop_file_pp": 4.2,
+          "flip_rate_pct": 28.1,
+          "rx_factor": "tilt",
+          "checkpoint_sha256": "52e3f2e94586da1c0bc3fb10201f3df754e40dadd6d10da0b4d337a01b1a89e4",
+          "eval_rng_seed": 4
+        }
+      ],
+      "window_drop_pp": [
+        5.9,
+        5.6,
+        3.1,
+        5.6,
+        5.7
+      ],
+      "file_drop_pp": [
+        -4.2,
+        4.2,
+        0.0,
+        0.0,
+        4.2
+      ],
+      "flip_rate_pct": [
+        29.2,
+        32.1,
+        23.9,
+        29.6,
+        28.1
+      ],
+      "window_drop_mean_pp": 5.2,
+      "window_drop_std_pp": 1.2
+    },
+    "oob_scale": {
+      "per_seed": [
+        {
+          "seed": 0,
+          "clean_window_pct": 43.8,
+          "arm_window_pct": 18.2,
+          "drop_window_pp": 25.5,
+          "clean_file_pct": 70.8,
+          "arm_file_pct": 33.3,
+          "drop_file_pp": 37.5,
+          "flip_rate_pct": 73.6,
+          "rx_factor": "oob_scale",
+          "checkpoint_sha256": "8899f9187203e84e2c00ba6c4586cc483440a548593bd09843b926ef78d1ce3d",
+          "eval_rng_seed": 0
+        },
+        {
+          "seed": 1,
+          "clean_window_pct": 44.3,
+          "arm_window_pct": 15.8,
+          "drop_window_pp": 28.5,
+          "clean_file_pct": 87.5,
+          "arm_file_pct": 41.7,
+          "drop_file_pp": 45.8,
+          "flip_rate_pct": 76.6,
+          "rx_factor": "oob_scale",
+          "checkpoint_sha256": "cc361a1791adbcfc8b9590e17d0ac7d9ef50b645df40a7f7f34c2a6dab3038e2",
+          "eval_rng_seed": 1
+        },
+        {
+          "seed": 2,
+          "clean_window_pct": 46.1,
+          "arm_window_pct": 13.7,
+          "drop_window_pp": 32.3,
+          "clean_file_pct": 70.8,
+          "arm_file_pct": 29.2,
+          "drop_file_pp": 41.7,
+          "flip_rate_pct": 81.6,
+          "rx_factor": "oob_scale",
+          "checkpoint_sha256": "e4e710f1865252dffe47175da1735e885f53165ebff70f4b358f9b52920425ca",
+          "eval_rng_seed": 2
+        },
+        {
+          "seed": 3,
+          "clean_window_pct": 46.5,
+          "arm_window_pct": 17.5,
+          "drop_window_pp": 28.9,
+          "clean_file_pct": 79.2,
+          "arm_file_pct": 45.8,
+          "drop_file_pp": 33.3,
+          "flip_rate_pct": 76.9,
+          "rx_factor": "oob_scale",
+          "checkpoint_sha256": "b4c79882a1a497ad5c3663841c6b5ddfccac84842e03afc5c6a7b3d95c1680fb",
+          "eval_rng_seed": 3
+        },
+        {
+          "seed": 4,
+          "clean_window_pct": 46.7,
+          "arm_window_pct": 18.4,
+          "drop_window_pp": 28.3,
+          "clean_file_pct": 87.5,
+          "arm_file_pct": 41.7,
+          "drop_file_pp": 45.8,
+          "flip_rate_pct": 75.0,
+          "rx_factor": "oob_scale",
+          "checkpoint_sha256": "52e3f2e94586da1c0bc3fb10201f3df754e40dadd6d10da0b4d337a01b1a89e4",
+          "eval_rng_seed": 4
+        }
+      ],
+      "window_drop_pp": [
+        25.5,
+        28.5,
+        32.3,
+        28.9,
+        28.3
+      ],
+      "file_drop_pp": [
+        37.5,
+        45.8,
+        41.7,
+        33.3,
+        45.8
+      ],
+      "flip_rate_pct": [
+        73.6,
+        76.6,
+        81.6,
+        76.9,
+        75.0
+      ],
+      "window_drop_mean_pp": 28.7,
+      "window_drop_std_pp": 2.4
+    },
+    "gain": {
+      "per_seed": [
+        {
+          "seed": 0,
+          "clean_window_pct": 43.8,
+          "arm_window_pct": 36.4,
+          "drop_window_pp": 7.4,
+          "clean_file_pct": 70.8,
+          "arm_file_pct": 62.5,
+          "drop_file_pp": 8.3,
+          "flip_rate_pct": 29.9,
+          "rx_factor": "gain",
+          "checkpoint_sha256": "8899f9187203e84e2c00ba6c4586cc483440a548593bd09843b926ef78d1ce3d",
+          "eval_rng_seed": 0
+        },
+        {
+          "seed": 1,
+          "clean_window_pct": 44.3,
+          "arm_window_pct": 43.8,
+          "drop_window_pp": 0.4,
+          "clean_file_pct": 87.5,
+          "arm_file_pct": 79.2,
+          "drop_file_pp": 8.3,
+          "flip_rate_pct": 7.8,
+          "rx_factor": "gain",
+          "checkpoint_sha256": "cc361a1791adbcfc8b9590e17d0ac7d9ef50b645df40a7f7f34c2a6dab3038e2",
+          "eval_rng_seed": 1
+        },
+        {
+          "seed": 2,
+          "clean_window_pct": 46.1,
+          "arm_window_pct": 37.2,
+          "drop_window_pp": 8.9,
+          "clean_file_pct": 70.8,
+          "arm_file_pct": 70.8,
+          "drop_file_pp": 0.0,
+          "flip_rate_pct": 41.3,
+          "rx_factor": "gain",
+          "checkpoint_sha256": "e4e710f1865252dffe47175da1735e885f53165ebff70f4b358f9b52920425ca",
+          "eval_rng_seed": 2
+        },
+        {
+          "seed": 3,
+          "clean_window_pct": 46.5,
+          "arm_window_pct": 42.0,
+          "drop_window_pp": 4.5,
+          "clean_file_pct": 79.2,
+          "arm_file_pct": 79.2,
+          "drop_file_pp": 0.0,
+          "flip_rate_pct": 26.7,
+          "rx_factor": "gain",
+          "checkpoint_sha256": "b4c79882a1a497ad5c3663841c6b5ddfccac84842e03afc5c6a7b3d95c1680fb",
+          "eval_rng_seed": 3
+        },
+        {
+          "seed": 4,
+          "clean_window_pct": 46.7,
+          "arm_window_pct": 37.9,
+          "drop_window_pp": 8.8,
+          "clean_file_pct": 87.5,
+          "arm_file_pct": 83.3,
+          "drop_file_pp": 4.2,
+          "flip_rate_pct": 34.9,
+          "rx_factor": "gain",
+          "checkpoint_sha256": "52e3f2e94586da1c0bc3fb10201f3df754e40dadd6d10da0b4d337a01b1a89e4",
+          "eval_rng_seed": 4
+        }
+      ],
+      "window_drop_pp": [
+        7.4,
+        0.4,
+        8.9,
+        4.5,
+        8.8
+      ],
+      "file_drop_pp": [
+        8.3,
+        8.3,
+        0.0,
+        0.0,
+        4.2
+      ],
+      "flip_rate_pct": [
+        29.9,
+        7.8,
+        41.3,
+        26.7,
+        34.9
+      ],
+      "window_drop_mean_pp": 6.0,
+      "window_drop_std_pp": 3.6
+    },
+    "phase": {
+      "per_seed": [
+        {
+          "seed": 0,
+          "clean_window_pct": 43.8,
+          "arm_window_pct": 43.3,
+          "drop_window_pp": 0.5,
+          "clean_file_pct": 70.8,
+          "arm_file_pct": 70.8,
+          "drop_file_pp": 0.0,
+          "flip_rate_pct": 13.8,
+          "rx_factor": "phase",
+          "checkpoint_sha256": "8899f9187203e84e2c00ba6c4586cc483440a548593bd09843b926ef78d1ce3d",
+          "eval_rng_seed": 0
+        },
+        {
+          "seed": 1,
+          "clean_window_pct": 44.3,
+          "arm_window_pct": 44.0,
+          "drop_window_pp": 0.3,
+          "clean_file_pct": 87.5,
+          "arm_file_pct": 87.5,
+          "drop_file_pp": 0.0,
+          "flip_rate_pct": 6.2,
+          "rx_factor": "phase",
+          "checkpoint_sha256": "cc361a1791adbcfc8b9590e17d0ac7d9ef50b645df40a7f7f34c2a6dab3038e2",
+          "eval_rng_seed": 1
+        },
+        {
+          "seed": 2,
+          "clean_window_pct": 46.1,
+          "arm_window_pct": 46.1,
+          "drop_window_pp": -0.0,
+          "clean_file_pct": 70.8,
+          "arm_file_pct": 70.8,
+          "drop_file_pp": 0.0,
+          "flip_rate_pct": 8.1,
+          "rx_factor": "phase",
+          "checkpoint_sha256": "e4e710f1865252dffe47175da1735e885f53165ebff70f4b358f9b52920425ca",
+          "eval_rng_seed": 2
+        },
+        {
+          "seed": 3,
+          "clean_window_pct": 46.5,
+          "arm_window_pct": 45.9,
+          "drop_window_pp": 0.5,
+          "clean_file_pct": 79.2,
+          "arm_file_pct": 79.2,
+          "drop_file_pp": 0.0,
+          "flip_rate_pct": 11.9,
+          "rx_factor": "phase",
+          "checkpoint_sha256": "b4c79882a1a497ad5c3663841c6b5ddfccac84842e03afc5c6a7b3d95c1680fb",
+          "eval_rng_seed": 3
+        },
+        {
+          "seed": 4,
+          "clean_window_pct": 46.7,
+          "arm_window_pct": 46.4,
+          "drop_window_pp": 0.2,
+          "clean_file_pct": 87.5,
+          "arm_file_pct": 87.5,
+          "drop_file_pp": 0.0,
+          "flip_rate_pct": 3.2,
+          "rx_factor": "phase",
+          "checkpoint_sha256": "52e3f2e94586da1c0bc3fb10201f3df754e40dadd6d10da0b4d337a01b1a89e4",
+          "eval_rng_seed": 4
+        }
+      ],
+      "window_drop_pp": [
+        0.5,
+        0.3,
+        -0.0,
+        0.5,
+        0.2
+      ],
+      "file_drop_pp": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "flip_rate_pct": [
+        13.8,
+        6.2,
+        8.1,
+        11.9,
+        3.2
+      ],
+      "window_drop_mean_pp": 0.3,
+      "window_drop_std_pp": 0.2
+    },
+    "noise": {
+      "per_seed": [
+        {
+          "seed": 0,
+          "clean_window_pct": 43.8,
+          "arm_window_pct": 43.7,
+          "drop_window_pp": 0.1,
+          "clean_file_pct": 70.8,
+          "arm_file_pct": 70.8,
+          "drop_file_pp": 0.0,
+          "flip_rate_pct": 7.0,
+          "rx_factor": "noise",
+          "checkpoint_sha256": "8899f9187203e84e2c00ba6c4586cc483440a548593bd09843b926ef78d1ce3d",
+          "eval_rng_seed": 0
+        },
+        {
+          "seed": 1,
+          "clean_window_pct": 44.3,
+          "arm_window_pct": 44.0,
+          "drop_window_pp": 0.3,
+          "clean_file_pct": 87.5,
+          "arm_file_pct": 83.3,
+          "drop_file_pp": 4.2,
+          "flip_rate_pct": 8.4,
+          "rx_factor": "noise",
+          "checkpoint_sha256": "cc361a1791adbcfc8b9590e17d0ac7d9ef50b645df40a7f7f34c2a6dab3038e2",
+          "eval_rng_seed": 1
+        },
+        {
+          "seed": 2,
+          "clean_window_pct": 46.1,
+          "arm_window_pct": 46.1,
+          "drop_window_pp": 0.0,
+          "clean_file_pct": 70.8,
+          "arm_file_pct": 70.8,
+          "drop_file_pp": 0.0,
+          "flip_rate_pct": 7.6,
+          "rx_factor": "noise",
+          "checkpoint_sha256": "e4e710f1865252dffe47175da1735e885f53165ebff70f4b358f9b52920425ca",
+          "eval_rng_seed": 2
+        },
+        {
+          "seed": 3,
+          "clean_window_pct": 46.5,
+          "arm_window_pct": 46.4,
+          "drop_window_pp": 0.1,
+          "clean_file_pct": 79.2,
+          "arm_file_pct": 79.2,
+          "drop_file_pp": 0.0,
+          "flip_rate_pct": 6.2,
+          "rx_factor": "noise",
+          "checkpoint_sha256": "b4c79882a1a497ad5c3663841c6b5ddfccac84842e03afc5c6a7b3d95c1680fb",
+          "eval_rng_seed": 3
+        },
+        {
+          "seed": 4,
+          "clean_window_pct": 46.7,
+          "arm_window_pct": 46.3,
+          "drop_window_pp": 0.3,
+          "clean_file_pct": 87.5,
+          "arm_file_pct": 87.5,
+          "drop_file_pp": 0.0,
+          "flip_rate_pct": 4.1,
+          "rx_factor": "noise",
+          "checkpoint_sha256": "52e3f2e94586da1c0bc3fb10201f3df754e40dadd6d10da0b4d337a01b1a89e4",
+          "eval_rng_seed": 4
+        }
+      ],
+      "window_drop_pp": [
+        0.1,
+        0.3,
+        0.0,
+        0.1,
+        0.3
+      ],
+      "file_drop_pp": [
+        0.0,
+        4.2,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "flip_rate_pct": [
+        7.0,
+        8.4,
+        7.6,
+        6.2,
+        4.1
+      ],
+      "window_drop_mean_pp": 0.2,
+      "window_drop_std_pp": 0.1
+    },
+    "spec": {
+      "per_seed": [
+        {
+          "seed": 0,
+          "clean_window_pct": 43.8,
+          "arm_window_pct": 15.2,
+          "drop_window_pp": 28.6,
+          "clean_file_pct": 70.8,
+          "arm_file_pct": 33.3,
+          "drop_file_pp": 37.5,
+          "flip_rate_pct": 78.9,
+          "rx_factor": "spec",
+          "checkpoint_sha256": "8899f9187203e84e2c00ba6c4586cc483440a548593bd09843b926ef78d1ce3d",
+          "eval_rng_seed": 0
+        },
+        {
+          "seed": 1,
+          "clean_window_pct": 44.3,
+          "arm_window_pct": 15.3,
+          "drop_window_pp": 28.9,
+          "clean_file_pct": 87.5,
+          "arm_file_pct": 45.8,
+          "drop_file_pp": 41.7,
+          "flip_rate_pct": 79.5,
+          "rx_factor": "spec",
+          "checkpoint_sha256": "cc361a1791adbcfc8b9590e17d0ac7d9ef50b645df40a7f7f34c2a6dab3038e2",
+          "eval_rng_seed": 1
+        },
+        {
+          "seed": 2,
+          "clean_window_pct": 46.1,
+          "arm_window_pct": 13.0,
+          "drop_window_pp": 33.1,
+          "clean_file_pct": 70.8,
+          "arm_file_pct": 29.2,
+          "drop_file_pp": 41.7,
+          "flip_rate_pct": 85.5,
+          "rx_factor": "spec",
+          "checkpoint_sha256": "e4e710f1865252dffe47175da1735e885f53165ebff70f4b358f9b52920425ca",
+          "eval_rng_seed": 2
+        },
+        {
+          "seed": 3,
+          "clean_window_pct": 46.5,
+          "arm_window_pct": 15.5,
+          "drop_window_pp": 31.0,
+          "clean_file_pct": 79.2,
+          "arm_file_pct": 45.8,
+          "drop_file_pp": 33.3,
+          "flip_rate_pct": 81.1,
+          "rx_factor": "spec",
+          "checkpoint_sha256": "b4c79882a1a497ad5c3663841c6b5ddfccac84842e03afc5c6a7b3d95c1680fb",
+          "eval_rng_seed": 3
+        },
+        {
+          "seed": 4,
+          "clean_window_pct": 46.7,
+          "arm_window_pct": 16.0,
+          "drop_window_pp": 30.7,
+          "clean_file_pct": 87.5,
+          "arm_file_pct": 33.3,
+          "drop_file_pp": 54.2,
+          "flip_rate_pct": 80.3,
+          "rx_factor": "spec",
+          "checkpoint_sha256": "52e3f2e94586da1c0bc3fb10201f3df754e40dadd6d10da0b4d337a01b1a89e4",
+          "eval_rng_seed": 4
+        }
+      ],
+      "window_drop_pp": [
+        28.6,
+        28.9,
+        33.1,
+        31.0,
+        30.7
+      ],
+      "file_drop_pp": [
+        37.5,
+        41.7,
+        41.7,
+        33.3,
+        54.2
+      ],
+      "flip_rate_pct": [
+        78.9,
+        79.5,
+        85.5,
+        81.1,
+        80.3
+      ],
+      "window_drop_mean_pp": 30.5,
+      "window_drop_std_pp": 1.8
+    },
+    "nonspec": {
+      "per_seed": [
+        {
+          "seed": 0,
+          "clean_window_pct": 43.8,
+          "arm_window_pct": 43.4,
+          "drop_window_pp": 0.4,
+          "clean_file_pct": 70.8,
+          "arm_file_pct": 70.8,
+          "drop_file_pp": 0.0,
+          "flip_rate_pct": 15.3,
+          "rx_factor": "nonspec",
+          "checkpoint_sha256": "8899f9187203e84e2c00ba6c4586cc483440a548593bd09843b926ef78d1ce3d",
+          "eval_rng_seed": 0
+        },
+        {
+          "seed": 1,
+          "clean_window_pct": 44.3,
+          "arm_window_pct": 43.1,
+          "drop_window_pp": 1.2,
+          "clean_file_pct": 87.5,
+          "arm_file_pct": 79.2,
+          "drop_file_pp": 8.3,
+          "flip_rate_pct": 11.1,
+          "rx_factor": "nonspec",
+          "checkpoint_sha256": "cc361a1791adbcfc8b9590e17d0ac7d9ef50b645df40a7f7f34c2a6dab3038e2",
+          "eval_rng_seed": 1
+        },
+        {
+          "seed": 2,
+          "clean_window_pct": 46.1,
+          "arm_window_pct": 46.3,
+          "drop_window_pp": -0.2,
+          "clean_file_pct": 70.8,
+          "arm_file_pct": 70.8,
+          "drop_file_pp": 0.0,
+          "flip_rate_pct": 11.7,
+          "rx_factor": "nonspec",
+          "checkpoint_sha256": "e4e710f1865252dffe47175da1735e885f53165ebff70f4b358f9b52920425ca",
+          "eval_rng_seed": 2
+        },
+        {
+          "seed": 3,
+          "clean_window_pct": 46.5,
+          "arm_window_pct": 46.4,
+          "drop_window_pp": 0.1,
+          "clean_file_pct": 79.2,
+          "arm_file_pct": 79.2,
+          "drop_file_pp": 0.0,
+          "flip_rate_pct": 13.0,
+          "rx_factor": "nonspec",
+          "checkpoint_sha256": "b4c79882a1a497ad5c3663841c6b5ddfccac84842e03afc5c6a7b3d95c1680fb",
+          "eval_rng_seed": 3
+        },
+        {
+          "seed": 4,
+          "clean_window_pct": 46.7,
+          "arm_window_pct": 46.3,
+          "drop_window_pp": 0.4,
+          "clean_file_pct": 87.5,
+          "arm_file_pct": 87.5,
+          "drop_file_pp": 0.0,
+          "flip_rate_pct": 6.4,
+          "rx_factor": "nonspec",
+          "checkpoint_sha256": "52e3f2e94586da1c0bc3fb10201f3df754e40dadd6d10da0b4d337a01b1a89e4",
+          "eval_rng_seed": 4
+        }
+      ],
+      "window_drop_pp": [
+        0.4,
+        1.2,
+        -0.2,
+        0.1,
+        0.4
+      ],
+      "file_drop_pp": [
+        0.0,
+        8.3,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "flip_rate_pct": [
+        15.3,
+        11.1,
+        11.7,
+        13.0,
+        6.4
+      ],
+      "window_drop_mean_pp": 0.4,
+      "window_drop_std_pp": 0.5
+    }
+  },
+  "mean_window_drop_pp": {
+    "tilt": 5.2,
+    "oob_scale": 28.7,
+    "gain": 6.0,
+    "phase": 0.3,
+    "noise": 0.2,
+    "spec": 30.5,
+    "nonspec": 0.4
+  },
+  "decision": {
+    "case": "magnitude_candidate",
+    "canonicalizer_go": true,
+    "need_oob_only_tilt_localization": false,
+    "note": "Case 1 is magnitude-family candidate only. Canonicalizer GO requires D_oob_scale >= 15pp. R_spec alone does not authorize DCT. Non-additivity cannot by itself be read as factor interaction: arms use independent perturbation draws plus network nonlinearity."
+  }
+}

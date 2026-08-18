@@ -1,0 +1,15 @@
+{
+  "day5_used": false,
+  "rows": [
+    {
+      "seed": 0,
+      "delta_window_pp": -0.3,
+      "clean_gate_pass": true
+    },
+    {
+      "seed": 1,
+      "delta_window_pp": -20.0,
+      "clean_gate_pass": false
+    }
+  ]
+}

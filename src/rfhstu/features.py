@@ -17,7 +17,7 @@ def normalize_iq(x: np.ndarray, eps: float = 1e-6) -> np.ndarray:
 
 
 FFT_NORM_CHOICES = ("none", "log_zscore")
-OOB_NORM_CHOICES = ("none", "ratio", "log_ratio", "zscore")
+OOB_NORM_CHOICES = ("none", "ratio", "log_ratio", "zscore", "ratio_rms", "ratio_logdc")
 
 
 def torch_rf_views(
@@ -38,7 +38,9 @@ def torch_rf_views(
         oob_norm: OOB feature normalization. ``zscore`` (legacy) = masked log1p then
             per-window z-score (shares the FFT z-score stats); ``none`` = masked log1p
             only; ``ratio`` = linear |spectrum| at OOB bins divided by the in-band RMS
-            magnitude (removes receiver gain); ``log_ratio`` = log|spectrum| - log(inband RMS).
+            magnitude (removes receiver gain); ``log_ratio`` = log|spectrum| - log(inband RMS);
+            ``ratio_rms`` = ``ratio`` then divide by OOB RMS (C1); ``ratio_logdc`` =
+            log(ratio+eps) minus OOB mean (C2). ``ratio`` algebra is unchanged.
 
     Returns:
         Tuple of tensors:
@@ -86,8 +88,18 @@ def torch_rf_views(
         inband_rms = (inband_power.sum(dim=-1, keepdim=True) / n_inband).clamp_min(eps).sqrt()
         if oob_norm == "ratio":
             oob_view = (abs_spec / inband_rms) * oob_mask
-        else:  # "log_ratio"
+        elif oob_norm == "log_ratio":
             oob_view = (torch.log(abs_spec + eps) - torch.log(inband_rms + eps)) * oob_mask
+        else:
+            ratio = (abs_spec / inband_rms) * oob_mask
+            n_oob = oob_mask.sum(dim=-1, keepdim=True).clamp_min(1.0)
+            if oob_norm == "ratio_rms":
+                oob_rms = ((ratio ** 2).sum(dim=-1, keepdim=True) / n_oob).clamp_min(eps).sqrt()
+                oob_view = (ratio / oob_rms) * oob_mask
+            else:  # ratio_logdc
+                log_ratio = torch.log(ratio + eps)
+                oob_mu = (log_ratio * oob_mask).sum(dim=-1, keepdim=True) / n_oob
+                oob_view = (log_ratio - oob_mu) * oob_mask
 
     return iq, fft_view, oob_view, amp_phase
 

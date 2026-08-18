@@ -146,17 +146,33 @@ Do not rewrite these numbers. Audit writes only under `experiments/paper1_audit/
 ```text
 1A  this file + machine audit          ← done
 1B  spectral audit, no training        ← done (GO_TWO_CANDIDATES)
-1C  CNN / Main / Full, 5 seeds Day4    ← done; HOLD / crutch clause
+1C  CNN / Main / Full, 5 seeds Day4    ← done; YELLOW / crutch; not GREEN
 1C.mech  Day4 mechanism audit (no Day5)
     oracle headroom                    ← done; utility gate not DROP
-    OOB identity shuffle               ← done; C' only; collapse-dominated mean
-    RX-style corruption                ← done; eval-only; RX-entangled 30.3±2.0pp
-1D  file-vote K sweep                  ← not opened
-1E  LODO                               ← not opened
-    → Experiment 2 / RCOF closed
+    OOB identity shuffle               ← done; identity claim SHRUNK
+    RX-style corruption                ← done; RX-entangled 30.3±2.0pp
+    RX-style factor attribution        ← done; Case 1A; D_oob_scale 28.7; D_spec 30.5
+1D  file-vote K sweep                  ← closed this audit
+1E  LODO                               ← closed this audit
+    → PAPER1_AUDIT_REPORT.md           ← written; YELLOW
+    → Phase 2A-0 scale probe           ← done; C1 GO (ρ 0.65); C2 no
+    → Phase 2A-1 C1 seed 0/1 train     ← done; two-seed clean FAIL (1/2)
+    → Experiment 2 / RCOF / utility gate closed
 ```
 
-Do not rescue Main, retune lr/epoch, open Day5, 1D, Hann/guard, or RCOF from 1C File-Acc.
+Human stage reading after 1C + oracle + shuffle + combined RX (not a moved numeric gate):
+
+```text
+Paper1 identity claim     SHRUNK
+Paper1 matched 5-seed     YELLOW (Main crutch; C' window < CNN)
+Oracle complementarity    CONDITIONAL PASS (stable-Main seeds)
+RX-style sensitivity      STRONG (30.3±2.0pp)
+Paper2 motivation         GO for receiver/style-robust OOB modeling
+Paper2 algorithm          Case 1A (OOB scale); C1 train 1/2 FAIL
+Working title             Scale-Decoupled and Utility-Aware OOB Fusion for LoRa RFFI
+```
+
+Do not rescue Main, retune lr/epoch, open Day5, 1D, Hann/guard, RCOF, or a utility gate from 1C File-Acc or from the 30.3pp combined drop. C1 is not a C' replacement. Next job needs a Human GO (seed-0-only scale/RX stress, or seed-1 curve).
 
 ---
 

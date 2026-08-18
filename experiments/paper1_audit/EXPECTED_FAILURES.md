@@ -62,8 +62,9 @@ Order (one step at a time):
 
 ```text
 1. Label-oracle headroom   ← done; not DROP
-2. OOB identity shuffle    ← done; C' only
+2. OOB identity shuffle    ← done; C' only; identity claim SHRUNK
 3. RX-style corruption     ← done; mean window drop 30.3±2.0pp; RX-entangled
+4. RX-style factor attribution ← done; Case 1A; see RX_FACTOR_ATTRIBUTION.md
 ```
 
 ### Oracle (label oracle)
@@ -125,6 +126,42 @@ Frozen rule, **not moved**:
 
 Neither row opens RCOF, Day5, 1D, a utility gate, or Hann/guard. Hann/guard open only if a later human reading says the drop is band-edge.
 
+### Stage reading (human, after steps 1–3; not a moved 1C count)
+
+Registered before 1C.mech-4. Do not rewrite after seeing factor drops.
+
+| Read | Status | Why |
+|------|--------|-----|
+| Paper1 “stable OOB device identity” | **SHRUNK** | trained-subset shuffle drops −9.4 / +4.4 / −12.7 pp (mean −5.9) |
+| Matched 5-seed H3 | **YELLOW** | Main 3/5 collapse (crutch); C' window 45.5±1.3 < CNN 49.9±2.7 |
+| Oracle utility headroom | **CONDITIONAL PASS** | stable-Main seeds 8.7 / 18.7 pp; not a gate implementation |
+| Combined RX-style | **STRONG** | 30.3±2.0 pp window, 5/5 |
+| Paper2 motivation | **GO** | receiver/style-robust OOB modeling |
+| Paper2 algorithm | **HOLD** | magnitude canonicalizer vs noise/phase vs augmentation is 1C.mech-4 |
+| Utility gate | **POSTPONED** | Main endpoint itself collapses on 3/5 seeds |
+| 1D / 1E / full RCOF | **CLOSED** | they do not choose the Paper2 nuisance |
+
+Do not title Paper 2 “Receiver-Canonicalized …” until Case 1 **and** the OOB-path localization gate in `RX_FACTOR_ATTRIBUTION.md` §5.1 both fire, then a Human GO opens Phase 2A. `R_spec ≥ 18.2` alone is only a magnitude-family **candidate**.
+
+### RX-style factor attribution (1C.mech-4, done)
+
+Window drop vs clean C', frozen `D_full=30.3`. Complete 7×5. Day5 unused.
+
+| Arm | mean window drop |
+|-----|-----------------:|
+| tilt | 5.2±1.2 |
+| oob_scale | **28.7±2.4** |
+| gain | 6.0±3.6 |
+| phase | 0.3±0.2 |
+| noise | 0.2±0.1 |
+| spec | **30.5±1.8** |
+| nonspec | 0.4±0.5 |
+
+Frozen reading (thresholds not moved): **Case 1A magnitude-family + OOB-path**.  
+`D_spec=30.5≥18.2`, `D_nonspec=0.4<18.2`, `max(phase,noise)<15`, `D_oob_scale=28.7≥15` → **Canonicalizer GO**. OOB-only tilt localization **not required**.
+
+This does **not** start DCT training. Next writing: `PAPER1_AUDIT_REPORT.md`. Next experiment after a Human GO: non-learned **OOB-scale** invariance (not tilt-first DCT), no classifier training.
+
 ## 1D File voting
 
 Fail to claim “authentication-style robustness” if Full only wins at K=256 and loses at K≤64.
@@ -135,4 +172,8 @@ Run only after 1B–1D freeze. 3 seeds per fold, 5 seeds on the original Day5 pr
 
 ## Experiment 2
 
-**Not opened in this round.** Open only after a human GO on `PAPER1_AUDIT_REPORT.md`.
+**Not opened in this round.** Full RCOF and utility gate stay closed.
+
+1C.mech-4 Case 1A fired. A later Human GO may open **Phase 2A Canonicalizer-only**, starting with a **non-learned OOB-scale / DC residual** invariance test (tilt-only DCT is the wrong first module: `D_tilt=5.2<15`). No utility gate. Do not rescue the frozen 1C Main table.
+
+`PAPER1_AUDIT_REPORT.md` is written (YELLOW). Phase 2A-0 selected C1 (ρ 0.65); C2 rejected. Phase 2A-1 two-seed clean **FAIL (1/2)**: seed 0 Δ −0.3 pp PASS, seed 1 Δ −20.0 pp FAIL. C1 is not a C' replacement. File-vote / per-device / LODO remain revision reserve.

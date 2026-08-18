@@ -25,8 +25,8 @@ def add_common_args(parser: argparse.ArgumentParser) -> None:
                         help="Per-window IQ normalization. none=raw, iq_rms=divide by RMS power.")
     parser.add_argument("--fft-norm", choices=["none", "log_zscore"], default="none",
                         help="FFT magnitude normalization (Hybrid only). none=log1p, log_zscore=log1p+per-window zscore.")
-    parser.add_argument("--oob-norm", choices=["none", "ratio", "log_ratio", "zscore"], default="none",
-                        help="OOB feature normalization (Hybrid only). none=masked log1p; ratio/log_ratio normalize by in-band RMS; zscore=masked log1p+zscore.")
+    parser.add_argument("--oob-norm", choices=["none", "ratio", "log_ratio", "zscore", "ratio_rms", "ratio_logdc"], default="none",
+                        help="OOB feature normalization (Hybrid only). none=masked log1p; ratio/log_ratio normalize by in-band RMS; zscore=masked log1p+zscore; ratio_rms/ratio_logdc are Paper 2 scale-shape views.")
     # Receiver-style augmentation (train-only; default OFF keeps behavior identical).
     parser.add_argument("--augment-receiver-style", action="store_true",
                         help="Enable train-only receiver-style augmentation (spectral tilt / in-band & OOB scale / noise floor / phase). No target labels used.")
@@ -246,15 +246,39 @@ def forward_with_batch(model: torch.nn.Module, iq: torch.Tensor, batch: dict[str
     return model(iq, **kwargs)
 
 
+RX_ATOMIC_FACTORS = ("tilt", "oob_scale", "gain", "phase", "noise")
+RX_FACTOR_CHOICES = RX_ATOMIC_FACTORS + ("spec", "nonspec")
+RX_FACTOR_MASKS = {
+    "tilt": frozenset({"tilt"}),
+    "oob_scale": frozenset({"oob_scale"}),
+    "gain": frozenset({"gain"}),
+    "phase": frozenset({"phase"}),
+    "noise": frozenset({"noise"}),
+    "spec": frozenset({"tilt", "oob_scale", "gain"}),
+    "nonspec": frozenset({"phase", "noise"}),
+}
+
+
+def resolve_rx_factor_mask(factor: str | None) -> frozenset[str]:
+    """Return enabled atomic operators. None means the original all-five bundle."""
+    if factor is None:
+        return frozenset(RX_ATOMIC_FACTORS)
+    if factor not in RX_FACTOR_MASKS:
+        raise ValueError(f"unknown rx_factor={factor!r}; expected one of {RX_FACTOR_CHOICES}")
+    return RX_FACTOR_MASKS[factor]
+
+
 def apply_receiver_style(iq: torch.Tensor, args: argparse.Namespace, *, lock_inband: bool = False) -> torch.Tensor:
     """Perturb receiver/OOB style in the frequency domain, then invert to IQ.
 
-    lock_inband=True keeps in-band magnitude scale at 1 (eval audit). Tilt, OOB
-    scale, gain, phase, and noise still follow the existing operator ranges.
+    lock_inband=True keeps in-band magnitude scale at 1 (eval audit). Enabled
+    operators keep their existing on-ranges. Disabled operators are identity
+    (tilt_db=0, oob_scale=1, gain_db=0, phi=0, noise_std=0).
     """
     x = iq
     bsz, _, length = x.shape
     device, dtype = x.device, x.dtype
+    mask = resolve_rx_factor_mask(getattr(args, "rx_factor", None))
 
     def rand(lo: float, hi: float, shape) -> torch.Tensor:
         return torch.empty(shape, device=device).uniform_(float(lo), float(hi))
@@ -265,24 +289,38 @@ def apply_receiver_style(iq: torch.Tensor, args: argparse.Namespace, *, lock_inb
     in_band = (freq.abs() <= (args.lora_bandwidth / 2.0)).view(1, -1)
     fmax = freq.abs().max().clamp_min(1.0)
 
-    tilt_db = rand(args.rx_spectral_tilt_db_min, args.rx_spectral_tilt_db_max, (bsz, 1))
+    if "tilt" in mask:
+        tilt_db = rand(args.rx_spectral_tilt_db_min, args.rx_spectral_tilt_db_max, (bsz, 1))
+    else:
+        tilt_db = torch.zeros((bsz, 1), device=device)
     gain = 10.0 ** ((tilt_db * (freq / fmax).view(1, -1)) / 20.0)
     if lock_inband:
         inband_scale = torch.ones((bsz, 1), device=device, dtype=gain.dtype)
     else:
         inband_scale = rand(args.rx_inband_scale_min, args.rx_inband_scale_max, (bsz, 1))
-    oob_scale = rand(args.rx_oob_scale_min, args.rx_oob_scale_max, (bsz, 1))
+    if "oob_scale" in mask:
+        oob_scale = rand(args.rx_oob_scale_min, args.rx_oob_scale_max, (bsz, 1))
+    else:
+        oob_scale = torch.ones((bsz, 1), device=device, dtype=gain.dtype)
     gain = gain * torch.where(in_band, inband_scale, oob_scale)
-    gain_db = rand(args.rx_gain_db_min, args.rx_gain_db_max, (bsz, 1))
+    if "gain" in mask:
+        gain_db = rand(args.rx_gain_db_min, args.rx_gain_db_max, (bsz, 1))
+    else:
+        gain_db = torch.zeros((bsz, 1), device=device)
     gain = gain * (10.0 ** (gain_db / 20.0))
 
     spectrum = spectrum * gain.to(spectrum.dtype)
     z_aug = torch.fft.ifft(torch.fft.ifftshift(spectrum, dim=-1), dim=-1)
-    phi = rand(-math.pi, math.pi, (bsz, 1))
+    if "phase" in mask:
+        phi = rand(-math.pi, math.pi, (bsz, 1))
+    else:
+        phi = torch.zeros((bsz, 1), device=device)
     z_aug = z_aug * torch.complex(torch.cos(phi), torch.sin(phi)).to(z_aug.dtype)
     x = torch.stack([z_aug.real, z_aug.imag], dim=1).to(dtype)
-    noise_std = rand(args.rx_noise_std_min, args.rx_noise_std_max, (bsz, 1, 1)).to(dtype)
-    return x + torch.randn_like(x) * noise_std
+    if "noise" in mask:
+        noise_std = rand(args.rx_noise_std_min, args.rx_noise_std_max, (bsz, 1, 1)).to(dtype)
+        return x + torch.randn_like(x) * noise_std
+    return x
 
 
 def make_loader(dataset: SigMFIQDataset, args: argparse.Namespace, shuffle: bool) -> DataLoader:
