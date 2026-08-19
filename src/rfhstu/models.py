@@ -166,6 +166,7 @@ class RFPatchEmbedder(nn.Module):
         cnn_stem_kernels: str = "7,5",
         fft_norm: str = "log_zscore",
         oob_norm: str = "zscore",
+        fft_source: str = "full",
     ) -> None:
         super().__init__()
         self.window_size = window_size
@@ -177,6 +178,7 @@ class RFPatchEmbedder(nn.Module):
         self.dim = dim
         self.fft_norm = fft_norm
         self.oob_norm = oob_norm
+        self.fft_source = fft_source
         self.oob_fusion_type = "no_oob" if not use_oob else oob_fusion_type
         if self.patch_embed_type not in {"linear", "cnn_stem"}:
             raise ValueError(f"Unknown patch_embed_type={patch_embed_type!r}")
@@ -223,7 +225,12 @@ class RFPatchEmbedder(nn.Module):
     def forward(self, iq: torch.Tensor) -> tuple[torch.Tensor, dict[str, torch.Tensor]]:
         if self.patch_embed_type == "cnn_stem":
             iq_view, fft_view, oob_view, amp_phase = torch_rf_views(
-                iq, self.sample_rate, self.lora_bandwidth, fft_norm=self.fft_norm, oob_norm=self.oob_norm
+                iq,
+                self.sample_rate,
+                self.lora_bandwidth,
+                fft_norm=self.fft_norm,
+                oob_norm=self.oob_norm,
+                fft_source=self.fft_source,
             )
             views = {
                 "iq": patchify(iq_view, self.patch_size),
@@ -249,6 +256,7 @@ class RFPatchEmbedder(nn.Module):
             use_oob=self.use_oob,
             fft_norm=self.fft_norm,
             oob_norm=self.oob_norm,
+            fft_source=self.fft_source,
         )
         main = torch.cat([views["iq"], views["fft"], views["amp_phase"]], dim=-1)
         if self.oob_fusion_type == "concat_oob":

@@ -36,6 +36,8 @@ On Day4 selection, then frozen Day5: Full > Main, and Full > CNN, under identica
 
 File accuracy of Full increases smoothly with K in {8,16,32,64,128,256}.
 
+Day4 revision-reserve test (not Day5): first-K by `window_index` on frozen 1C CNN / Main / C'. Primary vote `mean_logits`. **Result: H4_PASS** (`file_vote_k.md`).
+
 ## H5 — LODO does not reverse the Day5 conclusion
 
 After method freeze, most LODO folds remain Full > Main.

@@ -44,7 +44,16 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--checkpoint", required=True)
     parser.add_argument("--prototype", action="store_true")
     parser.add_argument("--mode", choices=["classifier", "prototype"], default=None)
-    parser.add_argument("--file-vote-mode", choices=["mean_logits", "mean_prob", "confidence_weighted"], default="mean_logits")
+    parser.add_argument(
+        "--file-vote-mode",
+        choices=["mean_logits", "mean_prob", "majority", "confidence_weighted"],
+        default="mean_logits",
+    )
+    parser.add_argument(
+        "--save-window-logits",
+        default=None,
+        help="Optional .npz sidecar of per-window logits. Does not change metrics.",
+    )
     parser.add_argument("--score-fusion", action="store_true")
     parser.add_argument("--fusion-alpha", type=float, default=0.5)
     parser.add_argument("--tta-mode", choices=["none", "bn_adapt", "tent"], default="none")
@@ -169,6 +178,7 @@ def build_model(args: argparse.Namespace, ckpt: dict, device: torch.device) -> t
         cnn_stem_kernels=cnn_stem_kernels,
         fft_norm=args.fft_norm,
         oob_norm=args.oob_norm,
+        fft_source=getattr(args, "fft_source", "full"),
     )
     model = DeviceClassifier(
         embedder,
@@ -709,6 +719,30 @@ def collect_predictions(
     return rows
 
 
+def majority_vote_scores(scores: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+    preds = scores.argmax(dim=-1)
+    num_classes = int(scores.shape[-1])
+    votes = torch.zeros(num_classes, dtype=torch.float32)
+    votes.scatter_add_(0, preds, torch.ones(preds.shape[0], dtype=torch.float32))
+    vote_probs = votes / votes.sum().clamp_min(1e-8)
+    return votes, vote_probs
+
+
+def save_window_logits(path: Path, window_rows: list[dict[str, Any]]) -> None:
+    import numpy as np
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    logits = np.stack([np.asarray(row["_scores"].detach().cpu(), dtype=np.float32) for row in window_rows])
+    np.savez_compressed(
+        path,
+        logits=logits,
+        label=np.asarray([int(row["label"]) for row in window_rows], dtype=np.int64),
+        pred=np.asarray([int(row["pred"]) for row in window_rows], dtype=np.int64),
+        window_index=np.asarray([int(row["window_index"]) for row in window_rows], dtype=np.int64),
+        file_path=np.asarray([str(row["file_path"]) for row in window_rows]),
+    )
+
+
 def file_level_predictions(
     window_rows: list[dict[str, Any]],
     mode: str,
@@ -722,7 +756,9 @@ def file_level_predictions(
     file_rows = []
     for path, rows in grouped.items():
         scores = torch.stack([row["_scores"] for row in rows])
-        if scores_are_probs:
+        if vote_mode == "majority":
+            file_scores, vote_probs = majority_vote_scores(scores)
+        elif scores_are_probs:
             probs = scores
             if vote_mode in {"mean_logits", "mean_prob"}:
                 vote_probs = probs.mean(dim=0)
@@ -833,6 +869,7 @@ def main() -> None:
     args.input_norm = ckpt_args_for_norm.get("input_norm", "iq_rms")
     args.fft_norm = ckpt_args_for_norm.get("fft_norm", "log_zscore")
     args.oob_norm = ckpt_args_for_norm.get("oob_norm", "zscore")
+    args.fft_source = ckpt_args_for_norm.get("fft_source", getattr(args, "fft_source", "full"))
     args.oob_identity_shuffle = bool(
         getattr(args, "oob_identity_shuffle", False) or ckpt_args_for_norm.get("oob_identity_shuffle", False)
     )
@@ -940,6 +977,8 @@ def main() -> None:
         tta_optimizer=tta_optimizer,
         episodic_state=episodic_state,
     )
+    if args.save_window_logits:
+        save_window_logits(Path(args.save_window_logits), window_rows)
     file_rows = file_level_predictions(
         window_rows,
         mode,
@@ -1064,6 +1103,8 @@ def main() -> None:
         "input_norm": ckpt_args.get("input_norm", args.input_norm),
         "fft_norm": ckpt_args.get("fft_norm", args.fft_norm),
         "oob_norm": ckpt_args.get("oob_norm", args.oob_norm),
+        "fft_source": ckpt_args.get("fft_source", getattr(args, "fft_source", "full")),
+        "paired_view": ckpt_args.get("paired_view", getattr(args, "paired_view", "off")),
         "augment_receiver_style": bool(ckpt_args.get("augment_receiver_style", False)),
         "rx_gain_db_min": ckpt_args.get("rx_gain_db_min", ""),
         "rx_gain_db_max": ckpt_args.get("rx_gain_db_max", ""),

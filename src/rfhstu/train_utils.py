@@ -27,6 +27,18 @@ def add_common_args(parser: argparse.ArgumentParser) -> None:
                         help="FFT magnitude normalization (Hybrid only). none=log1p, log_zscore=log1p+per-window zscore.")
     parser.add_argument("--oob-norm", choices=["none", "ratio", "log_ratio", "zscore", "ratio_rms", "ratio_logdc"], default="none",
                         help="OOB feature normalization (Hybrid only). none=masked log1p; ratio/log_ratio normalize by in-band RMS; zscore=masked log1p+zscore; ratio_rms/ratio_logdc are Paper 2 scale-shape views.")
+    parser.add_argument(
+        "--fft-source",
+        choices=["full", "inband"],
+        default="full",
+        help="Main FFT view source. full=legacy full-IQ spectrum; inband=C_fft (FFT view from in-band-reconstructed IQ). Not in-band-only z-score on the full spectrum.",
+    )
+    parser.add_argument(
+        "--paired-view",
+        choices=["off", "clean", "oob_scale"],
+        default="off",
+        help="2B-0 train-only second view. off=legacy single CE; clean=S0 (x,x); oob_scale=S1 (x, T_a(x)) with lock_inband. Val ignores this flag. Do not combine with --augment-receiver-style.",
+    )
     # Receiver-style augmentation (train-only; default OFF keeps behavior identical).
     parser.add_argument("--augment-receiver-style", action="store_true",
                         help="Enable train-only receiver-style augmentation (spectral tilt / in-band & OOB scale / noise floor / phase). No target labels used.")
@@ -266,6 +278,25 @@ def resolve_rx_factor_mask(factor: str | None) -> frozenset[str]:
     if factor not in RX_FACTOR_MASKS:
         raise ValueError(f"unknown rx_factor={factor!r}; expected one of {RX_FACTOR_CHOICES}")
     return RX_FACTOR_MASKS[factor]
+
+
+def paired_second_view(iq: torch.Tensor, args: argparse.Namespace) -> torch.Tensor:
+    """Second view for 2B-0 paired CE. Does not change the first view tensor.
+
+    off/clean: return the same IQ (S0 uses two forwards of this tensor).
+    oob_scale: eval operator only — lock_inband=True, rx_factor=oob_scale, range 0.5–2.0.
+    """
+    mode = getattr(args, "paired_view", "off")
+    if mode in {"off", "clean"}:
+        return iq
+    if mode != "oob_scale":
+        raise ValueError(f"unknown paired_view={mode!r}")
+    saved = getattr(args, "rx_factor", None)
+    args.rx_factor = "oob_scale"
+    try:
+        return apply_receiver_style(iq, args, lock_inband=True)
+    finally:
+        args.rx_factor = saved
 
 
 def apply_receiver_style(iq: torch.Tensor, args: argparse.Namespace, *, lock_inband: bool = False) -> torch.Tensor:

@@ -1,0 +1,35 @@
+{
+  "day5_used": false,
+  "fft_source": "full",
+  "oob_norm": "ratio",
+  "gate0_pass": true,
+  "gate1_pass": true,
+  "s1_trained": true,
+  "rows": [
+    {
+      "seed": 0,
+      "cprime_window": 43.8,
+      "s0_window": 46.4,
+      "delta_s0_pp": 2.7,
+      "s0_gate": true,
+      "s0_file": 83.3,
+      "s1_window": 43.4,
+      "delta_s1_pp": -0.4,
+      "s1_gate": true,
+      "s1_file": 75.0
+    },
+    {
+      "seed": 1,
+      "cprime_window": 44.3,
+      "s0_window": 43.1,
+      "delta_s0_pp": -1.2,
+      "s0_gate": true,
+      "s0_file": 83.3,
+      "s1_window": 43.4,
+      "delta_s1_pp": -0.9,
+      "s1_gate": true,
+      "s1_file": 75.0
+    }
+  ],
+  "verdict": "CLEAN_PASS"
+}

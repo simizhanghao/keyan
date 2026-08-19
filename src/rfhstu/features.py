@@ -17,7 +17,23 @@ def normalize_iq(x: np.ndarray, eps: float = 1e-6) -> np.ndarray:
 
 
 FFT_NORM_CHOICES = ("none", "log_zscore")
+FFT_SOURCE_CHOICES = ("full", "inband")
 OOB_NORM_CHOICES = ("none", "ratio", "log_ratio", "zscore", "ratio_rms", "ratio_logdc")
+
+
+def reconstruct_inband_iq(
+    iq: torch.Tensor,
+    sample_rate: float = 1_000_000.0,
+    lora_bandwidth: float = 125_000.0,
+) -> torch.Tensor:
+    """Zero OOB FFT bins, invert to IQ. This is the locked C_fft operator, not in-band-only z-score."""
+    z = torch.complex(iq[:, 0], iq[:, 1])
+    spectrum = torch.fft.fftshift(torch.fft.fft(z, dim=-1), dim=-1)
+    freq = torch.fft.fftshift(torch.fft.fftfreq(iq.shape[-1], d=1.0 / sample_rate)).to(device=iq.device)
+    in_band = freq.abs() <= (lora_bandwidth / 2.0)
+    spectrum = spectrum * in_band.to(dtype=spectrum.dtype).view(1, -1)
+    z_ib = torch.fft.ifft(torch.fft.ifftshift(spectrum, dim=-1), dim=-1)
+    return torch.stack([z_ib.real, z_ib.imag], dim=1).to(dtype=iq.dtype)
 
 
 def torch_rf_views(
@@ -27,6 +43,7 @@ def torch_rf_views(
     eps: float = 1e-6,
     fft_norm: str = "log_zscore",
     oob_norm: str = "zscore",
+    fft_source: str = "full",
 ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
     """Build IQ, FFT, OOB, and amplitude/phase views.
 
@@ -41,6 +58,10 @@ def torch_rf_views(
             magnitude (removes receiver gain); ``log_ratio`` = log|spectrum| - log(inband RMS);
             ``ratio_rms`` = ``ratio`` then divide by OOB RMS (C1); ``ratio_logdc`` =
             log(ratio+eps) minus OOB mean (C2). ``ratio`` algebra is unchanged.
+        fft_source: ``full`` (legacy) uses the full-IQ spectrum for the FFT view.
+            ``inband`` (C_fft) rebuilds IQ with OOB bins zeroed, then applies the same
+            ``fft_norm`` to that spectrum. IQ / amp-phase / OOB still come from full IQ.
+            This is not in-band-only z-score on the full spectrum.
 
     Returns:
         Tuple of tensors:
@@ -53,6 +74,8 @@ def torch_rf_views(
         raise ValueError(f"Unknown fft_norm={fft_norm!r}; expected one of {FFT_NORM_CHOICES}")
     if oob_norm not in OOB_NORM_CHOICES:
         raise ValueError(f"Unknown oob_norm={oob_norm!r}; expected one of {OOB_NORM_CHOICES}")
+    if fft_source not in FFT_SOURCE_CHOICES:
+        raise ValueError(f"Unknown fft_source={fft_source!r}; expected one of {FFT_SOURCE_CHOICES}")
 
     complex_x = torch.complex(iq[:, 0], iq[:, 1])
     spectrum = torch.fft.fftshift(torch.fft.fft(complex_x, dim=-1), dim=-1)
@@ -68,17 +91,30 @@ def torch_rf_views(
     phase = torch.atan2(iq[:, 1], iq[:, 0]) / math.pi
     amp_phase = torch.stack([torch.log1p(amp), phase], dim=1)
 
-    # per-window FFT z-score stats (computed on log magnitude, legacy definition)
-    fft_mean = mag.mean(dim=-1, keepdim=True)
-    fft_std = mag.std(dim=-1, keepdim=True).clamp_min(eps)
+    # Full-spectrum stats stay on the original IQ so OOB zscore is not rewritten by C_fft.
+    fft_mean_full = mag.mean(dim=-1, keepdim=True)
+    fft_std_full = mag.std(dim=-1, keepdim=True).clamp_min(eps)
+    if fft_source == "inband":
+        iq_ib = reconstruct_inband_iq(iq, sample_rate=sample_rate, lora_bandwidth=lora_bandwidth)
+        mag_fft = torch.log1p(
+            torch.abs(
+                torch.fft.fftshift(torch.fft.fft(torch.complex(iq_ib[:, 0], iq_ib[:, 1]), dim=-1), dim=-1)
+            ).unsqueeze(1)
+        )
+        fft_mean = mag_fft.mean(dim=-1, keepdim=True)
+        fft_std = mag_fft.std(dim=-1, keepdim=True).clamp_min(eps)
+    else:
+        mag_fft = mag
+        fft_mean = fft_mean_full
+        fft_std = fft_std_full
 
     if fft_norm == "log_zscore":
-        fft_view = (mag - fft_mean) / fft_std
+        fft_view = (mag_fft - fft_mean) / fft_std
     else:  # "none"
-        fft_view = mag
+        fft_view = mag_fft
 
     if oob_norm == "zscore":
-        oob_view = (mag * oob_mask - fft_mean) / fft_std
+        oob_view = (mag * oob_mask - fft_mean_full) / fft_std_full
     elif oob_norm == "none":
         oob_view = mag * oob_mask
     else:
@@ -121,10 +157,11 @@ def build_patch_features(
     use_oob: bool = True,
     fft_norm: str = "log_zscore",
     oob_norm: str = "zscore",
+    fft_source: str = "full",
 ) -> tuple[torch.Tensor, dict[str, torch.Tensor]]:
     """Build fused RF patch features from IQ-derived views."""
     iq_view, fft_view, oob_view, amp_phase = torch_rf_views(
-        iq, sample_rate, lora_bandwidth, fft_norm=fft_norm, oob_norm=oob_norm
+        iq, sample_rate, lora_bandwidth, fft_norm=fft_norm, oob_norm=oob_norm, fft_source=fft_source
     )
     views = {
         "iq": patchify(iq_view, patch_size),

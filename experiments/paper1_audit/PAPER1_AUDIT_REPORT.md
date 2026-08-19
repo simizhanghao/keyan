@@ -33,9 +33,11 @@ Overall:                              YELLOW
 Architecture empirical finding:       SUPPORTED (OOB path is predictive)
 Stable OOB device-identity story:     NOT SUPPORTED
 Paper 2 motivation:                   GO
-Paper 2 algorithm:                    Scale–shape decoupling (not generic DA)
-Utility gate:                         POSTPONED (recompute after canonicalization)
-1D / 1E / Day5:                       closed until a later Human GO
+Paper 2 algorithm:                    S1 FROZEN (paired oob_scale on C'; Case A 1.3 / 10.3)
+Utility gate:                         POSTPONED (recompute after a scale-robust method, not after C1)
+1D vote (revision reserve):           H4_PASS; 1C K=256 table unchanged
+1D per-device:                        MIXED (file 10/3/11; window 9/15)
+1E / Day5:                            closed until a later Human GO
 ```
 
 Safe one-sentence claim:
@@ -93,7 +95,8 @@ Recipe freeze: 80 ep, lr 3e-3, bs 128, dim 64, Day4 val-acc checkpoint. C (`zsco
 Hits:
 
 - Main collapsed to chance on seeds 2–4 while Full stayed up → **training crutch**.
-- H3 “Full > CNN” fails on **window** for C and C' (0/5). C' File>CNN on 4/5 is K=256 aggregation, not a mechanism win.
+- H3 “Full > CNN” fails on **window** for C and C' (0/5). C' File>CNN on 4/5 is still not a mechanism win.
+- H4 file-vote (revision reserve): **H4_PASS**. C' mean_logits 65.8/66.7/66.7/73.3/75.8/79.2 at K=8…256. Already > CNN at K=8 (56.7) and K=64 (65.8). CNN saturates at K=64; C' keeps climbing. Not a K=256 spike. Source: `results/matched_seed0/file_vote_k.md`.
 - GREEN (Full>Main on ≥4/5 **and** a clean identity story) does **not** fire.
 
 Source: `results/matched_seed0/audit_5seed.md`.
@@ -172,7 +175,7 @@ Source: `results/matched_seed0/rx_style_eval.md`, `rx_factor_attribution.md`.
 | Item | Why closed now |
 | --- | --- |
 | Day5 sealed test | method not frozen for a one-shot test |
-| 1D K-sweep | revision reserve; does not choose Paper 2 |
+| 1D K-sweep | done H4_PASS; does not choose Paper 2 |
 | 1E LODO | revision reserve; 3 seeds × 5 folds later |
 | Hann/guard retrain | drop is OOB scale, not band-edge |
 | Utility / RCOF | wait for scale-canonical Oracle |
@@ -180,16 +183,17 @@ Source: `results/matched_seed0/rx_style_eval.md`, `rx_factor_attribution.md`.
 
 ---
 
-## Paper 2 working title
+## Paper 2 working title (internal)
 
 ```text
-Scale-Decoupled and Utility-Aware OOB Fusion
-for Receiver-Robust LoRa Radio-Frequency Fingerprinting
+Scale-Robust OOB Hybrid
 ```
 
-Utility is conditional. If a later canonical Oracle gap is < 5 pp, drop the gate.
+Not a manuscript title. The frozen synthetic method is **S1**: C' + `--paired-view oob_scale`. Hard canonicalization is closed.  
+Utility stays closed until a later Oracle on this frozen method.  
+Paper 1 `no OOB` means **without explicit OOB branch**. A true in-band Main baseline is revision reserve.
 
-Method selection for C1/C2 uses **source Day1–4 + synthetic OOB-scale only**. Real RX1↔RX2 opens after the representation is frozen (`SCALE_DECOUPLE_LOCK.md`).
+Real RX1↔RX2 stays closed until a later GO (optional 5-seed S1 first). See `PHASE2B0_SCALE_AUG_LOCK.md`.
 
 ---
 
@@ -247,7 +251,49 @@ C1 did not kill the scale shortcut. Token invariance did not transfer to the tra
 | D_iq_amp | inband | full | inband | 0.0590 | LIVE |
 | E_all_inband | inband | inband | inband | 0.0000 | STABLE (control) |
 
-**SMALLEST_KILL = C_fft.** Replacing only amp/phase does not kill the stem. Candidate operator: FFT view from in-band-reconstructed IQ. Not a train GO.
+**SMALLEST_KILL = C_fft.** Replacing only amp/phase does not kill the stem. Candidate operator: FFT view from in-band-reconstructed IQ.
+
+**2A-5 Cross-band leakage.** Operator smoke **PASS**. C_fft-only clean **PASS** (2/2). Stress **NOT_KILLED**.
+
+| Seed | C_fft clean | oob_scale | Δ oob | full RX | Δ full | Bin |
+| ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| 0 | 46.2% | 14.2% | 32.0 | 11.6% | 34.6 | NOT_KILLED |
+| 1 | 46.1% | 15.4% | 30.7 | 12.2% | 33.8 | NOT_KILLED |
+
+Mean oob_scale drop **31.4** (C' mean 28.7). View-level C_fft is STABLE; the trained classifier is not.
+
+**Cell D** (`inband` + `ratio_rms`) clean **FAIL** (1/2). Stress closed.
+
+| Seed | C' | D | Δ | Gate | C1 | C_fft |
+| ---: | ---: | ---: | ---: | --- | ---: | ---: |
+| 0 | 43.8% | 53.8% | +10.0 | PASS | 43.4% | 46.2% |
+| 1 | 44.3% | 31.9% | −12.4 | FAIL | 24.2% | 46.1% |
+
+No 2×2 cell is both clean-stable and scale-killed. Do not retune.
+
+**2A-5 CLOSED.** View leak can be killed; the trained shortcut cannot, not with C_fft, not with C1, not with both under the frozen recipe. Hard scale removal is not a drop-in. Do not open 5-seed / RX2 / Day5 / utility from this grid.
+
+### Paper 1 claim freeze (revision reserve)
+
+**Supported.** Frozen-protocol cross-day file-level gain exists. The OOB branch is predictive. The model is highly sensitive to OOB relative magnitude scale (28.7±2.4 ≈ full RX 30.3±2.0). Full-spectrum `log_zscore` leaks that scale into Main FFT.
+
+**Shrunk.** OOB is not a proven stable transmitter fingerprint. `no OOB` means **without explicit OOB branch**. View isolation does not give classifier robustness.
+
+**Failed interventions (negative evidence, keep).** C1, C_fft-only, and D. Do not retune them.
+
+1D vote closed **H4_PASS**. Per-device closed **MIXED** (file win 10 / lose 3 / tie 11; window 9/15). Source: `results/matched_seed0/per_device_day4.md`.  
+Queued later: True In-Band Main; LODO.
+
+**2B-0 clean.** S0 Gate 0 PASS; S1 Gate 1 PASS (2/2). Not a robustness claim.
+
+| Seed | C' | S0 | Δ S0 | S1 | Δ S1 |
+| ---: | ---: | ---: | ---: | ---: | ---: |
+| 0 | 43.8% | 46.4% | +2.7 | 43.4% | −0.4 |
+| 1 | 44.3% | 43.1% | −1.2 | 43.4% | −0.9 |
+
+**2B-0 Gate 2 STRONG / Case A.** S1 mean oob_scale drop **1.3**. S0 mean **29.6**.
+
+**2B-0 Gate 3 TRACKS_SCALE.** S1 mean full RX drop **10.3** (9.2 / 11.5) vs C' 30.3. S0 mean **30.9**. Seed 0/1 synthetic chain done. RX2 / 5-seed not opened.
 
 ---
 
@@ -268,3 +314,11 @@ C1 did not kill the scale shortcut. Token invariance did not transfer to the tra
 | 2A-2 C1 seed 0 RX | `results/matched_seed0/c1_seed0_rx_stress.json` |
 | 2A-3 path leak | `results/scale_path_leak/scale_path_leak_day4.json` |
 | 2A-4 view ablation | `results/inband_view_ablation/inband_view_ablation_day4.json` |
+| 2A-5 C_fft smoke | `results/cfft_operator_smoke/cfft_operator_smoke.json` |
+| 2A-5 C_fft clean | `results/matched_seed0/cfft_clean_vs_cprime.json` |
+| 2A-5 C_fft RX | `results/matched_seed0/cfft_rx_stress.json` |
+| 2A-5 D clean | `results/matched_seed0/d_clean_vs_cprime.json` |
+| 2B-0 pre-reg | `PHASE2B0_SCALE_AUG_LOCK.md` |
+| 2B-0 clean | `results/matched_seed0/s0_s1_clean_vs_cprime.json` |
+| 2B-0 oob_scale | `results/matched_seed0/s0_s1_rx_oob_scale.json` |
+| 2B-0 full RX | `results/matched_seed0/s0_s1_rx_full.json` |

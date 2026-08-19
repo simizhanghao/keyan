@@ -1,0 +1,54 @@
+{
+  "day5_used": false,
+  "training": false,
+  "fft_source": "full",
+  "oob_norm": "ratio",
+  "rx_factor": "all",
+  "rows": [
+    {
+      "arm": "S0",
+      "seed": 0,
+      "clean_window": 46.4,
+      "full_rx_window": 14.7,
+      "full_rx_drop_pp": 31.7,
+      "full_rx_file_drop_pp": 58.3,
+      "cprime_full_rx_drop_pp": 28.5,
+      "full_reading": "RESIDUAL"
+    },
+    {
+      "arm": "S0",
+      "seed": 1,
+      "clean_window": 43.1,
+      "full_rx_window": 12.9,
+      "full_rx_drop_pp": 30.1,
+      "full_rx_file_drop_pp": 54.2,
+      "cprime_full_rx_drop_pp": 29.3,
+      "full_reading": "RESIDUAL"
+    },
+    {
+      "arm": "S1",
+      "seed": 0,
+      "clean_window": 43.4,
+      "full_rx_window": 34.2,
+      "full_rx_drop_pp": 9.2,
+      "full_rx_file_drop_pp": 12.5,
+      "cprime_full_rx_drop_pp": 28.5,
+      "full_reading": "TRACKS_SCALE"
+    },
+    {
+      "arm": "S1",
+      "seed": 1,
+      "clean_window": 43.4,
+      "full_rx_window": 31.9,
+      "full_rx_drop_pp": 11.5,
+      "full_rx_file_drop_pp": 12.5,
+      "cprime_full_rx_drop_pp": 29.3,
+      "full_reading": "TRACKS_SCALE"
+    }
+  ],
+  "mean_s0_full_rx_drop_pp": 30.9,
+  "mean_s1_full_rx_drop_pp": 10.3,
+  "full_reading": "TRACKS_SCALE",
+  "frozen_cprime_mean_full_rx_drop_pp": 30.3,
+  "s1_oob_scale_drop_pp": 1.3
+}

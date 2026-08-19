@@ -1,0 +1,25 @@
+{
+  "day5_used": false,
+  "fft_source": "inband",
+  "oob_norm": "ratio",
+  "cell": "C",
+  "verdict": "CLEAN_PASS",
+  "rows": [
+    {
+      "seed": 0,
+      "cprime_window": 43.8,
+      "cfft_window": 46.2,
+      "delta_window_pp": 2.4,
+      "collapsed": false,
+      "clean_gate_pass": true
+    },
+    {
+      "seed": 1,
+      "cprime_window": 44.3,
+      "cfft_window": 46.1,
+      "delta_window_pp": 1.8,
+      "collapsed": false,
+      "clean_gate_pass": true
+    }
+  ]
+}

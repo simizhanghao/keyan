@@ -1,0 +1,11 @@
+{
+  "day5_used": false,
+  "training": false,
+  "accuracy": false,
+  "test1_s0_rel_l2": 0.0,
+  "test2_inband_rel_l2": 1.0241627279583554e-07,
+  "test2_oob_rel_l2": 0.3560279905796051,
+  "test2_iq_rel_l2": 0.03633562847971916,
+  "test3_paired_ce": 4.075623035430908,
+  "verdict": "SMOKE_PASS"
+}

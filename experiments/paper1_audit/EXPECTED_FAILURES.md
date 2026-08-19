@@ -137,7 +137,7 @@ Registered before 1C.mech-4. Do not rewrite after seeing factor drops.
 | Oracle utility headroom | **CONDITIONAL PASS** | stable-Main seeds 8.7 / 18.7 pp; not a gate implementation |
 | Combined RX-style | **STRONG** | 30.3±2.0 pp window, 5/5 |
 | Paper2 motivation | **GO** | receiver/style-robust OOB modeling |
-| Paper2 algorithm | **HOLD** | C1 drop-in FAIL; stem leak **C_fft** (in-band FFT view), not amp_phase swap |
+| Paper2 algorithm | **S1 FROZEN** | Case A 1.3 / 10.3; keep small; RX2 / 5-seed / utility closed |
 | Utility gate | **POSTPONED** | Main endpoint itself collapses on 3/5 seeds |
 | 1D / 1E / full RCOF | **CLOSED** | they do not choose the Paper2 nuisance |
 
@@ -164,7 +164,39 @@ This does **not** start DCT training. Next writing: `PAPER1_AUDIT_REPORT.md`. Ne
 
 ## 1D File voting
 
-Fail to claim “authentication-style robustness” if Full only wins at K=256 and loses at K≤64.
+Revision reserve, no-train, Day4 only. Frozen 1C table stays K=256 / mean_logits.
+
+Sweep: CNN / Main / C' × seeds 0–4 × K∈{8,16,32,64,128,256} × {mean_logits, mean_prob, majority}.
+Prefix = first K windows by `window_index`. Logits dumped to `eval_val_logits/` (does not overwrite `eval_val/`).
+
+Pre-registered (before seeing the curve):
+
+- Sanity: K=256 mean_logits file-acc matches frozen 1C metrics within 0.05 pp. Else `SANITY_FAIL`, do not read H4.
+- H4a: C' 5-seed mean file-acc (mean_logits) has no step drop > 2.0 pp.
+- H4b: C' 5-seed mean > CNN at K=64 (mean_logits).
+- SPIKE_ONLY: C' ≤ CNN at every K∈{8,16,32,64} and C' > CNN only at 256.
+
+Fail to claim “authentication-style robustness” if the verdict is `H4_SPIKE_ONLY`.
+Do not open Day5 / LODO / RX2 / S1 5-seed from this table.
+
+### 1D result — H4_PASS (2026-08-19)
+
+Sanity 15/15. C' mean_logits curve 65.8 → 66.7 → 66.7 → 73.3 → 75.8 → 79.2.  
+K=8 already C' 65.8 > CNN 56.7. K=64 C' 73.3 > CNN 65.8. CNN plateaus at K=64; C' keeps climbing.  
+`mean_prob` / `majority` same rank. Not SPIKE_ONLY. Frozen 1C table stays K=256.
+
+## 1D per-device
+
+No-train. Frozen 1C `per_device_accuracy.csv` only (K=256, mean_logits).  
+Pre-register: C' vs CNN file-mean on 24 devices. ≥16/24 BROAD; ≤8/24 CONCENTRATED; else MIXED.  
+Sanity: 24-device macro file-acc matches `metrics.json` within 0.05 pp.  
+Does not open Day5 / LODO / RX2.
+
+### 1D per-device result — MIXED (2026-08-19)
+
+Sanity OK. C' vs CNN file: win 10 / lose 3 / tie 11. Window: win 9 / lose 15.  
+File gain is not CONCENTRATED (not ≤8 devices) and not BROAD (≥16). Hardest C' file losses: Device1, Device19 (−40 pp); biggest file wins: Device14 (+80), Device18 (+60). Window still mostly CNN (15/24). Main remains a crutch.  
+Do not write “C' wins most devices on window.” Do not open Day5 / LODO / RX2.
 
 ## 1E LODO
 

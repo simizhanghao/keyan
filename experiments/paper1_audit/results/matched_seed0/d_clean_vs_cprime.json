@@ -1,0 +1,31 @@
+{
+  "day5_used": false,
+  "fft_source": "inband",
+  "oob_norm": "ratio_rms",
+  "cell": "D",
+  "verdict": "CLEAN_FAIL",
+  "rows": [
+    {
+      "seed": 0,
+      "cprime_window": 43.8,
+      "d_window": 53.8,
+      "c1_window": 43.4,
+      "cfft_window": 46.2,
+      "delta_vs_cprime_pp": 10.0,
+      "collapsed": false,
+      "clean_gate_pass": true,
+      "d_file": 79.2
+    },
+    {
+      "seed": 1,
+      "cprime_window": 44.3,
+      "d_window": 31.9,
+      "c1_window": 24.2,
+      "cfft_window": 46.1,
+      "delta_vs_cprime_pp": -12.4,
+      "collapsed": false,
+      "clean_gate_pass": false,
+      "d_file": 66.7
+    }
+  ]
+}

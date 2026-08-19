@@ -1,0 +1,16 @@
+{
+  "training": false,
+  "day5_used": false,
+  "accuracy_used": false,
+  "n_files": 2,
+  "n_windows": 4,
+  "fft_source": "inband",
+  "oob_norm": "ratio",
+  "test1_deterministic_l2": 0.0,
+  "test2_cfft_oob_scale_l2": 5.187919668969698e-06,
+  "test2_full_oob_scale_l2": 0.03978746011853218,
+  "test3_iq_l2": 0.0,
+  "test3_amp_phase_l2": 0.0,
+  "test3_oob_ratio_l2": 0.0,
+  "verdict": "SMOKE_PASS"
+}

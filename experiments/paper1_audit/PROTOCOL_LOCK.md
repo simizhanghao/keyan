@@ -152,7 +152,7 @@ Do not rewrite these numbers. Audit writes only under `experiments/paper1_audit/
     OOB identity shuffle               ← done; identity claim SHRUNK
     RX-style corruption                ← done; RX-entangled 30.3±2.0pp
     RX-style factor attribution        ← done; Case 1A; D_oob_scale 28.7; D_spec 30.5
-1D  file-vote K sweep                  ← closed this audit
+1D  file-vote K sweep                  ← protocol K stays 256; revision reserve opened below
 1E  LODO                               ← closed this audit
     → PAPER1_AUDIT_REPORT.md           ← written; YELLOW
     → Phase 2A-0 scale probe           ← done; C1 GO (ρ 0.65); C2 no
@@ -160,7 +160,11 @@ Do not rewrite these numbers. Audit writes only under `experiments/paper1_audit/
     → Phase 2A-2 C1 seed 0 RX stress   ← done; NOT_TRANSFERRED (23.2 pp)
     → Phase 2A-3 scale path leak       ← done; views: amp_phase + cnn_stem LIVE
     → Phase 2A-4 in-band view ablation ← done; SMALLEST_KILL=C_fft
+    → Phase 2A-5 C_fft intervention    ← CLOSED; hard canonicalization CLOSED
+    → Phase 2B-0 paired OOB-scale train ← S1 FROZEN (Case A; 1.3 / 10.3); RX2 / 5-seed closed
     → Experiment 2 / RCOF / utility gate closed
+    1D file-vote K sensitivity         ← done; H4_PASS (not a K=256 spike)
+    1D per-device Day4                 ← done; MIXED (10 win / 3 lose / 11 tie)
 ```
 
 Human stage reading after 1C + oracle + shuffle + combined RX (not a moved numeric gate):
@@ -170,12 +174,12 @@ Paper1 identity claim     SHRUNK
 Paper1 matched 5-seed     YELLOW (Main crutch; C' window < CNN)
 Oracle complementarity    CONDITIONAL PASS (stable-Main seeds)
 RX-style sensitivity      STRONG (30.3±2.0pp)
-Paper2 motivation         GO for receiver/style-robust OOB modeling
-Paper2 algorithm          Case 1A; C1 drop-in FAIL; stem leak killed by C_fft (not A_amp)
-Working title             Scale-Decoupled and Utility-Aware OOB Fusion for LoRa RFFI
+Paper2 motivation         GO (OOB-scale shortcut is real)
+Paper2 algorithm          S1 FROZEN (paired oob_scale on C'); synthetic Case A; RX2 / 5-seed closed
+Working title             Scale-Robust OOB Hybrid (internal; not a paper title)
 ```
 
-Do not rescue Main, retune lr/epoch, open Day5, 1D, Hann/guard, RCOF, or a utility gate from 1C File-Acc or from the 30.3pp combined drop. C1 is not a C' replacement and did not kill the scale shortcut. Next job needs a Human GO.
+Do not rescue Main, retune lr/epoch, reopen C1/C_fft/D, open Day5, Hann/guard, RCOF, or a utility gate. C1 is not a C' replacement. Current `no OOB` means no explicit OOB branch. S1 is the frozen synthetic method. RX2 / 5-seed wait for a later GO. 1D vote is closed H4_PASS; per-device is closed MIXED. Neither changes the frozen K=256 1C table. LODO / Day5 / RX2 still wait.
 
 ---
 

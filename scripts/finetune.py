@@ -32,6 +32,7 @@ from rfhstu.train_utils import (
     add_common_args,
     apply_receiver_style,
     format_metrics,
+    paired_second_view,
     forward_with_batch,
     load_checkpoint,
     make_datasets,
@@ -203,6 +204,7 @@ def run_epoch(
         model_input = prepare_model_input(iq, args)
         labels = batch["label"].to(device)
         domains = batch["domains"].to(device)
+        paired = bool(train and getattr(args, "paired_view", "off") != "off")
         with torch.set_grad_enabled(train):
             out = forward_with_batch(
                 model, model_input, batch, adv_lambda=args.adv_lambda, return_features=args.use_supcon
@@ -210,22 +212,33 @@ def run_epoch(
             logits = out["logits"]
             z = out.get("features", out["embedding"])
             loss = classification_loss(logits, labels, args, class_weights)
-            if args.use_hard_margin:
+            if paired:
+                iq_b = paired_second_view(iq, args)
+                out_b = forward_with_batch(
+                    model,
+                    prepare_model_input(iq_b, args),
+                    batch,
+                    adv_lambda=args.adv_lambda,
+                    return_features=False,
+                )
+                loss = 0.5 * loss + 0.5 * classification_loss(out_b["logits"], labels, args, class_weights)
+            elif args.use_hard_margin:
                 if args.use_supcon:
                     raise RuntimeError("--use-hard-margin and --use-supcon should not be enabled together in this first version.")
                 loss = loss + args.hard_margin_weight * hard_negative_margin_loss(z, labels, model.classifier, args.hard_margin)
-            if args.use_center_loss:
-                if center_loss is None:
-                    raise RuntimeError("--use-center-loss requires a CenterLoss module.")
-                loss = loss + args.center_loss_weight * center_loss(z, labels)
-            if args.use_supcon:
-                supcon_z = supcon_projector(z) if supcon_projector is not None else z
-                loss = loss + args.supcon_weight * supcon(supcon_z, labels)
-            if args.use_contrastive:
-                loss = loss + args.contrastive_weight * supervised_contrastive_loss(z, labels, args.temperature)
-            if args.use_adversarial and model.domain_head is not None:
-                domain_loss = model.domain_head.loss(out["domain_logits"], domains, field_to_col)
-                loss = loss + args.adversarial_weight * domain_loss
+            if not paired:
+                if args.use_center_loss:
+                    if center_loss is None:
+                        raise RuntimeError("--use-center-loss requires a CenterLoss module.")
+                    loss = loss + args.center_loss_weight * center_loss(z, labels)
+                if args.use_supcon:
+                    supcon_z = supcon_projector(z) if supcon_projector is not None else z
+                    loss = loss + args.supcon_weight * supcon(supcon_z, labels)
+                if args.use_contrastive:
+                    loss = loss + args.contrastive_weight * supervised_contrastive_loss(z, labels, args.temperature)
+                if args.use_adversarial and model.domain_head is not None:
+                    domain_loss = model.domain_head.loss(out["domain_logits"], domains, field_to_col)
+                    loss = loss + args.adversarial_weight * domain_loss
             if train:
                 optimizer.zero_grad(set_to_none=True)
                 loss.backward()
@@ -371,6 +384,21 @@ def main() -> None:
     if args.oob_identity_shuffle:
         if args.model_type == "osu_cnn" or args.no_oob or args.oob_fusion_type == "no_oob":
             raise ValueError("OOB identity shuffle requires a Full model with an OOB branch.")
+    paired_mode = getattr(args, "paired_view", "off")
+    if paired_mode != "off":
+        extras = [
+            args.augment_receiver_style,
+            args.augment_rf,
+            args.use_contrastive,
+            args.use_adversarial,
+            args.use_supcon,
+            args.use_hard_margin,
+            args.use_center_loss,
+            args.use_target_unlabeled,
+        ]
+        if any(extras):
+            raise ValueError("--paired-view is CE-only and cannot combine with receiver-style/RF aug or extra losses.")
+        print(f"paired_view={paired_mode} (train-only; val stays clean)")
     seed_everything(args.seed)
     device = resolve_device(args.device)
     train_ds, val_ds = make_datasets(args)
@@ -400,6 +428,7 @@ def main() -> None:
             cnn_stem_kernels=args.cnn_stem_kernels,
             fft_norm=args.fft_norm,
             oob_norm=args.oob_norm,
+            fft_source=getattr(args, "fft_source", "full"),
         )
         domain_sizes = infer_domain_sizes([*train_ds.rows, *val_ds.rows]) if args.use_adversarial else None
         model = DeviceClassifier(
