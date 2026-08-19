@@ -1,0 +1,108 @@
+{
+  "day5_used": false,
+  "rx2_used": false,
+  "f1_opened": false,
+  "pretrained_used": false,
+  "recipe": "F0 identity-first: init-checkpoint C' + paired oob_scale; 80/3e-3",
+  "seeds": [
+    2,
+    3,
+    4
+  ],
+  "clean": {
+    "rows": [
+      {
+        "seed": 2,
+        "cprime_window": 46.1,
+        "f0_window": 52.9,
+        "delta_clean_pp": 6.8,
+        "f0_file": 66.7,
+        "clean_pass": true,
+        "collapse": false
+      },
+      {
+        "seed": 3,
+        "cprime_window": 46.5,
+        "f0_window": 48.5,
+        "delta_clean_pp": 2.0,
+        "f0_file": 70.8,
+        "clean_pass": true,
+        "collapse": false
+      },
+      {
+        "seed": 4,
+        "cprime_window": 46.7,
+        "f0_window": 48.5,
+        "delta_clean_pp": 1.8,
+        "f0_file": 79.2,
+        "clean_pass": true,
+        "collapse": false
+      }
+    ],
+    "n_pass": "3/3",
+    "n_collapse": 0,
+    "mean_delta_pp": 3.53,
+    "pass": true,
+    "gate": "Gate A: 3/3 \u0394>=-2 pp and no collapse"
+  },
+  "scale": {
+    "rows": [
+      {
+        "seed": 2,
+        "clean": 52.9,
+        "oob_scale": 50.9,
+        "d_scale": 2.0,
+        "bin": "STRONG"
+      },
+      {
+        "seed": 3,
+        "clean": 48.5,
+        "oob_scale": 47.6,
+        "d_scale": 0.9,
+        "bin": "STRONG"
+      },
+      {
+        "seed": 4,
+        "clean": 48.5,
+        "oob_scale": 48.0,
+        "d_scale": 0.5,
+        "bin": "STRONG"
+      }
+    ],
+    "mean_pp": 1.13,
+    "std_pp": 0.78,
+    "verdict": "GATE_B_STRONG"
+  },
+  "full_rx": {
+    "rows": [
+      {
+        "seed": 2,
+        "clean": 52.9,
+        "full_rx": 48.5,
+        "d_full": 4.4,
+        "bin": "TRACKS_SCALE"
+      },
+      {
+        "seed": 3,
+        "clean": 48.5,
+        "full_rx": 40.2,
+        "d_full": 8.3,
+        "bin": "TRACKS_SCALE"
+      },
+      {
+        "seed": 4,
+        "clean": 48.5,
+        "full_rx": 43.4,
+        "d_full": 5.1,
+        "bin": "TRACKS_SCALE"
+      }
+    ],
+    "mean_pp": 5.93,
+    "std_pp": 2.08,
+    "verdict": "TRACKS_SCALE",
+    "gate_c_tracks": true,
+    "hard_gate": false
+  },
+  "verdict": "F0_GO",
+  "note": "RX2 still closed. Do not retune from this table. F0_GO \u2192 later expand to seeds 0/1. GATE_B_FAIL or clean fail \u2192 F1, not retune."
+}

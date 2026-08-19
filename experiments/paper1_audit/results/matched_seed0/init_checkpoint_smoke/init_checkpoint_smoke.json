@@ -1,0 +1,35 @@
+{
+  "day5_used": false,
+  "rx2_used": false,
+  "training": false,
+  "seed": 2,
+  "weights": {
+    "seed": 2,
+    "cprime_ckpt": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/matched_seed0/runs/C_full_ratio/seed_2/best.pt",
+    "classifier_keys": [
+      "classifier.weight",
+      "classifier.bias"
+    ],
+    "full_load": {
+      "missing": [],
+      "unexpected": [],
+      "classifier_rel_l2_vs_ckpt": 0.0,
+      "ok": true
+    },
+    "pretrained_encoder_only": {
+      "classifier_changed_by_load": 0.0,
+      "classifier_rel_l2_vs_ckpt": 1.002931,
+      "ok_documents_forbid": true
+    }
+  },
+  "day4_eval": {
+    "frozen_window_pct": 46.0775,
+    "smoke_window_pct": 46.0775,
+    "abs_pp": 0.0,
+    "tol_pp": 0.05,
+    "ok": true,
+    "smoke_ckpt": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/matched_seed0/init_checkpoint_smoke/seed_2_init_reload.pt",
+    "eval_dir": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/matched_seed0/init_checkpoint_smoke/eval_val_seed_2"
+  },
+  "verdict": "SMOKE_PASS"
+}

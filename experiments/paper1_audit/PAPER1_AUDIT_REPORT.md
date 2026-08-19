@@ -33,7 +33,7 @@ Overall:                              YELLOW
 Architecture empirical finding:       SUPPORTED (OOB path is predictive)
 Stable OOB device-identity story:     NOT SUPPORTED
 Paper 2 motivation:                   GO
-Paper 2 algorithm:                    S1 FROZEN; 5-seed CLEAN_FAIL (2/5, mean −2.72); S0 SCALE_TAX / Case D; RX2 closed
+Paper 2 algorithm:                    F0 synthetic GO; real OSU 2-RX RX_FAIL; 2C external audit current
 Utility gate:                         POSTPONED (recompute after a scale-robust method, not after C1)
 1D vote (revision reserve):           H4_PASS; 1C K=256 table unchanged
 1D per-device:                        MIXED (file 10/3/11; window 9/15)
@@ -299,6 +299,39 @@ Queued later: True In-Band Main; LODO.
 
 **2B-0 S0 seeds 2/3/4 SCALE_TAX.** Focus S0 2/3 PASS, mean Δ −0.93; S1 mean Δ −4.10. Case D on stronger C' seeds. RX2 / retune still closed. Source: `results/matched_seed0/s0_seeds234_diag.md`.
 
+### 2B-1 Identity-first F0 — synthetic GO
+
+`--init-checkpoint` smoke **SMOKE_PASS** (seed 2): full load missing/unexpected empty, classifier rel-L2 = 0, Day4 window 46.0775 = frozen C'; `--pretrained` leaves classifier (rel-L2 ≈ 1.00) and is forbidden for F0.
+
+F0 = matching-seed C' full `best.pt` + `0.5 CE(x)+0.5 CE(T_a(x))`, `a~U[0.5,2.0]`, same 80 / 3e-3 / clean Day4 ckpt. F1 not opened.
+
+| Seed | C' win | F0 win | Δ clean | D_scale | D_full |
+| ---: | ---: | ---: | ---: | ---: | ---: |
+| 0 | 43.8 | 47.7 | +3.9 | 2.6 | 7.7 |
+| 1 | 44.3 | 45.5 | +1.2 | 1.6 | 9.0 |
+| 2 | 46.1 | 52.9 | +6.8 | 2.0 | 4.4 |
+| 3 | 46.5 | 48.5 | +2.0 | 0.9 | 8.3 |
+| 4 | 46.7 | 48.5 | +1.8 | 0.5 | 5.1 |
+
+**F0_5SEED_GO.** Clean 5/5, mean Δ **+3.14**. Scale **STRONG** 1.5±0.8. Full RX **TRACKS_SCALE** 6.9±2.0. Contrast S1 5-seed **CLEAN_FAIL** (2/5, mean −2.72). Identity-first keeps clean Acc and kills the synthetic OOB-scale shortcut; from-scratch pairing does not.
+
+### 2B-2 Real OSU 2-RX — RX_FAIL
+
+Day4 ckpts not transferable (`Diff_Receivers` ≠ 5-day indoor). Retrain C'_RX then F0_RX on `rx1_to_rx2_source_only` / `rx2_to_rx1_source_only`; seeds 0/1; `--eval-split test`. Manifest audit **RX_MANIFEST_PASS**.
+
+| Direction | C' win 0/1 | F0 win 0/1 | mean Δ win |
+| --- | --- | --- | ---: |
+| RX1→RX2 | 15.5 / 16.9 | 13.9 / 16.6 | **−0.95** |
+| RX2→RX1 | 15.1 / 15.4 | 14.3 / 16.0 | **−0.10** |
+
+Pooled window Δ **−0.52 pp**. File Acc is 1-file noise (±4.17 pp) and is not a gate. Pre-registered FAIL: pooled < 4. Do not retune `a`/lr; do not open F1.
+
+**Reading (frozen).** Synthetic F0 GO; real OSU 2-RX transfer NO-GO. Killing synthetic `oob_scale` is not the same as unseen-receiver transfer. OSU Indoor SameTx has only two SDRs; this closes the method line on this backbone + this corpus, not the Day4 mechanism story.
+
+### 2C External multi-RX — LOCAL_ABSENT
+
+Zhang/TMC 10 DUT × 20 SDR LoRa (DOI 10.21227/d6vx-r538). Local scan **LOCAL_ABSENT**. Human download / author email is the current beat. After files land: `OOB_OK` → new multi-RX DG protocol; `OOB_INSUFFICIENT` → do not force our OOB branch onto spectrograms. Do not claim “F0 solves cross-receiver.”
+
 ---
 
 ## Pointers
@@ -328,3 +361,11 @@ Queued later: True In-Band Main; LODO.
 | 2B-0 full RX | `results/matched_seed0/s0_s1_rx_full.json` |
 | 2B-0 5-seed | `results/matched_seed0/s1_5seed_stability.md` |
 | 2B-0 S0 2/3/4 | `results/matched_seed0/s0_seeds234_diag.md` |
+| 2B-1 pre-reg | `PHASE2B1_IDENTITY_ANCHOR_LOCK.md` |
+| 2B-1 init smoke | `results/matched_seed0/init_checkpoint_smoke/init_checkpoint_smoke.json` |
+| 2B-1 F0 2/3/4 | `results/matched_seed0/f0_identity_first_gate.md` |
+| 2B-1 F0 5-seed | `results/matched_seed0/f0_5seed_stability.md` |
+| 2B-2 RX lock | `PHASE2B2_REAL_RX_LOCK.md` |
+| 2B-2 RX F0 vs C' | `results/real_rx_source_only/rx_f0_vs_cprime.md` |
+| 2C external lock | `PHASE2C_EXTERNAL_DATASET_LOCK.md` |
+| 2C local scan | `results/external_rx_audit/external_rx_audit.md` |

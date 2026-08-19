@@ -1,0 +1,64 @@
+{
+  "day4_ckpt_used": false,
+  "oracle_used": false,
+  "f1_opened": false,
+  "cnn_opened": false,
+  "rows": [
+    {
+      "direction": "rx1_to_rx2",
+      "seed": 0,
+      "c_window": 15.5,
+      "f0_window": 13.9,
+      "delta_window_pp": -1.6,
+      "c_file": 16.7,
+      "f0_file": 20.8,
+      "delta_file_pp": 4.1,
+      "n_files": 24
+    },
+    {
+      "direction": "rx1_to_rx2",
+      "seed": 1,
+      "c_window": 16.9,
+      "f0_window": 16.6,
+      "delta_window_pp": -0.3,
+      "c_file": 16.7,
+      "f0_file": 16.7,
+      "delta_file_pp": 0.0,
+      "n_files": 24
+    },
+    {
+      "direction": "rx2_to_rx1",
+      "seed": 0,
+      "c_window": 15.1,
+      "f0_window": 14.3,
+      "delta_window_pp": -0.8,
+      "c_file": 12.5,
+      "f0_file": 16.7,
+      "delta_file_pp": 4.2,
+      "n_files": 24
+    },
+    {
+      "direction": "rx2_to_rx1",
+      "seed": 1,
+      "c_window": 15.4,
+      "f0_window": 16.0,
+      "delta_window_pp": 0.6,
+      "c_file": 12.5,
+      "f0_file": 8.3,
+      "delta_file_pp": -4.2,
+      "n_files": 24
+    }
+  ],
+  "direction_mean_delta_window_pp": {
+    "rx1_to_rx2": -0.95,
+    "rx2_to_rx1": -0.1
+  },
+  "pooled_delta_window_pp": -0.52,
+  "verdict": "RX_FAIL",
+  "gate": {
+    "STRONG_GO": "both dirs F0>C', pooled>=8, max dir>=10",
+    "WEAK_GO": "both dirs >0 and 4<=pooled<8",
+    "FAIL": "pooled<4 or any dir mean <=-2"
+  },
+  "note": "Do not retune a/lr/epoch from this table. File Acc recorded only."
+}

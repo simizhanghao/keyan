@@ -321,7 +321,8 @@ S1 D_scale < 8              → Case A: aug-only works; keep method small
 Seed 0/1 synthetic gates remain Case A (D_scale 1.3 / D_full 10.3).  
 5-seed clean is Case D (SCALE_TAX). `S1_5SEED_GO` did not fire. Real RX1↔RX2 stays closed.
 
-Closed until a later Human GO: Day5, RX2, 5-seed S1 stress reading, retune, utility, RCOF, C2, DCT K, Hann/guard, True In-Band Main, LODO. No GPU beat is open.
+Closed until a later Human GO: Day5, RX2, 5-seed S1 stress reading, retune, utility, RCOF, C2, DCT K, Hann/guard, True In-Band Main, LODO.  
+**Next beat:** Phase 2B-2 real RX manifest audit (`PHASE2B2_REAL_RX_LOCK.md`). F0 5-seed is **F0_5SEED_GO**. Do not reopen S1. Do not open F1.
 
 ---
 

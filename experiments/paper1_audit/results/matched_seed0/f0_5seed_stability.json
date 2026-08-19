@@ -1,0 +1,157 @@
+{
+  "day5_used": false,
+  "rx2_used": false,
+  "f1_opened": false,
+  "pretrained_used": false,
+  "retrained_234": false,
+  "recipe": "F0 identity-first 5-seed; 0/1 new; 2/3/4 frozen F0_GO",
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "clean": {
+    "rows": [
+      {
+        "seed": 0,
+        "cprime_window": 43.8,
+        "f0_window": 47.7,
+        "delta_clean_pp": 3.9,
+        "f0_file": 79.2,
+        "clean_pass": true,
+        "collapse": false
+      },
+      {
+        "seed": 1,
+        "cprime_window": 44.3,
+        "f0_window": 45.5,
+        "delta_clean_pp": 1.2,
+        "f0_file": 66.7,
+        "clean_pass": true,
+        "collapse": false
+      },
+      {
+        "seed": 2,
+        "cprime_window": 46.1,
+        "f0_window": 52.9,
+        "delta_clean_pp": 6.8,
+        "f0_file": 66.7,
+        "clean_pass": true,
+        "collapse": false
+      },
+      {
+        "seed": 3,
+        "cprime_window": 46.5,
+        "f0_window": 48.5,
+        "delta_clean_pp": 2.0,
+        "f0_file": 70.8,
+        "clean_pass": true,
+        "collapse": false
+      },
+      {
+        "seed": 4,
+        "cprime_window": 46.7,
+        "f0_window": 48.5,
+        "delta_clean_pp": 1.8,
+        "f0_file": 79.2,
+        "clean_pass": true,
+        "collapse": false
+      }
+    ],
+    "n_pass": "5/5",
+    "n_collapse": 0,
+    "mean_delta_pp": 3.14,
+    "pass": true,
+    "gate": ">=4/5 \u0394>=-2 pp, mean \u0394>=-2, 0 collapse"
+  },
+  "scale": {
+    "rows": [
+      {
+        "seed": 0,
+        "clean": 47.7,
+        "oob_scale": 45.1,
+        "d_scale": 2.6,
+        "bin": "STRONG"
+      },
+      {
+        "seed": 1,
+        "clean": 45.5,
+        "oob_scale": 43.9,
+        "d_scale": 1.6,
+        "bin": "STRONG"
+      },
+      {
+        "seed": 2,
+        "clean": 52.9,
+        "oob_scale": 50.9,
+        "d_scale": 2.0,
+        "bin": "STRONG"
+      },
+      {
+        "seed": 3,
+        "clean": 48.5,
+        "oob_scale": 47.6,
+        "d_scale": 0.9,
+        "bin": "STRONG"
+      },
+      {
+        "seed": 4,
+        "clean": 48.5,
+        "oob_scale": 48.0,
+        "d_scale": 0.5,
+        "bin": "STRONG"
+      }
+    ],
+    "mean_pp": 1.52,
+    "std_pp": 0.84,
+    "verdict": "SCALE_STRONG",
+    "gate": "mean D<8 STRONG / all <15 and mean<15 PASS / else FAIL"
+  },
+  "full_rx": {
+    "rows": [
+      {
+        "seed": 0,
+        "clean": 47.7,
+        "full_rx": 40.0,
+        "d_full": 7.7,
+        "bin": "TRACKS_SCALE"
+      },
+      {
+        "seed": 1,
+        "clean": 45.5,
+        "full_rx": 36.5,
+        "d_full": 9.0,
+        "bin": "TRACKS_SCALE"
+      },
+      {
+        "seed": 2,
+        "clean": 52.9,
+        "full_rx": 48.5,
+        "d_full": 4.4,
+        "bin": "TRACKS_SCALE"
+      },
+      {
+        "seed": 3,
+        "clean": 48.5,
+        "full_rx": 40.2,
+        "d_full": 8.3,
+        "bin": "TRACKS_SCALE"
+      },
+      {
+        "seed": 4,
+        "clean": 48.5,
+        "full_rx": 43.4,
+        "d_full": 5.1,
+        "bin": "TRACKS_SCALE"
+      }
+    ],
+    "mean_pp": 6.9,
+    "std_pp": 2.03,
+    "verdict": "TRACKS_SCALE",
+    "hard_gate": false
+  },
+  "verdict": "F0_5SEED_GO",
+  "note": "RX2 still closed. Next Human GO only if F0_5SEED_GO. Do not retune. Do not open F1."
+}

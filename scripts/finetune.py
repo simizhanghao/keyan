@@ -47,7 +47,17 @@ from rfhstu.train_utils import (
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Fine-tune RF-HSTU for device classification.")
     add_common_args(parser)
-    parser.add_argument("--pretrained", default=None)
+    parser.add_argument(
+        "--pretrained",
+        default=None,
+        help="Encoder-only warm start (legacy). Forbidden for 2B-1 F0/F1; drops classifier.",
+    )
+    parser.add_argument(
+        "--init-checkpoint",
+        default=None,
+        help="Full-model warm start from a DeviceClassifier best.pt (embedder+encoder+classifier). "
+        "Required for Phase 2B-1 F0 identity-first. Mutually exclusive with --pretrained.",
+    )
     parser.add_argument("--out-dir", default="runs/finetune")
     parser.add_argument("--use-contrastive", action="store_true")
     parser.add_argument("--use-adversarial", action="store_true")
@@ -91,6 +101,23 @@ def maybe_load_pretrained(model: torch.nn.Module, path: str | None, device: torc
     encoder_state = {key.replace("encoder.", "", 1): value for key, value in state.items() if key.startswith("encoder.")}
     missing, unexpected = model.encoder.load_state_dict(encoder_state, strict=False)
     print(f"loaded_pretrained={path} missing={len(missing)} unexpected={len(unexpected)}")
+    print("WARNING: --pretrained is encoder-only; classifier is NOT restored. Use --init-checkpoint for F0.")
+
+
+def maybe_load_init_checkpoint(model: torch.nn.Module, path: str | None, device: torch.device) -> None:
+    """Full DeviceClassifier state (strict). Used by Phase 2B-1 F0 identity-first."""
+    if not path:
+        return
+    ckpt = load_checkpoint(path, map_location=device)
+    state = ckpt["model"]
+    missing, unexpected = model.load_state_dict(state, strict=True)
+    n_cls = sum(1 for k in state if k.startswith("classifier."))
+    if n_cls < 1:
+        raise RuntimeError(f"--init-checkpoint has no classifier.* keys: {path}")
+    print(
+        f"loaded_init_checkpoint={path} "
+        f"classifier_tensors={n_cls} missing={len(missing)} unexpected={len(unexpected)}"
+    )
 
 
 def compute_class_weights(train_ds, num_classes: int, device: torch.device) -> torch.Tensor:
@@ -381,6 +408,8 @@ def main() -> None:
     enabled_metric_losses = sum(bool(flag) for flag in [args.use_hard_margin, args.use_supcon, args.use_center_loss])
     if enabled_metric_losses > 1:
         raise ValueError("Enable only one of --use-hard-margin, --use-supcon, or --use-center-loss in this first version.")
+    if args.pretrained and args.init_checkpoint:
+        raise ValueError("Use only one of --pretrained (encoder-only) or --init-checkpoint (full model).")
     if args.oob_identity_shuffle:
         if args.model_type == "osu_cnn" or args.no_oob or args.oob_fusion_type == "no_oob":
             raise ValueError("OOB identity shuffle requires a Full model with an OOB branch.")
@@ -399,6 +428,8 @@ def main() -> None:
         if any(extras):
             raise ValueError("--paired-view is CE-only and cannot combine with receiver-style/RF aug or extra losses.")
         print(f"paired_view={paired_mode} (train-only; val stays clean)")
+    if args.init_checkpoint:
+        print(f"init_checkpoint={args.init_checkpoint} (full state; fresh optimizer)")
     seed_everything(args.seed)
     device = resolve_device(args.device)
     train_ds, val_ds = make_datasets(args)
@@ -451,6 +482,7 @@ def main() -> None:
             mixstyle_alpha=args.mixstyle_alpha,
         ).to(device)
     maybe_load_pretrained(model, args.pretrained, device)
+    maybe_load_init_checkpoint(model, args.init_checkpoint, device)
     supcon_projector = None
     if args.use_supcon and args.use_supcon_proj:
         supcon_projector = SupConProjector(args.dim if args.model_type == "rf_hstu" else args.cnn_hidden_dim, args.supcon_proj_dim).to(device)

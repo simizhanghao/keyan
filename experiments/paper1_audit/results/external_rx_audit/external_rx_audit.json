@@ -1,0 +1,26 @@
+{
+  "training": false,
+  "gpu": false,
+  "download": false,
+  "osu_rx_fail_frozen": true,
+  "paper": {
+    "official_page": "https://junqing-zhang.github.io/dataset-code/",
+    "dataport": "https://ieee-dataport.org/documents/radio-frequency-fingerprint-lora-dataset-multiple-receivers",
+    "doi": "10.21227/d6vx-r538",
+    "dut": 10,
+    "sdr": 20,
+    "bw_hz": 125000,
+    "fs_hz_claimed": 1000000,
+    "sf": 7,
+    "carrier_mhz": 868.1,
+    "zips": [
+      "multiple_receiver_train.zip (~13 GB)",
+      "multiple_receiver_test.zip (~11 GB)",
+      "receiver_drift_dataset.zip (~3.7 GB)"
+    ]
+  },
+  "hits": [],
+  "oob_guess": "not_applicable",
+  "verdict": "LOCAL_ABSENT",
+  "note": "IEEE DataPort needs a login; this script does not download. 1 MHz / 125 kHz can preserve OOB only if dumps are full-band complex IQ. Preamble-only spectrograms are OOB_INSUFFICIENT. Do not retune F0 from this file."
+}

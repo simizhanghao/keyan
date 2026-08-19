@@ -1,0 +1,94 @@
+{
+  "training": false,
+  "gpu": false,
+  "day5_used": false,
+  "oracle_used": false,
+  "day4_ckpt_used": false,
+  "reports": {
+    "rx1_to_rx2": {
+      "manifest": "/data1/hcc/llm4RF/new_phase/data/paper/rx1_to_rx2_source_only.csv",
+      "source": 1,
+      "target": 2,
+      "splits": {
+        "train": {
+          "n_rows": 24,
+          "receivers": [
+            1
+          ],
+          "n_devices": 24,
+          "protocols": [
+            "cross_receiver_source_only"
+          ],
+          "n_missing": 0
+        },
+        "val": {
+          "n_rows": 24,
+          "receivers": [
+            1
+          ],
+          "n_devices": 24,
+          "protocols": [
+            "cross_receiver_source_only"
+          ],
+          "n_missing": 0
+        },
+        "test": {
+          "n_rows": 24,
+          "receivers": [
+            2
+          ],
+          "n_devices": 24,
+          "protocols": [
+            "cross_receiver_source_only"
+          ],
+          "n_missing": 0
+        }
+      },
+      "issues": [],
+      "ok": true
+    },
+    "rx2_to_rx1": {
+      "manifest": "/data1/hcc/llm4RF/new_phase/data/paper/rx2_to_rx1_source_only.csv",
+      "source": 2,
+      "target": 1,
+      "splits": {
+        "train": {
+          "n_rows": 24,
+          "receivers": [
+            2
+          ],
+          "n_devices": 24,
+          "protocols": [
+            "cross_receiver_source_only"
+          ],
+          "n_missing": 0
+        },
+        "val": {
+          "n_rows": 24,
+          "receivers": [
+            2
+          ],
+          "n_devices": 24,
+          "protocols": [
+            "cross_receiver_source_only"
+          ],
+          "n_missing": 0
+        },
+        "test": {
+          "n_rows": 24,
+          "receivers": [
+            1
+          ],
+          "n_devices": 24,
+          "protocols": [
+            "cross_receiver_source_only"
+          ],
+          "n_missing": 0
+        }
+      },
+      "issues": [],
+      "ok": true
+    }
+  },
+  "verdict": "RX_MANIFEST_PASS"
+}
