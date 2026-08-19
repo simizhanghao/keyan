@@ -157,6 +157,9 @@ Do not rewrite these numbers. Audit writes only under `experiments/paper1_audit/
     → PAPER1_AUDIT_REPORT.md           ← written; YELLOW
     → Phase 2A-0 scale probe           ← done; C1 GO (ρ 0.65); C2 no
     → Phase 2A-1 C1 seed 0/1 train     ← done; two-seed clean FAIL (1/2)
+    → Phase 2A-2 C1 seed 0 RX stress   ← done; NOT_TRANSFERRED (23.2 pp)
+    → Phase 2A-3 scale path leak       ← done; views: amp_phase + cnn_stem LIVE
+    → Phase 2A-4 in-band view ablation ← done; SMALLEST_KILL=C_fft
     → Experiment 2 / RCOF / utility gate closed
 ```
 
@@ -168,11 +171,11 @@ Paper1 matched 5-seed     YELLOW (Main crutch; C' window < CNN)
 Oracle complementarity    CONDITIONAL PASS (stable-Main seeds)
 RX-style sensitivity      STRONG (30.3±2.0pp)
 Paper2 motivation         GO for receiver/style-robust OOB modeling
-Paper2 algorithm          Case 1A (OOB scale); C1 train 1/2 FAIL
+Paper2 algorithm          Case 1A; C1 drop-in FAIL; stem leak killed by C_fft (not A_amp)
 Working title             Scale-Decoupled and Utility-Aware OOB Fusion for LoRa RFFI
 ```
 
-Do not rescue Main, retune lr/epoch, open Day5, 1D, Hann/guard, RCOF, or a utility gate from 1C File-Acc or from the 30.3pp combined drop. C1 is not a C' replacement. Next job needs a Human GO (seed-0-only scale/RX stress, or seed-1 curve).
+Do not rescue Main, retune lr/epoch, open Day5, 1D, Hann/guard, RCOF, or a utility gate from 1C File-Acc or from the 30.3pp combined drop. C1 is not a C' replacement and did not kill the scale shortcut. Next job needs a Human GO.
 
 ---
 

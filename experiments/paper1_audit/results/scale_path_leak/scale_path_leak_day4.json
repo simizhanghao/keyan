@@ -1,0 +1,49 @@
+{
+  "training": false,
+  "day5_used": false,
+  "real_rx2_used": false,
+  "eval_split": "val",
+  "days": [
+    4
+  ],
+  "n_files": 24,
+  "n_windows": 384,
+  "samples_per_file": 16,
+  "smoke": false,
+  "checkpoint": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/matched_seed0/runs/C_full_ratio_rms/seed_0/best.pt",
+  "oob_norm": "ratio_rms",
+  "input_norm": "iq_rms",
+  "fft_norm": "log_zscore",
+  "rx_factor": "oob_scale",
+  "lock_inband": true,
+  "second_iq_rms_after_rx": false,
+  "relative_l2": {
+    "oob_c1": 3e-06,
+    "fft_inband_linear": 0.0,
+    "fft_log_zscore": 0.048817,
+    "fft_inband_of_log_zscore": 0.021288,
+    "iq_time": 0.04578,
+    "amp_phase": 0.119156,
+    "cnn_stem": 0.059091
+  },
+  "reading": {
+    "oob_c1": "STABLE",
+    "fft_inband_linear": "STABLE",
+    "fft_log_zscore": "WEAK",
+    "fft_inband_of_log_zscore": "WEAK",
+    "iq_time": "WEAK",
+    "amp_phase": "LIVE",
+    "cnn_stem": "LIVE"
+  },
+  "rms_after_rx_over_before": 1.004577,
+  "live_paths": [
+    "amp_phase",
+    "cnn_stem"
+  ],
+  "verdict": "LEAK_CONFIRMED",
+  "thresholds": {
+    "stable_lt": 0.01,
+    "live_ge": 0.05
+  },
+  "note": "Eval path is dataset iq_rms once, then RX, no second RMS. fft_log_zscore uses the full spectrum (model default). This file does not change norms or start a new train."
+}

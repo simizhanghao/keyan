@@ -137,7 +137,7 @@ Registered before 1C.mech-4. Do not rewrite after seeing factor drops.
 | Oracle utility headroom | **CONDITIONAL PASS** | stable-Main seeds 8.7 / 18.7 pp; not a gate implementation |
 | Combined RX-style | **STRONG** | 30.3±2.0 pp window, 5/5 |
 | Paper2 motivation | **GO** | receiver/style-robust OOB modeling |
-| Paper2 algorithm | **HOLD** | magnitude canonicalizer vs noise/phase vs augmentation is 1C.mech-4 |
+| Paper2 algorithm | **HOLD** | C1 drop-in FAIL; stem leak **C_fft** (in-band FFT view), not amp_phase swap |
 | Utility gate | **POSTPONED** | Main endpoint itself collapses on 3/5 seeds |
 | 1D / 1E / full RCOF | **CLOSED** | they do not choose the Paper2 nuisance |
 

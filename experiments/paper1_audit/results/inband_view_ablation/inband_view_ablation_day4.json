@@ -1,0 +1,37 @@
+{
+  "training": false,
+  "day5_used": false,
+  "real_rx2_used": false,
+  "eval_split": "val",
+  "days": [
+    4
+  ],
+  "n_files": 24,
+  "n_windows": 384,
+  "samples_per_file": 16,
+  "smoke": false,
+  "checkpoint": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/matched_seed0/runs/C_full_ratio_rms/seed_0/best.pt",
+  "cnn_stem_relative_l2": {
+    "R0_full": 0.059091,
+    "A_amp": 0.059,
+    "B_iq": 0.059005,
+    "C_fft": 0.00206,
+    "D_iq_amp": 0.058964,
+    "E_all_inband": 1e-06
+  },
+  "reading": {
+    "R0_full": "LIVE",
+    "A_amp": "LIVE",
+    "B_iq": "LIVE",
+    "C_fft": "STABLE",
+    "D_iq_amp": "LIVE",
+    "E_all_inband": "STABLE"
+  },
+  "smallest_kill": "C_fft",
+  "verdict": "SMALLEST_KILL",
+  "thresholds": {
+    "stable_lt": 0.01,
+    "live_ge": 0.05
+  },
+  "note": "E_all_inband STABLE is a lock_inband control, not a scientific finding. This file does not change model defaults or start training."
+}

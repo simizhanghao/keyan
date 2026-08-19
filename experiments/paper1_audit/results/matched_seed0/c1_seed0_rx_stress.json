@@ -1,0 +1,18 @@
+{
+  "day5_used": false,
+  "seed": 0,
+  "seed1_used": false,
+  "training": false,
+  "c1_clean_window": 43.4,
+  "c1_oob_scale_window": 20.2,
+  "c1_full_rx_window": 14.9,
+  "c1_oob_scale_drop_pp": 23.2,
+  "c1_full_rx_drop_pp": 28.5,
+  "c1_oob_scale_file_drop_pp": 25.0,
+  "c1_full_rx_file_drop_pp": 33.3,
+  "cprime_seed0_oob_scale_drop_pp": 25.5,
+  "cprime_seed0_full_rx_drop_pp": 28.5,
+  "frozen_cprime_mean_oob_scale_drop_pp": 28.7,
+  "frozen_cprime_mean_full_rx_drop_pp": 30.3,
+  "scale_reading": "NOT_TRANSFERRED"
+}

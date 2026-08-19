@@ -212,7 +212,42 @@ C1 selected on source-only invariance + ρ. C2 rejected (ρ rose). Not a target-
 | 0 | 43.8% | 43.4% | −0.3 | PASS |
 | 1 | 44.3% | 24.2% | −20.0 | FAIL |
 
-Two-seed clean: **FAIL (1/2)**. C1 is not authorized as a C' replacement. OOB-scale / full-RX stress not opened.
+Two-seed clean: **FAIL (1/2)**. C1 is not authorized as a C' replacement.
+
+**2A-2 C1 seed 0 RX stress (eval only).** Seed 1 unused. Day5 unused.
+
+| Arm | C1 clean | C1 stressed | C1 drop | C' seed0 | C' mean | Reading |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| oob_scale | 43.4 | 20.2 | 23.2 | 25.5 | 28.7 | **NOT_TRANSFERRED** (≥15) |
+| full_rx | 43.4 | 14.9 | 28.5 | 28.5 | 30.3 | diagnostic; matches C' seed 0 |
+
+C1 did not kill the scale shortcut. Token invariance did not transfer to the trained classifier.
+
+**2A-3 path leak (Day4, 24 files, 384 windows, no training).** Smoke is not the decision table.
+
+| Path | rel-L2 | Reading |
+| --- | -----: | --- |
+| oob_c1 | 0.0000 | STABLE |
+| fft_inband_linear | 0.0000 | STABLE |
+| fft_log_zscore | 0.0488 | WEAK |
+| iq_time | 0.0458 | WEAK |
+| amp_phase | 0.1192 | **LIVE** |
+| cnn_stem | 0.0591 | **LIVE** |
+
+**LEAK_CONFIRMED.** Views that move: `amp_phase` LIVE, `cnn_stem` LIVE. Not a second-RMS leak (`rms` ratio 1.0046). Not a broken lock_inband. Do not retune `fft_norm` because 0.0488 is WEAK. Stem-causal path is 2A-4, not this view table.
+
+**2A-4 view ablation (Day4, 24 files, 384 windows, frozen C1 stem).** Smoke is not the decision table.
+
+| Arm | iq | fft | amp_phase | stem rel-L2 | Reading |
+| --- | --- | --- | --- | -----: | --- |
+| R0_full | full | full | full | 0.0591 | LIVE |
+| A_amp | full | full | inband | 0.0590 | LIVE |
+| B_iq | inband | full | full | 0.0590 | LIVE |
+| **C_fft** | full | **inband** | full | **0.0021** | **STABLE** |
+| D_iq_amp | inband | full | inband | 0.0590 | LIVE |
+| E_all_inband | inband | inband | inband | 0.0000 | STABLE (control) |
+
+**SMALLEST_KILL = C_fft.** Replacing only amp/phase does not kill the stem. Candidate operator: FFT view from in-band-reconstructed IQ. Not a train GO.
 
 ---
 
@@ -230,3 +265,6 @@ Two-seed clean: **FAIL (1/2)**. C1 is not authorized as a C' replacement. OOB-sc
 | RX factors | `results/matched_seed0/rx_factor_attribution.md` |
 | 2A-0 probe | `results/scale_canonical_probe/scale_canonical_probe_source_day1to4.md` |
 | 2A-1 C1 vs C' | `results/matched_seed0/c1_clean_vs_cprime.json` |
+| 2A-2 C1 seed 0 RX | `results/matched_seed0/c1_seed0_rx_stress.json` |
+| 2A-3 path leak | `results/scale_path_leak/scale_path_leak_day4.json` |
+| 2A-4 view ablation | `results/inband_view_ablation/inband_view_ablation_day4.json` |
