@@ -33,7 +33,7 @@ Overall:                              YELLOW
 Architecture empirical finding:       SUPPORTED (OOB path is predictive)
 Stable OOB device-identity story:     NOT SUPPORTED
 Paper 2 motivation:                   GO
-Paper 2 algorithm:                    S1 FROZEN (paired oob_scale on C'; Case A 1.3 / 10.3)
+Paper 2 algorithm:                    S1 FROZEN; 5-seed CLEAN_FAIL (2/5, mean −2.72); S0 SCALE_TAX / Case D; RX2 closed
 Utility gate:                         POSTPONED (recompute after a scale-robust method, not after C1)
 1D vote (revision reserve):           H4_PASS; 1C K=256 table unchanged
 1D per-device:                        MIXED (file 10/3/11; window 9/15)
@@ -293,7 +293,11 @@ Queued later: True In-Band Main; LODO.
 
 **2B-0 Gate 2 STRONG / Case A.** S1 mean oob_scale drop **1.3**. S0 mean **29.6**.
 
-**2B-0 Gate 3 TRACKS_SCALE.** S1 mean full RX drop **10.3** (9.2 / 11.5) vs C' 30.3. S0 mean **30.9**. Seed 0/1 synthetic chain done. RX2 / 5-seed not opened.
+**2B-0 Gate 3 TRACKS_SCALE.** S1 mean full RX drop **10.3** (9.2 / 11.5) vs C' 30.3. S0 mean **30.9**. Seed 0/1 synthetic chain done.
+
+**2B-0 5-seed CLEAN_FAIL.** pass 2/5, mean Δ −2.72, collapse 0. Stress not read. Source: `results/matched_seed0/s1_5seed_stability.md`.
+
+**2B-0 S0 seeds 2/3/4 SCALE_TAX.** Focus S0 2/3 PASS, mean Δ −0.93; S1 mean Δ −4.10. Case D on stronger C' seeds. RX2 / retune still closed. Source: `results/matched_seed0/s0_seeds234_diag.md`.
 
 ---
 
@@ -322,3 +326,5 @@ Queued later: True In-Band Main; LODO.
 | 2B-0 clean | `results/matched_seed0/s0_s1_clean_vs_cprime.json` |
 | 2B-0 oob_scale | `results/matched_seed0/s0_s1_rx_oob_scale.json` |
 | 2B-0 full RX | `results/matched_seed0/s0_s1_rx_full.json` |
+| 2B-0 5-seed | `results/matched_seed0/s1_5seed_stability.md` |
+| 2B-0 S0 2/3/4 | `results/matched_seed0/s0_seeds234_diag.md` |

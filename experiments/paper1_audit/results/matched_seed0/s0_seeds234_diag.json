@@ -1,0 +1,85 @@
+{
+  "day5_used": false,
+  "rx2_used": false,
+  "s1_retrained": false,
+  "stress": false,
+  "focus_seeds": [
+    2,
+    3,
+    4
+  ],
+  "rows": [
+    {
+      "seed": 0,
+      "cprime_window": 43.8,
+      "s0_window": 46.4,
+      "s1_window": 43.4,
+      "delta_s0_pp": 2.6,
+      "delta_s1_pp": -0.4,
+      "s0_file": 83.3,
+      "s1_file": 75.0,
+      "s0_pass": true,
+      "s0_collapse": false,
+      "s1_pass": true
+    },
+    {
+      "seed": 1,
+      "cprime_window": 44.3,
+      "s0_window": 43.1,
+      "s1_window": 43.4,
+      "delta_s0_pp": -1.2,
+      "delta_s1_pp": -0.9,
+      "s0_file": 83.3,
+      "s1_file": 75.0,
+      "s0_pass": true,
+      "s0_collapse": false,
+      "s1_pass": true
+    },
+    {
+      "seed": 2,
+      "cprime_window": 46.1,
+      "s0_window": 46.1,
+      "s1_window": 41.7,
+      "delta_s0_pp": 0.0,
+      "delta_s1_pp": -4.4,
+      "s0_file": 75.0,
+      "s1_file": 66.7,
+      "s0_pass": true,
+      "s0_collapse": false,
+      "s1_pass": false
+    },
+    {
+      "seed": 3,
+      "cprime_window": 46.5,
+      "s0_window": 47.2,
+      "s1_window": 42.3,
+      "delta_s0_pp": 0.7,
+      "delta_s1_pp": -4.2,
+      "s0_file": 70.8,
+      "s1_file": 70.8,
+      "s0_pass": true,
+      "s0_collapse": false,
+      "s1_pass": false
+    },
+    {
+      "seed": 4,
+      "cprime_window": 46.7,
+      "s0_window": 43.2,
+      "s1_window": 43.0,
+      "delta_s0_pp": -3.5,
+      "delta_s1_pp": -3.7,
+      "s0_file": 70.8,
+      "s1_file": 75.0,
+      "s0_pass": false,
+      "s0_collapse": false,
+      "s1_pass": false
+    }
+  ],
+  "focus": {
+    "n_s0_pass": "2/3",
+    "mean_delta_s0_pp": -0.93,
+    "mean_delta_s1_pp": -4.1
+  },
+  "reading": "SCALE_TAX",
+  "note": "S1 5-seed CLEAN_FAIL is not moved. PAIRING_TAX: S0 also fails on >=2/3 of seeds 2-4. SCALE_TAX: S0 holds on >=2/3 while S1 already failed those seeds. Do not open RX2. Do not retune."
+}

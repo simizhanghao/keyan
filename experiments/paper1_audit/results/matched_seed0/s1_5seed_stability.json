@@ -1,0 +1,63 @@
+{
+  "day5_used": false,
+  "rx2_used": false,
+  "s0_retrained": false,
+  "recipe": "frozen S1 paired oob_scale",
+  "clean": {
+    "rows": [
+      {
+        "seed": 0,
+        "cprime_window": 43.8,
+        "s1_window": 43.4,
+        "delta_clean_pp": -0.4,
+        "s1_file": 75.0,
+        "clean_pass": true,
+        "collapse": false
+      },
+      {
+        "seed": 1,
+        "cprime_window": 44.3,
+        "s1_window": 43.4,
+        "delta_clean_pp": -0.9,
+        "s1_file": 75.0,
+        "clean_pass": true,
+        "collapse": false
+      },
+      {
+        "seed": 2,
+        "cprime_window": 46.1,
+        "s1_window": 41.7,
+        "delta_clean_pp": -4.4,
+        "s1_file": 66.7,
+        "clean_pass": false,
+        "collapse": false
+      },
+      {
+        "seed": 3,
+        "cprime_window": 46.5,
+        "s1_window": 42.3,
+        "delta_clean_pp": -4.2,
+        "s1_file": 70.8,
+        "clean_pass": false,
+        "collapse": false
+      },
+      {
+        "seed": 4,
+        "cprime_window": 46.7,
+        "s1_window": 43.0,
+        "delta_clean_pp": -3.7,
+        "s1_file": 75.0,
+        "clean_pass": false,
+        "collapse": false
+      }
+    ],
+    "n_pass": "2/5",
+    "n_collapse": 0,
+    "mean_delta_pp": -2.72,
+    "pass": false
+  },
+  "scale": null,
+  "full_rx": null,
+  "verdict": "CLEAN_FAIL",
+  "note": "Stress skipped on CLEAN_FAIL. RX2 closed."
+}

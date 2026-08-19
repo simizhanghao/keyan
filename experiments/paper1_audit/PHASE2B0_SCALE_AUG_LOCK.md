@@ -1,7 +1,6 @@
 # Phase 2B-0 — Counterfactual OOB-scale training (pre-registered)
 
-**Status:** LOCKED. Seed 0/1 synthetic chain **DONE**. Gate 2 STRONG (1.3). Gate 3 **TRACKS_SCALE** (10.3). RX2 / 5-seed closed.  
-**Human GO:** 2026-08-19.  
+**Status:** LOCKED. Seed 0/1 synthetic chain **DONE**. Gate 2 STRONG (1.3). Gate 3 **TRACKS_SCALE** (10.3). **5-seed S1 CLEAN_FAIL.** S0 seeds 2/3/4 diagnostic **SCALE_TAX** (Case D on stronger C' seeds). RX2 closed.  
 **Hard canonicalization (C1 / C_fft / D and any v2) is CLOSED.** Do not return to representation surgery.
 
 Question (the only question this beat answers):
@@ -196,7 +195,115 @@ Hard scale removal is not a drop-in. View invariant ≠ classifier robust. Targe
 
 **Forbidden.** Real RX2 is solved. 5-seed is done. Residual 10.3 pp means we must add factorization. C1/C_fft/D is the method. `no OOB` is OOB-free.
 
-**Still needs a later GO (do not start from this freeze):** 5-seed S1; RX1↔RX2; Day5; Oracle recompute; utility; Paper 1 vote K / per-device / True In-Band Main / LODO.
+**Still needs a later Human GO (5-seed did not unlock these):** RX1↔RX2; Day5; 5-seed S1 stress reading; Oracle recompute; utility; True In-Band Main / LODO.
+
+---
+
+## 5-seed S1 stability (pre-registered before seeds 2/3/4)
+
+Human GO 2026-08-19. This is **stability**, not method search.
+
+```text
+train        S1 only, seeds 2/3/4  (0/1 frozen; do not retrain)
+S0           NOT retrained (compute control already shown on 0/1)
+recipe       frozen S1: 80 ep, bs 128, lr 3e-3, a~U[0.5,2.0], clean Day4 ckpt
+eval         Day4 clean + oob_scale + full RX  (same operators)
+forbidden    RX2, Day5, retune, C_fft, utility, factorization, new loss
+```
+
+Primary metric remains **window** Acc.
+
+**Collapse** (locked here; the old `window < 15%` check would miss C1 seed 1 at 24.2%):
+
+```text
+collapse  :=  Δ_clean(S1 − same-seed C') ≤ −15 pp
+```
+
+**Clean (hard gate, before any stress reading):**
+
+- per-seed PASS: `Δ ≥ −2 pp` and not collapse
+- 5-seed CLEAN_PASS: ≥4/5 PASS, **0/5 collapse**, mean Δ ≥ −2 pp
+- CLEAN_FAIL ⇒ do not interpret scale / full RX; do not open RX2; do not retune
+
+**oob_scale (hard gate, only if CLEAN_PASS):**
+
+- `D = Acc_clean(S1) − Acc_oob_scale(S1)` vs own clean
+- SCALE_STRONG: mean D < 8 and 5/5 D < 15
+- SCALE_PASS: mean D < 15 and 5/5 D < 15
+- SCALE_FAIL: any seed D ≥ 15 or mean D ≥ 15
+
+**full RX (recorded, not a hard gate):**
+
+- report mean±std
+- TRACKS_SCALE if mean D_full < 15; else WITHIN_IDEAL / RESIDUAL
+- do not retune from leftover pp
+
+**S1_5SEED_GO** (only this unlocks a later RX2 GO): CLEAN_PASS and not SCALE_FAIL.  
+A later Human GO is still required before any real RX1↔RX2. Target data must not choose the method.
+
+Runner: `experiments/paper1_audit/scripts/run_s1_5seed.sh`  
+Output: `results/matched_seed0/s1_5seed_stability.md`
+
+### 5-seed result — CLEAN_FAIL (2026-08-19)
+
+| seed | C' | S1 | Δ | gate |
+| ---: | ---: | ---: | ---: | --- |
+| 0 | 43.8 | 43.4 | −0.4 | PASS |
+| 1 | 44.3 | 43.4 | −0.9 | PASS |
+| 2 | 46.1 | 41.7 | −4.4 | FAIL |
+| 3 | 46.5 | 42.3 | −4.2 | FAIL |
+| 4 | 46.7 | 43.0 | −3.7 | FAIL |
+
+mean Δ **−2.72** (need ≥−2). pass **2/5** (need ≥4/5). collapse **0**.  
+oob_scale / full RX **not read**. RX2 stays closed. Gates not moved.
+
+S1 itself is stable (41.7–43.4). The misses are vs stronger C' seeds 2–4 (46.1–46.7), not a C1-style −20 pp crash.  
+S0 seeds 2/3/4 now exist: reading **SCALE_TAX** (below). Case D is the 5-seed clean branch.
+
+Do not retune range/lr/epoch. Do not open RX2. Do not return to C1/C_fft/D.
+
+### S0 seeds 2/3/4 diagnostic (pre-registered)
+
+Human GO after CLEAN_FAIL. **Diagnosis only.** Does not reopen S1, move −2 pp, or open RX2.
+
+```text
+train        S0 only, seeds 2/3/4   (--paired-view clean)
+S1           frozen; do not retrain
+eval         clean Day4 only
+forbidden    stress, RX2, Day5, retune, overwrite s0_s1_clean_vs_cprime.json
+```
+
+Same Δ ≥ −2 / collapse ≤ −15 vs same-seed C'. Reading uses **seeds 2/3/4 only**:
+
+| Reading | If |
+| --- | --- |
+| PAIRING_TAX | S0 FAIL on ≥2/3 of {2,3,4} |
+| SCALE_TAX | S0 PASS on ≥2/3 of {2,3,4} (S1 already FAIL there) |
+| MIXED | 1/3 |
+
+PAIRING_TAX ⇒ the 5-seed clean miss is two-forward / pairing, not uniquely scale invariance.  
+SCALE_TAX ⇒ Case D on the stronger C' seeds: forcing scale invariance costs ~4 pp identity.  
+Neither reading opens RX2 or a retune.
+
+Runner: `experiments/paper1_audit/scripts/run_s0_seeds234.sh`  
+Output: `results/matched_seed0/s0_seeds234_diag.md`
+
+### S0 seeds 2/3/4 result — SCALE_TAX (2026-08-19)
+
+| seed | C' | S0 | S1 | Δ S0 | Δ S1 | S0 gate |
+| ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| 0 | 43.8 | 46.4 | 43.4 | +2.6 | −0.4 | PASS |
+| 1 | 44.3 | 43.1 | 43.4 | −1.2 | −0.9 | PASS |
+| 2 | 46.1 | 46.1 | 41.7 | +0.0 | −4.4 | PASS |
+| 3 | 46.5 | 47.2 | 42.3 | +0.7 | −4.2 | PASS |
+| 4 | 46.7 | 43.2 | 43.0 | −3.5 | −3.7 | FAIL |
+
+Focus 2/3/4: S0 mean Δ **−0.93** (**2/3 PASS**); S1 mean Δ **−4.10**.  
+Pre-registered reading **SCALE_TAX**. S1 5-seed **CLEAN_FAIL** is not moved.
+
+Case D: on the stronger C' seeds, forcing OOB-scale invariance costs ~4 pp identity. The miss is not two-forward / pairing (S0 holds 2/3). Seed 4 S0 also misses (−3.5); that does not flip the ≥2/3 rule.
+
+Neither this table nor SCALE_TAX opens RX2, a retune, S1 retrain, or 5-seed stress reading.
 
 ---
 
@@ -211,9 +318,10 @@ S1 D_scale 8–15             → Case B: aug weakens shortcut; later factorizat
 S1 D_scale < 8              → Case A: aug-only works; keep method small
 ```
 
-Case A is the realized branch. Method is frozen above. Real RX1↔RX2 still waits for a later Human GO after (optional) 5-seed.
+Seed 0/1 synthetic gates remain Case A (D_scale 1.3 / D_full 10.3).  
+5-seed clean is Case D (SCALE_TAX). `S1_5SEED_GO` did not fire. Real RX1↔RX2 stays closed.
 
-Closed until that later GO: Day5, RX2, utility, RCOF, C2, DCT K, Hann/guard, 5-seed S0/S1, True In-Band Main, LODO (Paper 1 queue, must not block 2B-0).
+Closed until a later Human GO: Day5, RX2, 5-seed S1 stress reading, retune, utility, RCOF, C2, DCT K, Hann/guard, True In-Band Main, LODO. No GPU beat is open.
 
 ---
 
