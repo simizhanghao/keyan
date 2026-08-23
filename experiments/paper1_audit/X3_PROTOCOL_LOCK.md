@@ -64,3 +64,15 @@ Held-out mean degradation over seeds was 42.59 pp (B1) and 51.83 pp (C'), with
 
 Raw results are under `results/external_rx_audit/x3_occlusion/`; neutral vectors
 are under `results/external_rx_audit/x3_neutral/`.
+
+## X3-D status (2026-08-23)
+
+One-sided OOB scale (`0.5`) was evaluated on all 6 held-out folds and 2 seeds.
+The effect is strongly asymmetric: left-side degradation is 44.41 pp (B1)
+and 51.12 pp (C'), while right-side degradation is 17.04 pp and 1.12 pp,
+respectively. The left side passes at 6/6 folds for both models; C' right-side
+effect is near zero. This localizes the shortcut to an asymmetric OOB region,
+consistent with receiver/front-end spectral response rather than a purely
+broadband scalar nuisance.
+
+Raw results are under `results/external_rx_audit/x3_lr/heldout/`.

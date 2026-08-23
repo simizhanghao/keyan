@@ -1,0 +1,13 @@
+{
+  "protocol": {
+    "fold": "pluto_1",
+    "model": "Cprime",
+    "seed": 1,
+    "split": "heldout",
+    "intervention": "right_oob_scale_0.5",
+    "training": false,
+    "blind_opened": false
+  },
+  "accuracy": 0.818375,
+  "n_eval": 8000
+}

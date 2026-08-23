@@ -1,0 +1,13 @@
+{
+  "protocol": {
+    "fold": "b200_1",
+    "model": "B1",
+    "seed": 0,
+    "split": "heldout",
+    "intervention": "right_oob_scale_0.5",
+    "training": false,
+    "blind_opened": false
+  },
+  "accuracy": 0.458125,
+  "n_eval": 8000
+}
