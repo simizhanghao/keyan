@@ -1,0 +1,12 @@
+{
+  "checks": {
+    "source_receivers_14": true,
+    "blind_paths_absent": true,
+    "four_views": true,
+    "late_fusion": true,
+    "no_forbidden_components": true,
+    "ten_class_contract_documented": true
+  },
+  "all_pass": true,
+  "runtime_forward": "requires torch environment"
+}
