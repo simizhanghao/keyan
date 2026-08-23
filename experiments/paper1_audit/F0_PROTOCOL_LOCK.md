@@ -4,6 +4,9 @@ Status: authorized after X3 `MECHANISM GO` (2026-08-23). Official six blind
 receivers remain SEALED. This phase uses only the 14 source receivers and the
 same six internal pseudo-unseen folds as X2.
 
+Dataset role: 20-SDR is the primary dataset for this phase. OSU is a separate
+secondary replication dataset and is not pooled into F0 gates or metrics.
+
 ## Purpose
 
 F0 tests whether controlled OOB-scale augmentation improves robustness after

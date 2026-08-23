@@ -1,0 +1,13 @@
+{
+  "protocol": {
+    "fold": "rtl_2",
+    "model": "Cprime",
+    "arm": "F0",
+    "seed": 1,
+    "init_checkpoint": "experiments/paper1_audit/results/external_rx_audit/x2_formal_runs/rtl_2/Cprime/seed_1/best.pt",
+    "checkpoint_selection": "source_validation_only",
+    "blind_opened": false
+  },
+  "best_epoch": 4,
+  "tensorboard": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/external_rx_audit/f0_formal/rtl_2/Cprime/F0/seed_1/tensorboard"
+}
