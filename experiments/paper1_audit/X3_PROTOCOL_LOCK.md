@@ -76,3 +76,20 @@ consistent with receiver/front-end spectral response rather than a purely
 broadband scalar nuisance.
 
 Raw results are under `results/external_rx_audit/x3_lr/heldout/`.
+
+## X3-E status and verdict (2026-08-23)
+
+Frozen embeddings were aggregated at the receiver x device cell level (256
+packets per cell). Device probes held out receiver groups; receiver probes held
+out device groups. Across 12 checkpoints, device-probe accuracy was 94.4% for
+B1 and 97.9% for C'. Grouped 13-class receiver-probe accuracy was 16.2% and
+14.7% (chance 7.7%), respectively: device information is strongly retained,
+while receiver information is comparatively weak and not the sole explanation.
+
+**X3 verdict: MECHANISM GO.** A-D establish cross-architecture OOB reliance,
+scale sensitivity, identity pairing, neutral-branch utility, and asymmetric
+frequency-side sensitivity; E confirms device utility without a receiver-only
+embedding explanation. This authorizes F0/F0-CT controls. Official blind
+receivers remain SEALED until the locked X6 endpoint.
+
+Probe results are under `results/external_rx_audit/x3_probe/`.

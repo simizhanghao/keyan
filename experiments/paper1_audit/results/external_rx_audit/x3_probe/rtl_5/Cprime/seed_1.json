@@ -1,0 +1,13 @@
+{
+  "protocol": {
+    "fold": "rtl_5",
+    "model": "Cprime",
+    "seed": 1,
+    "training_backbone": false,
+    "group_unit": "receiver_device_cell_mean_256_packets",
+    "blind_opened": false
+  },
+  "device_probe_accuracy": 0.9750000238418579,
+  "receiver_probe_accuracy": 0.1794871836900711,
+  "n_cells": 130
+}

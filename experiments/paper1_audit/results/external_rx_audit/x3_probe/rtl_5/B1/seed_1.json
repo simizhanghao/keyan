@@ -1,0 +1,13 @@
+{
+  "protocol": {
+    "fold": "rtl_5",
+    "model": "B1",
+    "seed": 1,
+    "training_backbone": false,
+    "group_unit": "receiver_device_cell_mean_256_packets",
+    "blind_opened": false
+  },
+  "device_probe_accuracy": 1.0,
+  "receiver_probe_accuracy": 0.1538461595773697,
+  "n_cells": 130
+}
