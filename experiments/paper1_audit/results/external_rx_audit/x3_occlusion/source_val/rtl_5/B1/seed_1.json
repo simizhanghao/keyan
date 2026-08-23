@@ -1,0 +1,13 @@
+{
+  "protocol": {
+    "fold": "rtl_5",
+    "model": "B1",
+    "seed": 1,
+    "split": "source_val",
+    "intervention": "source_derived_neutral_oob_replacement",
+    "training": false,
+    "blind_opened": false
+  },
+  "accuracy": 0.10980769230769231,
+  "n_eval": 10400
+}

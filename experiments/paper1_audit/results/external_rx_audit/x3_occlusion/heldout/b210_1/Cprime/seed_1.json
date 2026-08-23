@@ -1,0 +1,13 @@
+{
+  "protocol": {
+    "fold": "b210_1",
+    "model": "Cprime",
+    "seed": 1,
+    "split": "heldout",
+    "intervention": "source_derived_neutral_oob_replacement",
+    "training": false,
+    "blind_opened": false
+  },
+  "accuracy": 0.079875,
+  "n_eval": 8000
+}

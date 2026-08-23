@@ -53,3 +53,14 @@ the 5 pp threshold for each. This independently confirms an OOB-dependent
 shortcut under the locked intervention.
 
 Raw results are under `results/external_rx_audit/x3_shuffle/`.
+
+## X3-C status (2026-08-23)
+
+Source-derived neutral OOB replacement is complete. Neutral OOB magnitudes were
+estimated from 256 packets per source receiver, excluding the held-out fold;
+the replacement used zero phase and preserved the original in-band spectrum.
+Held-out mean degradation over seeds was 42.59 pp (B1) and 51.83 pp (C'), with
+6/6 folds passing the 5 pp criterion. This agrees with X3-A and X3-B.
+
+Raw results are under `results/external_rx_audit/x3_occlusion/`; neutral vectors
+are under `results/external_rx_audit/x3_neutral/`.
