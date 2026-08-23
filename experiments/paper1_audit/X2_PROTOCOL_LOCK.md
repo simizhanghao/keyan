@@ -22,6 +22,7 @@ For each fold, all other source receivers are training candidates; the held-out 
 1. B0: reproduce the released author spectrogram-CNN loader and labels as a pipeline sanity check.
 2. B1: input-and-capacity-matched multi-view CNN, without HSTU or cross-attention.
 3. C': audited OOB hybrid, with chirp removed and attribution described as an HSTU-inspired lightweight sequence encoder. Main tokens query an OOB frequency memory; no physical local-token alignment claim.
-4. F0 and F0-CT remain closed until X3 mechanism GO and a later Human GO.
+4. F0 and F0-CT remain closed until X3 mechanism GO. X3 has now reached
+   `MECHANISM GO`; the F0 control lock is defined in `F0_PROTOCOL_LOCK.md`.
 
 All models use the same receiver folds, data budget, checkpoint rule, and reporting unit. No new OOB statistic search is permitted in X2.
