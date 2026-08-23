@@ -1,0 +1,13 @@
+{
+  "protocol": {
+    "fold": "b210_1",
+    "model": "Cprime",
+    "arm": "CT",
+    "seed": 1,
+    "evaluation": "heldout_clean",
+    "blind_opened": false
+  },
+  "accuracy": 0.64725,
+  "macro_f1": 0.6152295969284308,
+  "n_eval": 8000
+}

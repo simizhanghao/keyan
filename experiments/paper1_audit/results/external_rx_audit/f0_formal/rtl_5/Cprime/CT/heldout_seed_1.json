@@ -1,0 +1,13 @@
+{
+  "protocol": {
+    "fold": "rtl_5",
+    "model": "Cprime",
+    "arm": "CT",
+    "seed": 1,
+    "evaluation": "heldout_clean",
+    "blind_opened": false
+  },
+  "accuracy": 0.53525,
+  "macro_f1": 0.48322082050901394,
+  "n_eval": 8000
+}

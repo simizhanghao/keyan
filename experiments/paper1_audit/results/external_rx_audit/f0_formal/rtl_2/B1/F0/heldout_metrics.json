@@ -1,0 +1,13 @@
+{
+  "protocol": {
+    "fold": "rtl_2",
+    "model": "B1",
+    "arm": "F0",
+    "seed": 1,
+    "evaluation": "heldout_clean",
+    "blind_opened": false
+  },
+  "accuracy": 0.716625,
+  "macro_f1": 0.7028766746084093,
+  "n_eval": 8000
+}

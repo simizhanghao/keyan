@@ -1,0 +1,13 @@
+{
+  "protocol": {
+    "fold": "b200_mini_1",
+    "model": "B1",
+    "arm": "CT",
+    "seed": 1,
+    "evaluation": "heldout_clean",
+    "blind_opened": false
+  },
+  "accuracy": 0.7465,
+  "macro_f1": 0.7371193301755298,
+  "n_eval": 8000
+}

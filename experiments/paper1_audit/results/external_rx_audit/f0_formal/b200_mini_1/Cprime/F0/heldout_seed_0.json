@@ -1,0 +1,13 @@
+{
+  "protocol": {
+    "fold": "b200_mini_1",
+    "model": "Cprime",
+    "arm": "F0",
+    "seed": 0,
+    "evaluation": "heldout_clean",
+    "blind_opened": false
+  },
+  "accuracy": 0.670625,
+  "macro_f1": 0.6555479425331077,
+  "n_eval": 8000
+}

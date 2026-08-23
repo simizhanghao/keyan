@@ -1,0 +1,13 @@
+{
+  "protocol": {
+    "fold": "pluto_1",
+    "model": "B1",
+    "arm": "F0",
+    "seed": 1,
+    "evaluation": "heldout_clean",
+    "blind_opened": false
+  },
+  "accuracy": 0.5985,
+  "macro_f1": 0.562800510004057,
+  "n_eval": 8000
+}

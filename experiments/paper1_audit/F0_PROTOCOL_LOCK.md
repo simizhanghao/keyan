@@ -41,3 +41,8 @@ seed. No packet-level pooled confidence interval. No blind receiver access.
 F0 is successful only if it is compared against both Base and CT and does not
 trade away clean source-validation performance. If F0 fails, do not retune in
 this phase; retain X3 as the mechanism result and stop before X6.
+
+## Formal status (2026-08-23)
+
+All six internal folds are complete. F0 is `HOLD/NO-GO`: it is below the CT
+control for both B1 and C'. No F0 retuning or blind evaluation is authorized.
