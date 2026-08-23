@@ -167,7 +167,7 @@ Do not rewrite these numbers. Audit writes only under `experiments/paper1_audit/
     → Phase 2C X0 external audit       ← OOB_OK; official 14/6 matched; blind six sealed
     → Phase X1 source-only signal audit ← done; receiver > day drift, device > receiver; no classifier training
     → Phase X1.5 publication audit    ← done; clustered cells + DUT/SNR/CFO/day checks
-    → Phase X2 protocol design         ← locked; 24-run formal manifest PASS, execution next; blind six remain sealed
+    → Phase X2 protocol design         ← locked; 24-run formal pilot RUNNING on GPUs 0–3 with TensorBoard; blind six remain sealed
     → Experiment 2 / RCOF / utility gate closed
     1D file-vote K sensitivity         ← done; H4_PASS (not a K=256 spike)
     1D per-device Day4                 ← done; MIXED (10 win / 3 lose / 11 tie)
