@@ -167,7 +167,7 @@ Do not rewrite these numbers. Audit writes only under `experiments/paper1_audit/
     → Phase 2C X0 external audit       ← OOB_OK; official 14/6 matched; blind six sealed
     → Phase X1 source-only signal audit ← done; receiver > day drift, device > receiver; no classifier training
     → Phase X1.5 publication audit    ← done; clustered cells + DUT/SNR/CFO/day checks
-    → Phase X2 protocol design         ← locked; B0 → B1 → C'; blind six remain sealed
+    → Phase X2 protocol design         ← locked; B0 done, B1 next, then C'; blind six remain sealed
     → Experiment 2 / RCOF / utility gate closed
     1D file-vote K sensitivity         ← done; H4_PASS (not a K=256 spike)
     1D per-device Day4                 ← done; MIXED (10 win / 3 lose / 11 tie)
@@ -185,7 +185,7 @@ Paper2 algorithm          F0 synthetic GO; real OSU 2-RX RX_FAIL; pivot 2C exter
 Working title             Identity-Anchored Counterfactual OOB (internal; not a paper title)
 ```
 
-Do not rescue Main, retune lr/epoch, reopen C1/C_fft/D, open Day5, Hann/guard, RCOF, or a utility gate. C1 is not a C' replacement. Current `no OOB` means no explicit OOB branch. S1 is frozen (`CLEAN_FAIL` / `SCALE_TAX`). F0 5-seed is **F0_5SEED_GO** (clean +3.14, D_scale 1.5, D_full 6.9). F1 closed. Phase 2C X0 is **OOB_OK** with the official 14-source/6-blind mapping verified from archive metadata. X1 signal-level GO and X1.5 publication audit are complete; the device > receiver > day ordering survives cell aggregation, per-DUT checks, and SNR/CFO sensitivity. Paper 2 method remains HOLD. X2 is protocol-locked in `X2_PROTOCOL_LOCK.md`; B0/B1/C' only, with F0/F0-CT closed. The six official blind HDF5 signals stay sealed until X6. Do not train C'/F0, retune F0, or open F1. Paper 1 True In-Band Main / LODO stay queued.
+Do not rescue Main, retune lr/epoch, reopen C1/C_fft/D, open Day5, Hann/guard, RCOF, or a utility gate. C1 is not a C' replacement. Current `no OOB` means no explicit OOB branch. S1 is frozen (`CLEAN_FAIL` / `SCALE_TAX`). F0 5-seed is **F0_5SEED_GO** (clean +3.14, D_scale 1.5, D_full 6.9). F1 closed. Phase 2C X0 is **OOB_OK** with the official 14-source/6-blind mapping verified from archive metadata. X1 signal-level GO and X1.5 publication audit are complete; the device > receiver > day ordering survives cell aggregation, per-DUT checks, and SNR/CFO sensitivity. Paper 2 method remains HOLD. X2 is protocol-locked in `X2_PROTOCOL_LOCK.md`; B0 loader sanity is PASS, B1 is next, and C' follows; F0/F0-CT stay closed. The six official blind HDF5 signals stay sealed until X6. Do not train C'/F0, retune F0, or open F1. Paper 1 True In-Band Main / LODO stay queued.
 
 ---
 

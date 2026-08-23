@@ -1,0 +1,532 @@
+{
+  "protocol": {
+    "training": false,
+    "blind_opened": false,
+    "loader": "released LoadDataset + ChannelIndSpectrogram",
+    "win_len": 128,
+    "overlap": 64,
+    "crop_ratio": 0.3,
+    "classes": 10
+  },
+  "files": [
+    {
+      "receiver": "b200_1",
+      "keys": [
+        "CFO",
+        "SNR",
+        "data",
+        "label"
+      ],
+      "shape": [
+        8,
+        16384
+      ],
+      "labels": [
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40
+      ],
+      "label_min": 31,
+      "label_max": 40,
+      "snr_finite": true,
+      "cfo_finite": true,
+      "iq_finite": true,
+      "normalization_rms_mean": 0.017338739098385614,
+      "spectrogram_shape": [
+        8,
+        52,
+        126
+      ],
+      "spectrogram_finite": true
+    },
+    {
+      "receiver": "b200_mini_1",
+      "keys": [
+        "CFO",
+        "SNR",
+        "data",
+        "label"
+      ],
+      "shape": [
+        8,
+        16384
+      ],
+      "labels": [
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40
+      ],
+      "label_min": 31,
+      "label_max": 40,
+      "snr_finite": true,
+      "cfo_finite": true,
+      "iq_finite": true,
+      "normalization_rms_mean": 0.014699277157054661,
+      "spectrogram_shape": [
+        8,
+        52,
+        126
+      ],
+      "spectrogram_finite": true
+    },
+    {
+      "receiver": "b210_1",
+      "keys": [
+        "CFO",
+        "SNR",
+        "data",
+        "label"
+      ],
+      "shape": [
+        8,
+        16384
+      ],
+      "labels": [
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40
+      ],
+      "label_min": 31,
+      "label_max": 40,
+      "snr_finite": true,
+      "cfo_finite": true,
+      "iq_finite": true,
+      "normalization_rms_mean": 0.013186641198170028,
+      "spectrogram_shape": [
+        8,
+        52,
+        126
+      ],
+      "spectrogram_finite": true
+    },
+    {
+      "receiver": "n210_1",
+      "keys": [
+        "CFO",
+        "SNR",
+        "data",
+        "label"
+      ],
+      "shape": [
+        8,
+        16384
+      ],
+      "labels": [
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40
+      ],
+      "label_min": 31,
+      "label_max": 40,
+      "snr_finite": true,
+      "cfo_finite": true,
+      "iq_finite": true,
+      "normalization_rms_mean": 0.4875873728239545,
+      "spectrogram_shape": [
+        8,
+        52,
+        126
+      ],
+      "spectrogram_finite": true
+    },
+    {
+      "receiver": "pluto_1",
+      "keys": [
+        "CFO",
+        "SNR",
+        "data",
+        "label"
+      ],
+      "shape": [
+        8,
+        16384
+      ],
+      "labels": [
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40
+      ],
+      "label_min": 31,
+      "label_max": 40,
+      "snr_finite": true,
+      "cfo_finite": true,
+      "iq_finite": true,
+      "normalization_rms_mean": 0.030767564391107404,
+      "spectrogram_shape": [
+        8,
+        52,
+        126
+      ],
+      "spectrogram_finite": true
+    },
+    {
+      "receiver": "rtl_1",
+      "keys": [
+        "CFO",
+        "SNR",
+        "data",
+        "label"
+      ],
+      "shape": [
+        8,
+        16384
+      ],
+      "labels": [
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40
+      ],
+      "label_min": 31,
+      "label_max": 40,
+      "snr_finite": true,
+      "cfo_finite": true,
+      "iq_finite": true,
+      "normalization_rms_mean": 0.6586865596322413,
+      "spectrogram_shape": [
+        8,
+        52,
+        126
+      ],
+      "spectrogram_finite": true
+    },
+    {
+      "receiver": "rtl_2",
+      "keys": [
+        "CFO",
+        "SNR",
+        "data",
+        "label"
+      ],
+      "shape": [
+        8,
+        16384
+      ],
+      "labels": [
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40
+      ],
+      "label_min": 31,
+      "label_max": 40,
+      "snr_finite": true,
+      "cfo_finite": true,
+      "iq_finite": true,
+      "normalization_rms_mean": 0.7340829088225862,
+      "spectrogram_shape": [
+        8,
+        52,
+        126
+      ],
+      "spectrogram_finite": true
+    },
+    {
+      "receiver": "rtl_3",
+      "keys": [
+        "CFO",
+        "SNR",
+        "data",
+        "label"
+      ],
+      "shape": [
+        8,
+        16384
+      ],
+      "labels": [
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40
+      ],
+      "label_min": 31,
+      "label_max": 40,
+      "snr_finite": true,
+      "cfo_finite": true,
+      "iq_finite": true,
+      "normalization_rms_mean": 0.5462475908577522,
+      "spectrogram_shape": [
+        8,
+        52,
+        126
+      ],
+      "spectrogram_finite": true
+    },
+    {
+      "receiver": "rtl_4",
+      "keys": [
+        "CFO",
+        "SNR",
+        "data",
+        "label"
+      ],
+      "shape": [
+        8,
+        16384
+      ],
+      "labels": [
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40
+      ],
+      "label_min": 31,
+      "label_max": 40,
+      "snr_finite": true,
+      "cfo_finite": true,
+      "iq_finite": true,
+      "normalization_rms_mean": 0.5860117099930244,
+      "spectrogram_shape": [
+        8,
+        52,
+        126
+      ],
+      "spectrogram_finite": true
+    },
+    {
+      "receiver": "rtl_5",
+      "keys": [
+        "CFO",
+        "SNR",
+        "data",
+        "label"
+      ],
+      "shape": [
+        8,
+        16384
+      ],
+      "labels": [
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40
+      ],
+      "label_min": 31,
+      "label_max": 40,
+      "snr_finite": true,
+      "cfo_finite": true,
+      "iq_finite": true,
+      "normalization_rms_mean": 0.4928623960872821,
+      "spectrogram_shape": [
+        8,
+        52,
+        126
+      ],
+      "spectrogram_finite": true
+    },
+    {
+      "receiver": "rtl_6",
+      "keys": [
+        "CFO",
+        "SNR",
+        "data",
+        "label"
+      ],
+      "shape": [
+        8,
+        16384
+      ],
+      "labels": [
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40
+      ],
+      "label_min": 31,
+      "label_max": 40,
+      "snr_finite": true,
+      "cfo_finite": true,
+      "iq_finite": true,
+      "normalization_rms_mean": 0.7324252558913542,
+      "spectrogram_shape": [
+        8,
+        52,
+        126
+      ],
+      "spectrogram_finite": true
+    },
+    {
+      "receiver": "rtl_7",
+      "keys": [
+        "CFO",
+        "SNR",
+        "data",
+        "label"
+      ],
+      "shape": [
+        8,
+        16384
+      ],
+      "labels": [
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40
+      ],
+      "label_min": 31,
+      "label_max": 40,
+      "snr_finite": true,
+      "cfo_finite": true,
+      "iq_finite": true,
+      "normalization_rms_mean": 0.6846917370643237,
+      "spectrogram_shape": [
+        8,
+        52,
+        126
+      ],
+      "spectrogram_finite": true
+    },
+    {
+      "receiver": "rtl_8",
+      "keys": [
+        "CFO",
+        "SNR",
+        "data",
+        "label"
+      ],
+      "shape": [
+        8,
+        16384
+      ],
+      "labels": [
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40
+      ],
+      "label_min": 31,
+      "label_max": 40,
+      "snr_finite": true,
+      "cfo_finite": true,
+      "iq_finite": true,
+      "normalization_rms_mean": 0.5810285087215015,
+      "spectrogram_shape": [
+        8,
+        52,
+        126
+      ],
+      "spectrogram_finite": true
+    },
+    {
+      "receiver": "rtl_9",
+      "keys": [
+        "CFO",
+        "SNR",
+        "data",
+        "label"
+      ],
+      "shape": [
+        8,
+        16384
+      ],
+      "labels": [
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40
+      ],
+      "label_min": 31,
+      "label_max": 40,
+      "snr_finite": true,
+      "cfo_finite": true,
+      "iq_finite": true,
+      "normalization_rms_mean": 0.670445236303933,
+      "spectrogram_shape": [
+        8,
+        52,
+        126
+      ],
+      "spectrogram_finite": true
+    }
+  ],
+  "all_pass": true
+}
