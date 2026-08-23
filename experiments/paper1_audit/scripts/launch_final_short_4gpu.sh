@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"; DATA="${DATA_ROOT:-$ROOT/../../../.x1_source_20260823}"; OUT="${OUT_ROOT:-$ROOT/results/final_training/short}"; PY="${PYTHON:-/data1/hcc/LlamaFactory/.venv/bin/python}"; export PYTHONPATH="$ROOT/../../src:${PYTHONPATH:-}"; mkdir -p "$OUT"
+jobs=("B1-OOB 5" "Cprime-OOB 4" "Cprime-TrueIB 5"); worker(){ local gpu="$1" i=0; for item in "${jobs[@]}"; do read -r model epochs <<<"$item"; for seed in 0 1 2 3 4; do if ((i%4==gpu)); then out="$OUT/$model/seed_${seed}.json"; [[ -f "$out" ]] || "$PY" "$ROOT/scripts/run_final_short.py" --data-root "$DATA" --out "$out" --model "$model" --seed "$seed" --gpu "$gpu" --epochs "$epochs"; fi; i=$((i+1)); done; done; }; for g in 0 1 2 3; do worker "$g" >"$OUT/worker_$g.log" 2>&1 & done; wait
