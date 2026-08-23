@@ -1,0 +1,32 @@
+{
+  "protocol": {
+    "fold": "rtl_2",
+    "model": "Cprime",
+    "seed": 0,
+    "training": false,
+    "blind_opened": false
+  },
+  "curve": [
+    {
+      "scale": 0.5,
+      "accuracy": 0.100125
+    },
+    {
+      "scale": 0.70710678,
+      "accuracy": 0.1025
+    },
+    {
+      "scale": 1.0,
+      "accuracy": 0.287
+    },
+    {
+      "scale": 1.41421356,
+      "accuracy": 0.186625
+    },
+    {
+      "scale": 2.0,
+      "accuracy": 0.14475
+    }
+  ],
+  "clean_accuracy": 0.287
+}
