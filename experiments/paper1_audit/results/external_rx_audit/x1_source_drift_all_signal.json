@@ -1,0 +1,237 @@
+{
+  "protocol": {
+    "fs_hz": 1000000.0,
+    "bw_hz": 125000.0,
+    "mask": "inband |f|<=BW/2; OOB complement",
+    "training": false,
+    "blind_opened": false,
+    "capture_metadata": false
+  },
+  "files": [
+    "/data1/hcc/llm4RF/.x1_source_20260823/b200_1_train.h5",
+    "/data1/hcc/llm4RF/.x1_source_20260823/b200_mini_1_train.h5",
+    "/data1/hcc/llm4RF/.x1_source_20260823/b210_1_train.h5",
+    "/data1/hcc/llm4RF/.x1_source_20260823/n210_1_train.h5",
+    "/data1/hcc/llm4RF/.x1_source_20260823/pluto_1_train.h5",
+    "/data1/hcc/llm4RF/.x1_source_20260823/rtl_1_train.h5",
+    "/data1/hcc/llm4RF/.x1_source_20260823/rtl_2_train.h5",
+    "/data1/hcc/llm4RF/.x1_source_20260823/rtl_3_train.h5",
+    "/data1/hcc/llm4RF/.x1_source_20260823/rtl_4_train.h5",
+    "/data1/hcc/llm4RF/.x1_source_20260823/rtl_5_train.h5",
+    "/data1/hcc/llm4RF/.x1_source_20260823/rtl_6_train.h5",
+    "/data1/hcc/llm4RF/.x1_source_20260823/rtl_7_train.h5",
+    "/data1/hcc/llm4RF/.x1_source_20260823/rtl_8_train.h5",
+    "/data1/hcc/llm4RF/.x1_source_20260823/rtl_9_train.h5",
+    "/data1/hcc/llm4RF/.x1_drift_20260823/Train/n210_1_day1_wireless_train.h5",
+    "/data1/hcc/llm4RF/.x1_drift_20260823/Train/rtl_6_day1_wireless_train.h5",
+    "/data1/hcc/llm4RF/.x1_drift_20260823/Test/n210_1_day1_wireless_test.h5",
+    "/data1/hcc/llm4RF/.x1_drift_20260823/Test/n210_1_day2_wireless_test.h5",
+    "/data1/hcc/llm4RF/.x1_drift_20260823/Test/n210_1_day3_wireless_test.h5",
+    "/data1/hcc/llm4RF/.x1_drift_20260823/Test/n210_1_day4_wireless_test.h5",
+    "/data1/hcc/llm4RF/.x1_drift_20260823/Test/rtl_6_day1_wireless_test.h5",
+    "/data1/hcc/llm4RF/.x1_drift_20260823/Test/rtl_6_day2_wireless_test.h5",
+    "/data1/hcc/llm4RF/.x1_drift_20260823/Test/rtl_6_day3_wireless_test.h5",
+    "/data1/hcc/llm4RF/.x1_drift_20260823/Test/rtl_6_day4_wireless_test.h5"
+  ],
+  "summary": {
+    "files": 24,
+    "packets": 144000,
+    "groups": {
+      "receiver": {
+        "b200_1": {
+          "n": 8000,
+          "mean_db": -28.545909069061278,
+          "std_db": 0.7883139061329282
+        },
+        "b200_mini_1": {
+          "n": 8000,
+          "mean_db": -28.722653691768645,
+          "std_db": 0.43772452647867044
+        },
+        "b210_1": {
+          "n": 8000,
+          "mean_db": -28.72883771967888,
+          "std_db": 0.42560692449074267
+        },
+        "n210_1": {
+          "n": 24000,
+          "mean_db": -28.79677173701922,
+          "std_db": 0.3875486598389187
+        },
+        "pluto_1": {
+          "n": 8000,
+          "mean_db": -28.91654736661911,
+          "std_db": 0.38517006354740024
+        },
+        "rtl_1": {
+          "n": 8000,
+          "mean_db": -28.74777164196968,
+          "std_db": 0.45427931507597796
+        },
+        "rtl_2": {
+          "n": 8000,
+          "mean_db": -28.709318073034286,
+          "std_db": 0.42804188553528544
+        },
+        "rtl_3": {
+          "n": 8000,
+          "mean_db": -28.696422162771224,
+          "std_db": 0.4441486265980519
+        },
+        "rtl_4": {
+          "n": 8000,
+          "mean_db": -28.706341037750246,
+          "std_db": 0.4506054959489104
+        },
+        "rtl_5": {
+          "n": 8000,
+          "mean_db": -28.69070392870903,
+          "std_db": 0.420005551281427
+        },
+        "rtl_6": {
+          "n": 24000,
+          "mean_db": -28.655352628707885,
+          "std_db": 0.47259720076837775
+        },
+        "rtl_7": {
+          "n": 8000,
+          "mean_db": -28.650451523542404,
+          "std_db": 0.48148330135005424
+        },
+        "rtl_8": {
+          "n": 8000,
+          "mean_db": -28.685348695516588,
+          "std_db": 0.45504685177738435
+        },
+        "rtl_9": {
+          "n": 8000,
+          "mean_db": -28.808624572753907,
+          "std_db": 0.4465950931937787
+        }
+      },
+      "receiver_type": {
+        "b200": {
+          "n": 8000,
+          "mean_db": -28.545909069061278,
+          "std_db": 0.7883139061329282
+        },
+        "b200_mini": {
+          "n": 8000,
+          "mean_db": -28.722653691768645,
+          "std_db": 0.43772452647867044
+        },
+        "b210": {
+          "n": 8000,
+          "mean_db": -28.72883771967888,
+          "std_db": 0.42560692449074267
+        },
+        "n210": {
+          "n": 24000,
+          "mean_db": -28.79677173701922,
+          "std_db": 0.3875486598389187
+        },
+        "pluto": {
+          "n": 8000,
+          "mean_db": -28.91654736661911,
+          "std_db": 0.38517006354740024
+        },
+        "rtl": {
+          "n": 88000,
+          "mean_db": -28.696458138379185,
+          "std_db": 0.4570172485954765
+        }
+      },
+      "day": {
+        "day1": {
+          "n": 20000,
+          "mean_db": -28.705307502174378,
+          "std_db": 0.45271690349859417
+        },
+        "day2": {
+          "n": 4000,
+          "mean_db": -28.744406315326692,
+          "std_db": 0.4370565215686447
+        },
+        "day3": {
+          "n": 4000,
+          "mean_db": -28.7450365729332,
+          "std_db": 0.4117997361267076
+        },
+        "day4": {
+          "n": 4000,
+          "mean_db": -28.72976838541031,
+          "std_db": 0.450619709433894
+        },
+        "train": {
+          "n": 112000,
+          "mean_db": -28.720887727720395,
+          "std_db": 0.4771953755164993
+        }
+      },
+      "device": {
+        "31": {
+          "n": 14400,
+          "mean_db": -29.14390237516827,
+          "std_db": 0.2072238369583176
+        },
+        "32": {
+          "n": 14400,
+          "mean_db": -29.121263599528206,
+          "std_db": 0.18578120249324628
+        },
+        "33": {
+          "n": 14400,
+          "mean_db": -28.978110869990456,
+          "std_db": 0.5759691565899666
+        },
+        "34": {
+          "n": 14400,
+          "mean_db": -29.031944600343703,
+          "std_db": 0.23699890913382907
+        },
+        "35": {
+          "n": 14400,
+          "mean_db": -29.197299223078623,
+          "std_db": 0.15893273530090316
+        },
+        "36": {
+          "n": 14400,
+          "mean_db": -28.1704502831565,
+          "std_db": 0.17040449914752726
+        },
+        "37": {
+          "n": 14400,
+          "mean_db": -28.262525373299916,
+          "std_db": 0.22685842844622345
+        },
+        "38": {
+          "n": 14400,
+          "mean_db": -28.52318559130033,
+          "std_db": 0.1660032538491626
+        },
+        "39": {
+          "n": 14400,
+          "mean_db": -28.53561151848899,
+          "std_db": 0.1823109547724622
+        },
+        "40": {
+          "n": 14400,
+          "mean_db": -28.238652443620893,
+          "std_db": 0.18146162192410514
+        }
+      }
+    },
+    "overall": {
+      "mean_db": -28.720294952392578,
+      "std_db": 0.4704272747039795,
+      "min_db": -30.3853816986084,
+      "max_db": -24.2192440032959
+    },
+    "between_group_std_db": {
+      "receiver": 0.08257002953223747,
+      "receiver_type": 0.11120935704425973,
+      "day": 0.014981501962433058,
+      "device": 0.39346771841883466
+    }
+  }
+}
