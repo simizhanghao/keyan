@@ -1,0 +1,17 @@
+{
+  "verdict": true,
+  "chirp": false,
+  "oob_fusion": "cross_attn_oob",
+  "main_queries_oob_memory": true,
+  "parameters": 625896,
+  "logits_shape": [
+    2,
+    10
+  ],
+  "embedding_shape": [
+    2,
+    64
+  ],
+  "blind_opened": false,
+  "note": "runtime smoke only; no accuracy"
+}
