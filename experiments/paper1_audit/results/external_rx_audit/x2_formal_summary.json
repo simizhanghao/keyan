@@ -1,0 +1,315 @@
+{
+  "protocol": "X2 Formal Pilot",
+  "runs": 24,
+  "blind_opened": false,
+  "per_fold": [
+    {
+      "fold": "b200_1",
+      "B1_accuracy_mean": 0.43518750000000006,
+      "Cprime_accuracy_mean": 0.697125,
+      "delta_Cprime_minus_B1_pp": 26.193749999999994,
+      "B1_macro_f1_mean": 0.39936197305739535,
+      "Cprime_macro_f1_mean": 0.6756741795683061
+    },
+    {
+      "fold": "b200_mini_1",
+      "B1_accuracy_mean": 0.57725,
+      "Cprime_accuracy_mean": 0.7489375,
+      "delta_Cprime_minus_B1_pp": 17.16875,
+      "B1_macro_f1_mean": 0.5523748679433677,
+      "Cprime_macro_f1_mean": 0.7411206837127072
+    },
+    {
+      "fold": "b210_1",
+      "B1_accuracy_mean": 0.5863125,
+      "Cprime_accuracy_mean": 0.6152500000000001,
+      "delta_Cprime_minus_B1_pp": 2.893750000000006,
+      "B1_macro_f1_mean": 0.5653864056297284,
+      "Cprime_macro_f1_mean": 0.573995222187364
+    },
+    {
+      "fold": "pluto_1",
+      "B1_accuracy_mean": 0.49125,
+      "Cprime_accuracy_mean": 0.854375,
+      "delta_Cprime_minus_B1_pp": 36.3125,
+      "B1_macro_f1_mean": 0.44348898242142376,
+      "Cprime_macro_f1_mean": 0.8532656420567929
+    },
+    {
+      "fold": "rtl_2",
+      "B1_accuracy_mean": 0.5676875,
+      "Cprime_accuracy_mean": 0.26549999999999996,
+      "delta_Cprime_minus_B1_pp": -30.218750000000007,
+      "B1_macro_f1_mean": 0.5504493518724167,
+      "Cprime_macro_f1_mean": 0.24380295821180395
+    },
+    {
+      "fold": "rtl_5",
+      "B1_accuracy_mean": 0.64775,
+      "Cprime_accuracy_mean": 0.5061249999999999,
+      "delta_Cprime_minus_B1_pp": -14.162500000000012,
+      "B1_macro_f1_mean": 0.6263223401705993,
+      "Cprime_macro_f1_mean": 0.45989441033562917
+    }
+  ],
+  "overall": {
+    "B1": {
+      "mean": 0.55090625,
+      "median": 0.57725,
+      "std_seed_run": 0.10676776418353061
+    },
+    "Cprime": {
+      "mean": 0.6145520833333333,
+      "median": 0.6407499999999999,
+      "std_seed_run": 0.20154192166506446
+    },
+    "Cprime_minus_B1_mean_pp": 6.36458333333333,
+    "Cprime_minus_B1_median_fold_pp": 10.031250000000004,
+    "positive_folds": 4,
+    "folds": 6
+  },
+  "decision": "X3_BOTH_B1_AND_CPRIME",
+  "decision_reason": "Cprime mean gain >=5 pp and 4/6 positive folds, but large RTL negative deltas require both backbones in shortcut audit.",
+  "rows": [
+    {
+      "fold": "b200_1",
+      "model": "B1",
+      "seed": 0,
+      "accuracy": 0.324,
+      "macro_f1": 0.26976969974202836,
+      "source_val_accuracy": 0.4971153846153846,
+      "best_epoch": 5,
+      "parameters": 539178
+    },
+    {
+      "fold": "b200_1",
+      "model": "B1",
+      "seed": 1,
+      "accuracy": 0.546375,
+      "macro_f1": 0.5289542463727623,
+      "source_val_accuracy": 0.6773076923076923,
+      "best_epoch": 5,
+      "parameters": 539178
+    },
+    {
+      "fold": "b200_1",
+      "model": "Cprime",
+      "seed": 0,
+      "accuracy": 0.752125,
+      "macro_f1": 0.7457100416388664,
+      "source_val_accuracy": 0.8897115384615385,
+      "best_epoch": 4,
+      "parameters": 625896
+    },
+    {
+      "fold": "b200_1",
+      "model": "Cprime",
+      "seed": 1,
+      "accuracy": 0.642125,
+      "macro_f1": 0.6056383174977457,
+      "source_val_accuracy": 0.9123076923076923,
+      "best_epoch": 5,
+      "parameters": 625896
+    },
+    {
+      "fold": "b200_mini_1",
+      "model": "B1",
+      "seed": 0,
+      "accuracy": 0.572625,
+      "macro_f1": 0.5361083634837729,
+      "source_val_accuracy": 0.6602884615384615,
+      "best_epoch": 5,
+      "parameters": 539178
+    },
+    {
+      "fold": "b200_mini_1",
+      "model": "B1",
+      "seed": 1,
+      "accuracy": 0.581875,
+      "macro_f1": 0.5686413724029624,
+      "source_val_accuracy": 0.49538461538461537,
+      "best_epoch": 3,
+      "parameters": 539178
+    },
+    {
+      "fold": "b200_mini_1",
+      "model": "Cprime",
+      "seed": 0,
+      "accuracy": 0.793625,
+      "macro_f1": 0.7882291211935103,
+      "source_val_accuracy": 0.9345192307692308,
+      "best_epoch": 5,
+      "parameters": 625896
+    },
+    {
+      "fold": "b200_mini_1",
+      "model": "Cprime",
+      "seed": 1,
+      "accuracy": 0.70425,
+      "macro_f1": 0.6940122462319042,
+      "source_val_accuracy": 0.9081730769230769,
+      "best_epoch": 5,
+      "parameters": 625896
+    },
+    {
+      "fold": "b210_1",
+      "model": "B1",
+      "seed": 0,
+      "accuracy": 0.640125,
+      "macro_f1": 0.6331070734239739,
+      "source_val_accuracy": 0.35615384615384615,
+      "best_epoch": 4,
+      "parameters": 539178
+    },
+    {
+      "fold": "b210_1",
+      "model": "B1",
+      "seed": 1,
+      "accuracy": 0.5325,
+      "macro_f1": 0.49766573783548285,
+      "source_val_accuracy": 0.58375,
+      "best_epoch": 5,
+      "parameters": 539178
+    },
+    {
+      "fold": "b210_1",
+      "model": "Cprime",
+      "seed": 0,
+      "accuracy": 0.591125,
+      "macro_f1": 0.547273449059393,
+      "source_val_accuracy": 0.8927884615384616,
+      "best_epoch": 5,
+      "parameters": 625896
+    },
+    {
+      "fold": "b210_1",
+      "model": "Cprime",
+      "seed": 1,
+      "accuracy": 0.639375,
+      "macro_f1": 0.600716995315335,
+      "source_val_accuracy": 0.9180769230769231,
+      "best_epoch": 4,
+      "parameters": 625896
+    },
+    {
+      "fold": "pluto_1",
+      "model": "B1",
+      "seed": 0,
+      "accuracy": 0.39125,
+      "macro_f1": 0.3207046710293411,
+      "source_val_accuracy": 0.33403846153846156,
+      "best_epoch": 2,
+      "parameters": 539178
+    },
+    {
+      "fold": "pluto_1",
+      "model": "B1",
+      "seed": 1,
+      "accuracy": 0.59125,
+      "macro_f1": 0.5662732938135064,
+      "source_val_accuracy": 0.6152884615384615,
+      "best_epoch": 5,
+      "parameters": 539178
+    },
+    {
+      "fold": "pluto_1",
+      "model": "Cprime",
+      "seed": 0,
+      "accuracy": 0.889,
+      "macro_f1": 0.8877641088322091,
+      "source_val_accuracy": 0.8954807692307692,
+      "best_epoch": 4,
+      "parameters": 625896
+    },
+    {
+      "fold": "pluto_1",
+      "model": "Cprime",
+      "seed": 1,
+      "accuracy": 0.81975,
+      "macro_f1": 0.8187671752813767,
+      "source_val_accuracy": 0.9125961538461539,
+      "best_epoch": 5,
+      "parameters": 625896
+    },
+    {
+      "fold": "rtl_2",
+      "model": "B1",
+      "seed": 0,
+      "accuracy": 0.66125,
+      "macro_f1": 0.6632933594103502,
+      "source_val_accuracy": 0.6192307692307693,
+      "best_epoch": 5,
+      "parameters": 539178
+    },
+    {
+      "fold": "rtl_2",
+      "model": "B1",
+      "seed": 1,
+      "accuracy": 0.474125,
+      "macro_f1": 0.4376053443344833,
+      "source_val_accuracy": 0.4423076923076923,
+      "best_epoch": 5,
+      "parameters": 539178
+    },
+    {
+      "fold": "rtl_2",
+      "model": "Cprime",
+      "seed": 0,
+      "accuracy": 0.287,
+      "macro_f1": 0.2534797481459359,
+      "source_val_accuracy": 0.9015384615384615,
+      "best_epoch": 4,
+      "parameters": 625896
+    },
+    {
+      "fold": "rtl_2",
+      "model": "Cprime",
+      "seed": 1,
+      "accuracy": 0.244,
+      "macro_f1": 0.23412616827767202,
+      "source_val_accuracy": 0.8826923076923077,
+      "best_epoch": 3,
+      "parameters": 625896
+    },
+    {
+      "fold": "rtl_5",
+      "model": "B1",
+      "seed": 0,
+      "accuracy": 0.658,
+      "macro_f1": 0.6409898411067735,
+      "source_val_accuracy": 0.6372115384615384,
+      "best_epoch": 5,
+      "parameters": 539178
+    },
+    {
+      "fold": "rtl_5",
+      "model": "B1",
+      "seed": 1,
+      "accuracy": 0.6375,
+      "macro_f1": 0.611654839234425,
+      "source_val_accuracy": 0.20990384615384616,
+      "best_epoch": 4,
+      "parameters": 539178
+    },
+    {
+      "fold": "rtl_5",
+      "model": "Cprime",
+      "seed": 0,
+      "accuracy": 0.49375,
+      "macro_f1": 0.4575064583060513,
+      "source_val_accuracy": 0.9264423076923077,
+      "best_epoch": 5,
+      "parameters": 625896
+    },
+    {
+      "fold": "rtl_5",
+      "model": "Cprime",
+      "seed": 1,
+      "accuracy": 0.5185,
+      "macro_f1": 0.4622823623652071,
+      "source_val_accuracy": 0.925,
+      "best_epoch": 5,
+      "parameters": 625896
+    }
+  ]
+}
