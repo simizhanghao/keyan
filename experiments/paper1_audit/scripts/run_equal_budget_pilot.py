@@ -24,13 +24,13 @@ def load(paths, fs=1e6, bw=125e3):
     return tuple(torch.from_numpy(np.concatenate(x)).float() for x in all_views), torch.from_numpy(np.concatenate(labels)).long(), torch.from_numpy(np.concatenate(raw)).float()
 
 def main():
-    p=argparse.ArgumentParser(); p.add_argument('--source-root',type=Path,required=True); p.add_argument('--out',type=Path,required=True); p.add_argument('--device',default='cuda:0'); a=p.parse_args()
+    p=argparse.ArgumentParser(); p.add_argument('--source-root',type=Path,required=True); p.add_argument('--out',type=Path,required=True); p.add_argument('--device',default='cuda:0'); p.add_argument('--lr',type=float,default=1e-3); p.add_argument('--weight-decay',type=float,default=5e-4); a=p.parse_args()
     random.seed(0); np.random.seed(0); torch.manual_seed(0); paths=sorted(a.source_root.glob('*.npz')); train=[x for x in paths if x.stem!='rtl_2_train']; test=[x for x in paths if x.stem=='rtl_2_train']
     tx,ty,triq=load(train); vx,vy,vriq=load(test); dev=torch.device(a.device if torch.cuda.is_available() else 'cpu')
     b1=MultiViewLateFusionCNN(10).to(dev); emb=RFPatchEmbedder(window_size=8192,patch_size=256,dim=64,cnn_stem_dim=32,patch_embed_type='cnn_stem',use_oob=True,oob_fusion_type='cross_attn_oob',use_oob_cross_attention=True,fft_norm='log_zscore',oob_norm='ratio'); cp=DeviceClassifier(emb,10,dim=64,depth=2,use_chirp_embedding=False).to(dev)
     results={}
     for name,model in [('B1',b1),('Cprime',cp)]:
-        opt=torch.optim.AdamW(model.parameters(),lr=1e-3,weight_decay=5e-4); ds=TensorDataset(*tx,triq,ty); loader=DataLoader(ds,batch_size=8,shuffle=True,generator=torch.Generator().manual_seed(0)); losses=[]; model.train()
+        opt=torch.optim.AdamW(model.parameters(),lr=a.lr,weight_decay=a.weight_decay); ds=TensorDataset(*tx,triq,ty); loader=DataLoader(ds,batch_size=8,shuffle=True,generator=torch.Generator().manual_seed(0)); losses=[]; model.train()
         for *items,y in loader:
             if name=='B1': batch={k:v.to(dev) for k,v in zip(KEYS,items[:4])}; logits=model(batch)['logits']
             else: logits=model(items[4].to(dev))['logits']
@@ -40,6 +40,6 @@ def main():
             def acc(x,iq,y):
                 logits=(model({k:v.to(dev) for k,v in zip(KEYS,x)}) if name=='B1' else model(iq.to(dev)))['logits']; return float((logits.argmax(-1).cpu()==y).float().mean())
             results[name]={'parameters':sum(v.numel() for v in model.parameters()),'loss_first':losses[0],'loss_last':losses[-1],'source_acc':acc(tx,triq,ty),'heldout_acc_pilot_only':acc(vx,vriq,vy)}
-    payload={'protocol':{'fold':'P1','heldout':'rtl_2','seed':0,'epochs':1,'batch_size':8,'lr':1e-3,'weight_decay':5e-4,'checkpoint_selection':'source_only','blind_opened':False,'training':True},'results':results,'note':'equal-budget pilot only; no paper metric'}
+    payload={'protocol':{'fold':'P1','heldout':'rtl_2','seed':0,'epochs':1,'batch_size':8,'lr':a.lr,'weight_decay':a.weight_decay,'checkpoint_selection':'source_only','blind_opened':False,'training':True},'results':results,'note':'equal-budget tuning pilot only; no paper metric'}
     a.out.parent.mkdir(parents=True,exist_ok=True); a.out.write_text(json.dumps(payload,indent=2)+'\n'); print(json.dumps(payload,indent=2))
 if __name__=='__main__': main()

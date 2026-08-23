@@ -1,0 +1,31 @@
+{
+  "protocol": {
+    "fold": "P1",
+    "heldout": "rtl_2",
+    "seed": 0,
+    "epochs": 1,
+    "batch_size": 8,
+    "lr": 0.0003,
+    "weight_decay": 0.0005,
+    "checkpoint_selection": "source_only",
+    "blind_opened": false,
+    "training": true
+  },
+  "results": {
+    "B1": {
+      "parameters": 539178,
+      "loss_first": 2.308185577392578,
+      "loss_last": 2.1574795246124268,
+      "source_acc": 1.0,
+      "heldout_acc_pilot_only": 1.0
+    },
+    "Cprime": {
+      "parameters": 625896,
+      "loss_first": 2.9536285400390625,
+      "loss_last": 0.1688220202922821,
+      "source_acc": 1.0,
+      "heldout_acc_pilot_only": 1.0
+    }
+  },
+  "note": "equal-budget tuning pilot only; no paper metric"
+}
