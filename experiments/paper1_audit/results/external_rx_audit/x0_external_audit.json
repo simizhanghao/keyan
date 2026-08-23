@@ -1,0 +1,679 @@
+{
+  "training": false,
+  "gpu": false,
+  "official_test_signal_opened": false,
+  "fs_hz": 1000000.0,
+  "bw_hz": 125000.0,
+  "missing_archives": [],
+  "archives": {
+    "multiple_receiver_test.zip": {
+      "path": "/data1/hcc/llm4RF/data0820/multiple_receiver_test.zip",
+      "size_bytes": 11737606817,
+      "entries": 38,
+      "h5_entries": 38,
+      "uncompressed_bytes": 12323104256,
+      "compressed_bytes": 11737600709,
+      "encrypted_entries": 0
+    },
+    "multiple_receiver_train.zip": {
+      "path": "/data1/hcc/llm4RF/data0820/multiple_receiver_train.zip",
+      "size_bytes": 13977703628,
+      "entries": 14,
+      "h5_entries": 14,
+      "uncompressed_bytes": 14682781568,
+      "compressed_bytes": 13977701440,
+      "encrypted_entries": 0
+    },
+    "receiver_drift_dataset.zip": {
+      "path": "/data1/hcc/llm4RF/data0820/receiver_drift_dataset.zip",
+      "size_bytes": 3990636998,
+      "entries": 10,
+      "h5_entries": 10,
+      "uncompressed_bytes": 4195093120,
+      "compressed_bytes": 3990634952,
+      "encrypted_entries": 0
+    }
+  },
+  "official_split": {
+    "train_receivers": [
+      "b200_1",
+      "b200_mini_1",
+      "b210_1",
+      "n210_1",
+      "pluto_1",
+      "rtl_1",
+      "rtl_2",
+      "rtl_3",
+      "rtl_4",
+      "rtl_5",
+      "rtl_6",
+      "rtl_7",
+      "rtl_8",
+      "rtl_9"
+    ],
+    "train_receiver_types": [
+      "b200",
+      "b200_mini",
+      "b210",
+      "n210",
+      "pluto",
+      "rtl"
+    ],
+    "base_test_receivers": [
+      "b200_1",
+      "b200_2",
+      "b200_mini_1",
+      "b200_mini_2",
+      "b210_1",
+      "b210_2",
+      "n210_1",
+      "n210_2",
+      "n210_3",
+      "pluto_1",
+      "pluto_2",
+      "rtl_1",
+      "rtl_2",
+      "rtl_3",
+      "rtl_4",
+      "rtl_5",
+      "rtl_6",
+      "rtl_7",
+      "rtl_8",
+      "rtl_9"
+    ],
+    "seen_test_receivers": [
+      "b200_1",
+      "b200_mini_1",
+      "b210_1",
+      "n210_1",
+      "pluto_1",
+      "rtl_1",
+      "rtl_2",
+      "rtl_3",
+      "rtl_4",
+      "rtl_5",
+      "rtl_6",
+      "rtl_7",
+      "rtl_8",
+      "rtl_9"
+    ],
+    "blind_test_receivers": [
+      "b200_2",
+      "b200_mini_2",
+      "b210_2",
+      "n210_2",
+      "n210_3",
+      "pluto_2"
+    ],
+    "expected_blind_receivers": [
+      "b200_2",
+      "b200_mini_2",
+      "b210_2",
+      "n210_2",
+      "n210_3",
+      "pluto_2"
+    ],
+    "blind_matches_expected": true,
+    "location_test_files": [
+      "Location_A_n210_1_test.h5",
+      "Location_A_n210_2_test.h5",
+      "Location_A_n210_3_test.h5",
+      "Location_B_n210_1_test.h5",
+      "Location_B_n210_2_test.h5",
+      "Location_B_n210_3_test.h5",
+      "Location_C_n210_1_test.h5",
+      "Location_C_n210_2_test.h5",
+      "Location_C_n210_3_test.h5",
+      "Location_D_n210_1_test.h5",
+      "Location_D_n210_2_test.h5",
+      "Location_D_n210_3_test.h5",
+      "Location_E_n210_1_test.h5",
+      "Location_E_n210_2_test.h5",
+      "Location_E_n210_3_test.h5",
+      "Location_F_n210_1_test.h5",
+      "Location_F_n210_2_test.h5",
+      "Location_F_n210_3_test.h5"
+    ],
+    "drift_files": [
+      "Test/n210_1_day1_wireless_test.h5",
+      "Test/n210_1_day2_wireless_test.h5",
+      "Test/n210_1_day3_wireless_test.h5",
+      "Test/n210_1_day4_wireless_test.h5",
+      "Test/rtl_6_day1_wireless_test.h5",
+      "Test/rtl_6_day2_wireless_test.h5",
+      "Test/rtl_6_day3_wireless_test.h5",
+      "Test/rtl_6_day4_wireless_test.h5",
+      "Train/n210_1_day1_wireless_train.h5",
+      "Train/rtl_6_day1_wireless_train.h5"
+    ]
+  },
+  "sampled_source_types": [
+    "b200",
+    "b200_mini",
+    "b210",
+    "n210",
+    "pluto",
+    "rtl"
+  ],
+  "expected_source_types": [
+    "b200",
+    "b200_mini",
+    "b210",
+    "n210",
+    "pluto",
+    "rtl"
+  ],
+  "source_h5_samples": [
+    {
+      "path": "/data1/hcc/llm4RF/data0820/audit_sample/b200_1_train.h5",
+      "receiver": "b200_1",
+      "receiver_type": "b200",
+      "size_bytes": 1048770112,
+      "keys": [
+        "CFO",
+        "SNR",
+        "data",
+        "label"
+      ],
+      "required_keys_present": true,
+      "schema": {
+        "CFO": {
+          "shape": [
+            1,
+            8000
+          ],
+          "dtype": "float64"
+        },
+        "SNR": {
+          "shape": [
+            1,
+            8000
+          ],
+          "dtype": "float64"
+        },
+        "data": {
+          "shape": [
+            8000,
+            16384
+          ],
+          "dtype": "float64"
+        },
+        "label": {
+          "shape": [
+            1,
+            8000
+          ],
+          "dtype": "float64"
+        }
+      },
+      "num_packets": 8000,
+      "stored_width": 16384,
+      "complex_samples": 8192,
+      "labels": [
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40
+      ],
+      "label_counts": {
+        "31": 800,
+        "32": 800,
+        "33": 800,
+        "34": 800,
+        "35": 800,
+        "36": 800,
+        "37": 800,
+        "38": 800,
+        "39": 800,
+        "40": 800
+      },
+      "snr_min": 41.0,
+      "snr_max": 48.0,
+      "cfo_min": -984.1841041545267,
+      "cfo_max": 6383.968883614405,
+      "sampled_packets": 100,
+      "inband_bins": 1025,
+      "oob_bins": 7167,
+      "inband_energy_fraction": 0.9901539763901861,
+      "oob_ratio_db_mean": -28.55289400873086,
+      "oob_ratio_db_std": 0.7601188326099179,
+      "oob_ratio_db_min": -29.27430291923497,
+      "oob_ratio_db_max": -25.627217993055588,
+      "oob_nonzero_fraction": 1.0,
+      "edge_vs_oob_db": -22.245239225358105,
+      "finite": true
+    },
+    {
+      "path": "/data1/hcc/llm4RF/data0820/audit_sample/b200_mini_1_train.h5",
+      "receiver": "b200_mini_1",
+      "receiver_type": "b200_mini",
+      "size_bytes": 1048770112,
+      "keys": [
+        "CFO",
+        "SNR",
+        "data",
+        "label"
+      ],
+      "required_keys_present": true,
+      "schema": {
+        "CFO": {
+          "shape": [
+            1,
+            8000
+          ],
+          "dtype": "float64"
+        },
+        "SNR": {
+          "shape": [
+            1,
+            8000
+          ],
+          "dtype": "float64"
+        },
+        "data": {
+          "shape": [
+            8000,
+            16384
+          ],
+          "dtype": "float64"
+        },
+        "label": {
+          "shape": [
+            1,
+            8000
+          ],
+          "dtype": "float64"
+        }
+      },
+      "num_packets": 8000,
+      "stored_width": 16384,
+      "complex_samples": 8192,
+      "labels": [
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40
+      ],
+      "label_counts": {
+        "31": 800,
+        "32": 800,
+        "33": 800,
+        "34": 800,
+        "35": 800,
+        "36": 800,
+        "37": 800,
+        "38": 800,
+        "39": 800,
+        "40": 800
+      },
+      "snr_min": 40.0,
+      "snr_max": 45.0,
+      "cfo_min": -17.439382032258436,
+      "cfo_max": 7545.007764439928,
+      "sampled_packets": 100,
+      "inband_bins": 1025,
+      "oob_bins": 7167,
+      "inband_energy_fraction": 0.9907420479206728,
+      "oob_ratio_db_mean": -28.731774739022836,
+      "oob_ratio_db_std": 0.43413913094188356,
+      "oob_ratio_db_min": -29.45353496541623,
+      "oob_ratio_db_max": -26.552425305181657,
+      "oob_nonzero_fraction": 1.0,
+      "edge_vs_oob_db": -21.042079793087435,
+      "finite": true
+    },
+    {
+      "path": "/data1/hcc/llm4RF/data0820/audit_sample/b210_1_train.h5",
+      "receiver": "b210_1",
+      "receiver_type": "b210",
+      "size_bytes": 1048770112,
+      "keys": [
+        "CFO",
+        "SNR",
+        "data",
+        "label"
+      ],
+      "required_keys_present": true,
+      "schema": {
+        "CFO": {
+          "shape": [
+            1,
+            8000
+          ],
+          "dtype": "float64"
+        },
+        "SNR": {
+          "shape": [
+            1,
+            8000
+          ],
+          "dtype": "float64"
+        },
+        "data": {
+          "shape": [
+            8000,
+            16384
+          ],
+          "dtype": "float64"
+        },
+        "label": {
+          "shape": [
+            1,
+            8000
+          ],
+          "dtype": "float64"
+        }
+      },
+      "num_packets": 8000,
+      "stored_width": 16384,
+      "complex_samples": 8192,
+      "labels": [
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40
+      ],
+      "label_counts": {
+        "31": 800,
+        "32": 800,
+        "33": 800,
+        "34": 800,
+        "35": 800,
+        "36": 800,
+        "37": 800,
+        "38": 800,
+        "39": 800,
+        "40": 800
+      },
+      "snr_min": 36.0,
+      "snr_max": 50.0,
+      "cfo_min": -1384.4528870824433,
+      "cfo_max": 6343.569369867153,
+      "sampled_packets": 100,
+      "inband_bins": 1025,
+      "oob_bins": 7167,
+      "inband_energy_fraction": 0.9907634860049946,
+      "oob_ratio_db_mean": -28.67539232021916,
+      "oob_ratio_db_std": 0.409099196101793,
+      "oob_ratio_db_min": -29.44681269080727,
+      "oob_ratio_db_max": -27.187578215062356,
+      "oob_nonzero_fraction": 1.0,
+      "edge_vs_oob_db": -21.799096919035183,
+      "finite": true
+    },
+    {
+      "path": "/data1/hcc/llm4RF/data0820/audit_sample/n210_1_train.h5",
+      "receiver": "n210_1",
+      "receiver_type": "n210",
+      "size_bytes": 1048770112,
+      "keys": [
+        "CFO",
+        "SNR",
+        "data",
+        "label"
+      ],
+      "required_keys_present": true,
+      "schema": {
+        "CFO": {
+          "shape": [
+            1,
+            8000
+          ],
+          "dtype": "float64"
+        },
+        "SNR": {
+          "shape": [
+            1,
+            8000
+          ],
+          "dtype": "float64"
+        },
+        "data": {
+          "shape": [
+            8000,
+            16384
+          ],
+          "dtype": "float64"
+        },
+        "label": {
+          "shape": [
+            1,
+            8000
+          ],
+          "dtype": "float64"
+        }
+      },
+      "num_packets": 8000,
+      "stored_width": 16384,
+      "complex_samples": 8192,
+      "labels": [
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40
+      ],
+      "label_counts": {
+        "31": 800,
+        "32": 800,
+        "33": 800,
+        "34": 800,
+        "35": 800,
+        "36": 800,
+        "37": 800,
+        "38": 800,
+        "39": 800,
+        "40": 800
+      },
+      "snr_min": 60.0,
+      "snr_max": 76.0,
+      "cfo_min": -2349.2443082567916,
+      "cfo_max": 5619.566555303696,
+      "sampled_packets": 100,
+      "inband_bins": 1025,
+      "oob_bins": 7167,
+      "inband_energy_fraction": 0.9913961345193776,
+      "oob_ratio_db_mean": -28.809149620663792,
+      "oob_ratio_db_std": 0.4022936278023472,
+      "oob_ratio_db_min": -29.46247237597213,
+      "oob_ratio_db_max": -27.94707128183323,
+      "oob_nonzero_fraction": 1.0,
+      "edge_vs_oob_db": -24.348377490254826,
+      "finite": true
+    },
+    {
+      "path": "/data1/hcc/llm4RF/data0820/audit_sample/pluto_1_train.h5",
+      "receiver": "pluto_1",
+      "receiver_type": "pluto",
+      "size_bytes": 1048770112,
+      "keys": [
+        "CFO",
+        "SNR",
+        "data",
+        "label"
+      ],
+      "required_keys_present": true,
+      "schema": {
+        "CFO": {
+          "shape": [
+            1,
+            8000
+          ],
+          "dtype": "float64"
+        },
+        "SNR": {
+          "shape": [
+            1,
+            8000
+          ],
+          "dtype": "float64"
+        },
+        "data": {
+          "shape": [
+            8000,
+            16384
+          ],
+          "dtype": "float64"
+        },
+        "label": {
+          "shape": [
+            1,
+            8000
+          ],
+          "dtype": "float64"
+        }
+      },
+      "num_packets": 8000,
+      "stored_width": 16384,
+      "complex_samples": 8192,
+      "labels": [
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40
+      ],
+      "label_counts": {
+        "31": 800,
+        "32": 800,
+        "33": 800,
+        "34": 800,
+        "35": 800,
+        "36": 800,
+        "37": 800,
+        "38": 800,
+        "39": 800,
+        "40": 800
+      },
+      "snr_min": 37.0,
+      "snr_max": 44.0,
+      "cfo_min": 6884.638513373036,
+      "cfo_max": 17694.332198022894,
+      "sampled_packets": 100,
+      "inband_bins": 1025,
+      "oob_bins": 7167,
+      "inband_energy_fraction": 0.9910920272572408,
+      "oob_ratio_db_mean": -28.932208860335862,
+      "oob_ratio_db_std": 0.3738723377340093,
+      "oob_ratio_db_min": -29.971371861772994,
+      "oob_ratio_db_max": -28.219068709091562,
+      "oob_nonzero_fraction": 1.0,
+      "edge_vs_oob_db": -19.258805575755485,
+      "finite": true
+    },
+    {
+      "path": "/data1/hcc/llm4RF/data0820/audit_sample/rtl_1_train.h5",
+      "receiver": "rtl_1",
+      "receiver_type": "rtl",
+      "size_bytes": 1048770112,
+      "keys": [
+        "CFO",
+        "SNR",
+        "data",
+        "label"
+      ],
+      "required_keys_present": true,
+      "schema": {
+        "CFO": {
+          "shape": [
+            1,
+            8000
+          ],
+          "dtype": "float64"
+        },
+        "SNR": {
+          "shape": [
+            1,
+            8000
+          ],
+          "dtype": "float64"
+        },
+        "data": {
+          "shape": [
+            8000,
+            16384
+          ],
+          "dtype": "float64"
+        },
+        "label": {
+          "shape": [
+            1,
+            8000
+          ],
+          "dtype": "float64"
+        }
+      },
+      "num_packets": 8000,
+      "stored_width": 16384,
+      "complex_samples": 8192,
+      "labels": [
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40
+      ],
+      "label_counts": {
+        "31": 800,
+        "32": 800,
+        "33": 800,
+        "34": 800,
+        "35": 800,
+        "36": 800,
+        "37": 800,
+        "38": 800,
+        "39": 800,
+        "40": 800
+      },
+      "snr_min": 32.0,
+      "snr_max": 38.0,
+      "cfo_min": -24815.01688204435,
+      "cfo_max": -16462.423647983567,
+      "sampled_packets": 100,
+      "inband_bins": 1025,
+      "oob_bins": 7167,
+      "inband_energy_fraction": 0.9910124014560562,
+      "oob_ratio_db_mean": -28.762175956951666,
+      "oob_ratio_db_std": 0.4643826162146426,
+      "oob_ratio_db_min": -29.46762016887744,
+      "oob_ratio_db_max": -27.86923812936683,
+      "oob_nonzero_fraction": 1.0,
+      "edge_vs_oob_db": -19.57148136437563,
+      "finite": true
+    }
+  ],
+  "verdict": "OOB_OK"
+}

@@ -164,7 +164,8 @@ Do not rewrite these numbers. Audit writes only under `experiments/paper1_audit/
     → Phase 2B-0 paired OOB-scale train ← S1 FROZEN; 5-seed CLEAN_FAIL; S0 SCALE_TAX; RX2 closed
     → Phase 2B-1 identity-anchored      ← F0_5SEED_GO; F1 closed
     → Phase 2B-2 real RX source-only    ← RX_FAIL; OSU 2-RX method STOPPED
-    → Phase 2C external multi-RX audit  ← current; no GPU; no F0 retune
+    → Phase 2C X0 external audit       ← OOB_OK; official 14/6 matched; blind six sealed
+    → Phase X1 source-only signal audit ← next, awaiting Human GO; no GPU; no classifier training
     → Experiment 2 / RCOF / utility gate closed
     1D file-vote K sensitivity         ← done; H4_PASS (not a K=256 spike)
     1D per-device Day4                 ← done; MIXED (10 win / 3 lose / 11 tie)
@@ -182,7 +183,7 @@ Paper2 algorithm          F0 synthetic GO; real OSU 2-RX RX_FAIL; pivot 2C exter
 Working title             Identity-Anchored Counterfactual OOB (internal; not a paper title)
 ```
 
-Do not rescue Main, retune lr/epoch, reopen C1/C_fft/D, open Day5, Hann/guard, RCOF, or a utility gate. C1 is not a C' replacement. Current `no OOB` means no explicit OOB branch. S1 is frozen (`CLEAN_FAIL` / `SCALE_TAX`). F0 5-seed is **F0_5SEED_GO** (clean +3.14, D_scale 1.5, D_full 6.9). F1 closed. Current beat: Phase 2C external dataset audit after **RX_FAIL** (pooled window Δ −0.52 pp). Do not retune F0. Do not open F1. Paper 1 True In-Band Main / LODO stay queued.
+Do not rescue Main, retune lr/epoch, reopen C1/C_fft/D, open Day5, Hann/guard, RCOF, or a utility gate. C1 is not a C' replacement. Current `no OOB` means no explicit OOB branch. S1 is frozen (`CLEAN_FAIL` / `SCALE_TAX`). F0 5-seed is **F0_5SEED_GO** (clean +3.14, D_scale 1.5, D_full 6.9). F1 closed. Phase 2C X0 is **OOB_OK** with the official 14-source/6-blind mapping verified from archive metadata. Current beat: X1 signal-level audit on source/train receivers and drift data only. The six official blind HDF5 signals stay sealed until X6. Do not train C'/F0, retune F0, or open F1. Paper 1 True In-Band Main / LODO stay queued.
 
 ---
 

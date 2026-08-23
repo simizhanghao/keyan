@@ -1,0 +1,166 @@
+{
+  "training": false,
+  "official_blind_signal_opened": false,
+  "files": {
+    "source_train": {
+      "path": "/data1/hcc/llm4RF/data0820/audit_sample/n210_1_train.h5",
+      "file_attributes": [],
+      "datasets": {
+        "CFO": {
+          "shape": [
+            1,
+            8000
+          ],
+          "dtype": "float64",
+          "attributes": []
+        },
+        "SNR": {
+          "shape": [
+            1,
+            8000
+          ],
+          "dtype": "float64",
+          "attributes": []
+        },
+        "data": {
+          "shape": [
+            8000,
+            16384
+          ],
+          "dtype": "float64",
+          "attributes": []
+        },
+        "label": {
+          "shape": [
+            1,
+            8000
+          ],
+          "dtype": "float64",
+          "attributes": []
+        }
+      },
+      "label_counts": {
+        "31": 800,
+        "32": 800,
+        "33": 800,
+        "34": 800,
+        "35": 800,
+        "36": 800,
+        "37": 800,
+        "38": 800,
+        "39": 800,
+        "40": 800
+      }
+    },
+    "seen_source_test": {
+      "path": "/data1/hcc/llm4RF/data0820/audit_sample/seen_test/n210_1_test.h5",
+      "file_attributes": [],
+      "datasets": {
+        "CFO": {
+          "shape": [
+            1,
+            2000
+          ],
+          "dtype": "float64",
+          "attributes": []
+        },
+        "SNR": {
+          "shape": [
+            1,
+            2000
+          ],
+          "dtype": "float64",
+          "attributes": []
+        },
+        "data": {
+          "shape": [
+            2000,
+            16384
+          ],
+          "dtype": "float64",
+          "attributes": []
+        },
+        "label": {
+          "shape": [
+            1,
+            2000
+          ],
+          "dtype": "float64",
+          "attributes": []
+        }
+      },
+      "label_counts": {
+        "31": 200,
+        "32": 200,
+        "33": 200,
+        "34": 200,
+        "35": 200,
+        "36": 200,
+        "37": 200,
+        "38": 200,
+        "39": 200,
+        "40": 200
+      }
+    },
+    "drift_day1_train": {
+      "path": "/data1/hcc/llm4RF/data0820/audit_sample/drift/n210_1_day1_wireless_train.h5",
+      "file_attributes": [],
+      "datasets": {
+        "CFO": {
+          "shape": [
+            1,
+            8000
+          ],
+          "dtype": "float64",
+          "attributes": []
+        },
+        "SNR": {
+          "shape": [
+            1,
+            8000
+          ],
+          "dtype": "float64",
+          "attributes": []
+        },
+        "data": {
+          "shape": [
+            8000,
+            16384
+          ],
+          "dtype": "float64",
+          "attributes": []
+        },
+        "label": {
+          "shape": [
+            1,
+            8000
+          ],
+          "dtype": "float64",
+          "attributes": []
+        }
+      },
+      "label_counts": {
+        "31": 800,
+        "32": 800,
+        "33": 800,
+        "34": 800,
+        "35": 800,
+        "36": 800,
+        "37": 800,
+        "38": 800,
+        "39": 800,
+        "40": 800
+      }
+    }
+  },
+  "unique_row_hashes": {
+    "source_train": 8000,
+    "seen_source_test": 2000,
+    "drift_day1_train": 8000
+  },
+  "exact_iq_row_overlaps": {
+    "source_train_vs_seen_test": 0,
+    "source_train_vs_drift_day1_train": 0
+  },
+  "grouping_verdict": "NO_CAPTURE_OR_SESSION_ID"
+}
