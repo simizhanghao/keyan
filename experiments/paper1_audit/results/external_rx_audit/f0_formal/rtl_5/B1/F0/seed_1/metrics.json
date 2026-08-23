@@ -1,0 +1,13 @@
+{
+  "protocol": {
+    "fold": "rtl_5",
+    "model": "B1",
+    "arm": "F0",
+    "seed": 1,
+    "init_checkpoint": "experiments/paper1_audit/results/external_rx_audit/x2_formal_runs/rtl_5/B1/seed_1/best.pt",
+    "checkpoint_selection": "source_validation_only",
+    "blind_opened": false
+  },
+  "best_epoch": 1,
+  "tensorboard": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/external_rx_audit/f0_formal/rtl_5/B1/F0/seed_1/tensorboard"
+}
