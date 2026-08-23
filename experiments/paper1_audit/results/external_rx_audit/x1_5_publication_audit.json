@@ -1,0 +1,112 @@
+{
+  "protocol": {
+    "training": false,
+    "blind_opened": false,
+    "cluster_unit": "receiver x device x file",
+    "mask": "|f|<=BW/2",
+    "fs_hz": 1000000.0,
+    "bw_hz": 125000.0
+  },
+  "files": [
+    "/data1/hcc/llm4RF/.x1_source_20260823/b200_1_train.h5",
+    "/data1/hcc/llm4RF/.x1_source_20260823/b200_mini_1_train.h5",
+    "/data1/hcc/llm4RF/.x1_source_20260823/b210_1_train.h5",
+    "/data1/hcc/llm4RF/.x1_source_20260823/n210_1_train.h5",
+    "/data1/hcc/llm4RF/.x1_source_20260823/pluto_1_train.h5",
+    "/data1/hcc/llm4RF/.x1_source_20260823/rtl_1_train.h5",
+    "/data1/hcc/llm4RF/.x1_source_20260823/rtl_2_train.h5",
+    "/data1/hcc/llm4RF/.x1_source_20260823/rtl_3_train.h5",
+    "/data1/hcc/llm4RF/.x1_source_20260823/rtl_4_train.h5",
+    "/data1/hcc/llm4RF/.x1_source_20260823/rtl_5_train.h5",
+    "/data1/hcc/llm4RF/.x1_source_20260823/rtl_6_train.h5",
+    "/data1/hcc/llm4RF/.x1_source_20260823/rtl_7_train.h5",
+    "/data1/hcc/llm4RF/.x1_source_20260823/rtl_8_train.h5",
+    "/data1/hcc/llm4RF/.x1_source_20260823/rtl_9_train.h5",
+    "/data1/hcc/llm4RF/.x1_drift_20260823/Train/n210_1_day1_wireless_train.h5",
+    "/data1/hcc/llm4RF/.x1_drift_20260823/Train/rtl_6_day1_wireless_train.h5",
+    "/data1/hcc/llm4RF/.x1_drift_20260823/Test/n210_1_day1_wireless_test.h5",
+    "/data1/hcc/llm4RF/.x1_drift_20260823/Test/n210_1_day2_wireless_test.h5",
+    "/data1/hcc/llm4RF/.x1_drift_20260823/Test/n210_1_day3_wireless_test.h5",
+    "/data1/hcc/llm4RF/.x1_drift_20260823/Test/n210_1_day4_wireless_test.h5",
+    "/data1/hcc/llm4RF/.x1_drift_20260823/Test/rtl_6_day1_wireless_test.h5",
+    "/data1/hcc/llm4RF/.x1_drift_20260823/Test/rtl_6_day2_wireless_test.h5",
+    "/data1/hcc/llm4RF/.x1_drift_20260823/Test/rtl_6_day3_wireless_test.h5",
+    "/data1/hcc/llm4RF/.x1_drift_20260823/Test/rtl_6_day4_wireless_test.h5"
+  ],
+  "cells": 240,
+  "group_mean_std_db": {
+    "receiver": 0.08270454672477484,
+    "device": 0.39977429724989116,
+    "day": 0.013845205389609911
+  },
+  "cluster_bootstrap": {
+    "receiver": {
+      "clusters": 14,
+      "mean_db": -28.72188509607485,
+      "ci95_db": [
+        -28.771577403433124,
+        -28.673349251634416
+      ],
+      "unit": "receiver"
+    },
+    "device": {
+      "clusters": 10,
+      "mean_db": -28.719317982916685,
+      "ci95_db": [
+        -28.967500444929055,
+        -28.469892461967717
+      ],
+      "unit": "device"
+    },
+    "day": {
+      "clusters": 5,
+      "mean_db": -28.724960712269638,
+      "ci95_db": [
+        -28.74173083238602,
+        -28.71640989425081
+      ],
+      "unit": "day"
+    }
+  },
+  "per_device_receiver": {
+    "31": 0.08516703162367852,
+    "32": 0.06435898171618408,
+    "33": 0.552283152060944,
+    "34": 0.07095175707393342,
+    "35": 0.047794547921473834,
+    "36": 0.14447913129506187,
+    "37": 0.11718741024790716,
+    "38": 0.09462501999788862,
+    "39": 0.13627997856322288,
+    "40": 0.10993096900157336
+  },
+  "per_receiver_day": {
+    "b200_1": 0.0,
+    "b200_mini_1": 0.0,
+    "b210_1": 0.0,
+    "n210_1": 0.007239063919253009,
+    "pluto_1": 0.0,
+    "rtl_1": 0.0,
+    "rtl_2": 0.0,
+    "rtl_3": 0.0,
+    "rtl_4": 0.0,
+    "rtl_5": 0.0,
+    "rtl_6": 0.030364224513628774,
+    "rtl_7": 0.0,
+    "rtl_8": 0.0,
+    "rtl_9": 0.0
+  },
+  "snr_cfo_sensitivity": {
+    "cell_rmse_db": 0.14570084924300736,
+    "receiver_component_std_db": 0.30127487638699413,
+    "snr_beta_db_per_sd": -0.16343312260876908,
+    "cfo_beta_db_per_sd": 0.33497702773037674,
+    "covariates": [
+      "receiver",
+      "device",
+      "day",
+      "snr_z",
+      "cfo_z"
+    ]
+  }
+}
