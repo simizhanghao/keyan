@@ -1,0 +1,34 @@
+{
+  "protocol": {
+    "fold": "b200_1",
+    "model": "Cprime",
+    "seed": 0,
+    "split": "heldout",
+    "training": false,
+    "blind_opened": false
+  },
+  "curve": [
+    {
+      "scale": 0.5,
+      "accuracy": 0.10675
+    },
+    {
+      "scale": 0.70710678,
+      "accuracy": 0.238
+    },
+    {
+      "scale": 1.0,
+      "accuracy": 0.752125
+    },
+    {
+      "scale": 1.41421356,
+      "accuracy": 0.309125
+    },
+    {
+      "scale": 2.0,
+      "accuracy": 0.101625
+    }
+  ],
+  "clean_accuracy": 0.752125,
+  "n_eval": 8000
+}

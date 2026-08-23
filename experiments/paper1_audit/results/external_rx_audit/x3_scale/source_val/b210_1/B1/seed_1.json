@@ -1,0 +1,34 @@
+{
+  "protocol": {
+    "fold": "b210_1",
+    "model": "B1",
+    "seed": 1,
+    "split": "source_val",
+    "training": false,
+    "blind_opened": false
+  },
+  "curve": [
+    {
+      "scale": 0.5,
+      "accuracy": 0.10384615384615385
+    },
+    {
+      "scale": 0.70710678,
+      "accuracy": 0.1076923076923077
+    },
+    {
+      "scale": 1.0,
+      "accuracy": 0.5870192307692308
+    },
+    {
+      "scale": 1.41421356,
+      "accuracy": 0.16125
+    },
+    {
+      "scale": 2.0,
+      "accuracy": 0.10817307692307693
+    }
+  ],
+  "clean_accuracy": 0.5870192307692308,
+  "n_eval": 10400
+}

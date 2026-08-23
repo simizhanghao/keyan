@@ -13,11 +13,21 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument('--root', type=Path, required=True); p.add_argument('--data-root', type=Path, required=True); p.add_argument('--fold', required=True)
     p.add_argument('--model', required=True, choices=['B1','Cprime']); p.add_argument('--seed', type=int, required=True)
+    p.add_argument('--split', choices=['heldout','source_val'], default='heldout')
     p.add_argument('--out', type=Path, required=True); p.add_argument('--device', default='cuda:0'); a = p.parse_args()
     dev = torch.device(a.device); paths = sorted(a.data_root.glob('*_train.h5'))
     hold = [x for x in paths if x.stem == a.fold + '_train'][0]; idx = {}
-    with h5py.File(hold, 'r') as f: n = f['data'].shape[0]
-    idx[hold.name] = list(range(n)); dl = DataLoader(H5Set([hold], idx), batch_size=128, shuffle=False, num_workers=2)
+    if a.split == 'heldout':
+        with h5py.File(hold, 'r') as f: n = f['data'].shape[0]
+        idx[hold.name] = list(range(n)); eval_paths = [hold]
+    else:
+        eval_paths = [x for x in paths if x != hold]
+        for pth in eval_paths:
+            with h5py.File(pth, 'r') as f: n = f['data'].shape[0]
+            # Stable source-validation partition, independent of Python hash randomization.
+            rng = np.random.default_rng(a.seed + sum(pth.name.encode('ascii')))
+            perm = rng.permutation(n); idx[pth.name] = perm[int(0.9*n):].tolist()
+    dl = DataLoader(H5Set(eval_paths, idx), batch_size=128, shuffle=False, num_workers=2)
     if a.model == 'B1': model = MultiViewLateFusionCNN(10).to(dev)
     else:
         e = RFPatchEmbedder(window_size=8192, patch_size=256, dim=64, cnn_stem_dim=32, patch_embed_type='cnn_stem', use_oob=True, oob_fusion_type='cross_attn_oob', use_oob_cross_attention=True, fft_norm='log_zscore', oob_norm='ratio')
@@ -35,6 +45,6 @@ def main():
                     iq2 = torch.fft.ifft(torch.fft.ifftshift(s2, dim=-1), dim=-1); out = model(iq, oob_iq=torch.stack([iq2.real,iq2.imag],1))['logits']
                 correct += (out.argmax(1) == y).sum().item(); total += len(y)
             result.append({'scale': scale, 'accuracy': correct / total})
-    payload = {'protocol': {'fold': a.fold, 'model': a.model, 'seed': a.seed, 'training': False, 'blind_opened': False}, 'curve': result, 'clean_accuracy': next(x['accuracy'] for x in result if x['scale'] == 1.0)}
+    payload = {'protocol': {'fold': a.fold, 'model': a.model, 'seed': a.seed, 'split': a.split, 'training': False, 'blind_opened': False}, 'curve': result, 'clean_accuracy': next(x['accuracy'] for x in result if x['scale'] == 1.0), 'n_eval': len(dl.dataset)}
     a.out.parent.mkdir(parents=True, exist_ok=True); a.out.write_text(json.dumps(payload, indent=2) + '\n'); print(json.dumps(payload))
 if __name__ == '__main__': main()

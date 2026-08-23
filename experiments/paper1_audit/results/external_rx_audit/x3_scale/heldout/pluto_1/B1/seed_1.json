@@ -1,0 +1,34 @@
+{
+  "protocol": {
+    "fold": "pluto_1",
+    "model": "B1",
+    "seed": 1,
+    "split": "heldout",
+    "training": false,
+    "blind_opened": false
+  },
+  "curve": [
+    {
+      "scale": 0.5,
+      "accuracy": 0.141
+    },
+    {
+      "scale": 0.70710678,
+      "accuracy": 0.147875
+    },
+    {
+      "scale": 1.0,
+      "accuracy": 0.59125
+    },
+    {
+      "scale": 1.41421356,
+      "accuracy": 0.193625
+    },
+    {
+      "scale": 2.0,
+      "accuracy": 0.15
+    }
+  ],
+  "clean_accuracy": 0.59125,
+  "n_eval": 8000
+}

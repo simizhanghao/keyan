@@ -1,0 +1,34 @@
+{
+  "protocol": {
+    "fold": "pluto_1",
+    "model": "B1",
+    "seed": 0,
+    "split": "source_val",
+    "training": false,
+    "blind_opened": false
+  },
+  "curve": [
+    {
+      "scale": 0.5,
+      "accuracy": 0.12663461538461537
+    },
+    {
+      "scale": 0.70710678,
+      "accuracy": 0.11807692307692308
+    },
+    {
+      "scale": 1.0,
+      "accuracy": 0.42451923076923076
+    },
+    {
+      "scale": 1.41421356,
+      "accuracy": 0.105
+    },
+    {
+      "scale": 2.0,
+      "accuracy": 0.1039423076923077
+    }
+  ],
+  "clean_accuracy": 0.42451923076923076,
+  "n_eval": 10400
+}
