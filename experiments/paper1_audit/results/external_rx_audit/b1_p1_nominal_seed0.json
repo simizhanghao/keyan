@@ -1,0 +1,19 @@
+{
+  "protocol": {
+    "fold": "P1",
+    "heldout_receiver": "rtl_2",
+    "checkpoint_selection": "source_only",
+    "seed": 0,
+    "training": true,
+    "blind_opened": false
+  },
+  "files": 14,
+  "train_packets": 52,
+  "heldout_packets": 4,
+  "parameters": 539178,
+  "loss_first": 2.308185577392578,
+  "loss_last": 1.1990591287612915,
+  "source_acc": 1.0,
+  "heldout_acc_pilot_only": 1.0,
+  "note": "pilot only; not a paper result"
+}
