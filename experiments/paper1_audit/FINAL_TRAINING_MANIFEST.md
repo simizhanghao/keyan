@@ -15,6 +15,10 @@ Status: development epoch budgets frozen before X6; final training pending.
 The manifest must record commit SHA, environment versions, config hash, and
 TensorBoard path for every final run.
 
+Final Shen uses the locked development batch size `64`. CIS is precomputed
+once into an exact float32 cache before training; this changes only the data
+loading implementation, not the representation or optimizer trajectory.
+
 ## Fixed epoch budgets
 
 The aggregation rule is the numerical median of the 12 development
