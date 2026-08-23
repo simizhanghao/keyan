@@ -1,0 +1,13 @@
+{
+  "protocol": {
+    "fold": "b200_1",
+    "model": "B1",
+    "seed": 1,
+    "split": "heldout",
+    "intervention": "same_receiver_cross_device_oob_shuffle",
+    "training": false,
+    "blind_opened": false
+  },
+  "accuracy": 0.10975,
+  "n_eval": 8000
+}

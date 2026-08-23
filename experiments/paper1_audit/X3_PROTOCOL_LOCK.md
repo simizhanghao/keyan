@@ -41,3 +41,15 @@ CLOSED until X3 is complete.
 
 Raw curves are under
 `results/external_rx_audit/x3_scale/{heldout,source_val}/`.
+
+## X3-B status (2026-08-23)
+
+Same-receiver cross-device OOB shuffle is complete for the same 24 checkpoint
+evaluations (plus source-validation counterparts). Donor samples were drawn
+from the same HDF5 receiver with a different device label; original IQ and
+labels were retained. Held-out accuracy degradation (clean minus shuffled,
+mean over seeds) was 45.95 pp for B1 and 55.71 pp for C', with 6/6 folds at
+the 5 pp threshold for each. This independently confirms an OOB-dependent
+shortcut under the locked intervention.
+
+Raw results are under `results/external_rx_audit/x3_shuffle/`.

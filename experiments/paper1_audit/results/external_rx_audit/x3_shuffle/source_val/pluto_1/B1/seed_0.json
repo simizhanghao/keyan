@@ -1,0 +1,13 @@
+{
+  "protocol": {
+    "fold": "pluto_1",
+    "model": "B1",
+    "seed": 0,
+    "split": "source_val",
+    "intervention": "same_receiver_cross_device_oob_shuffle",
+    "training": false,
+    "blind_opened": false
+  },
+  "accuracy": 0.07769230769230769,
+  "n_eval": 10400
+}

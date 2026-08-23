@@ -1,0 +1,13 @@
+{
+  "protocol": {
+    "fold": "rtl_2",
+    "model": "Cprime",
+    "seed": 1,
+    "split": "heldout",
+    "intervention": "same_receiver_cross_device_oob_shuffle",
+    "training": false,
+    "blind_opened": false
+  },
+  "accuracy": 0.0855,
+  "n_eval": 8000
+}
