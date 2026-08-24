@@ -58,7 +58,7 @@ def main():
                "model_decisions": decisions, "overall_decision": overall, "rows": rows}
     a.out.write_text(json.dumps(payload, indent=2) + "\n")
     with a.out.with_suffix(".csv").open("w", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=rows[0]); w.writeheader(); w.writerows(rows)
+        w = csv.DictWriter(f, fieldnames=rows[0], lineterminator="\n"); w.writeheader(); w.writerows(rows)
     print(json.dumps({"runs": len(rows), "overall_decision": overall, "model_decisions": decisions}, indent=2))
 
 
