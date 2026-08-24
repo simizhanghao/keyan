@@ -1,0 +1,66 @@
+\section{Results}
+\label{sec:results}
+\subsection{OOB Variation Contains Both Device and Receiver Structure}
+The signal-level audit shows that OOB-to-in-band variation is not a receiver-only artifact. The standard deviation of group means is 0.393 dB across devices, 0.111 dB across receiver types, 0.083 dB across receiver instances and 0.015 dB across days (Fig.~\ref{fig:signal}). Thus device structure is the largest observed grouping effect, while receiver-associated variation is substantially larger than the same-receiver day effect. This motivates an intervention study rather than a binary label of OOB as either useful fingerprint or receiver noise.
+
+\begin{figure}[t]
+\centering\includegraphics[width=\columnwidth]{fig2_signal_audit.pdf}
+\caption{Signal-level audit of relative OOB magnitude. The grouped standard deviation shows transmitter-discriminative variation together with a systematic receiver component.}
+\label{fig:signal}
+\end{figure}
+
+\subsection{Frozen Development Interventions Reveal OOB Dependence}
+On six pseudo-unseen development receiver folds, scaling OOB bins produces accuracy drops on every fold for both OOB-aware backbones. The median drops are 47.28 points for B1-OOB and 56.60 points for C$'$-OOB. Same-receiver cross-device shuffle produces median drops of 47.39 and 60.90 points, respectively, while source-derived neutral replacement produces median drops of 43.94 and 56.77 points. The agreement between shuffle and neutral replacement is important: the response is not explained by a single arbitrary neutral vector. Device probes reach 94.4\% for B1 and 97.9\% for C$'$, whereas receiver probes reach only 16.2\% and 14.7\% against a 7.7\% receiver-group chance level. OOB therefore carries device-discriminative evidence, but the classifier's use of that evidence remains receiver-sensitive.
+
+\begin{figure*}[t]
+\centering\includegraphics[width=.93\textwidth]{fig3_development_interventions.pdf}
+\caption{Development mechanism diagnosis. Accuracy drops are computed from frozen checkpoints under OOB-only scale and same-receiver cross-device shuffle interventions. Each point is a receiver mean over two seeds.}
+\label{fig:development}
+\end{figure*}
+
+\subsection{Architecture and Frequency Controls Define the Boundary}
+Matched development folds show architecture-dependent behavior. B1-OOB reaches 56.64\% while its strict TrueIB control reaches 11.97\%. For C$'$, the corresponding values are 60.90\% and 70.91\%. Thus an OOB-aware score cannot be interpreted as a universal benefit or penalty independent of representation. The strong Shen-CIS and Shen-RA baselines reach 94.101\% and 93.847\%, respectively, establishing that the receiver-held-out task is solvable under this protocol (Fig.~\ref{fig:controls}).
+
+The left/right intervention provides a frequency-structured diagnostic. On development folds, left-OOB drops are 44.41 and 51.12 points for B1 and C$'$, while right-OOB drops are 17.04 and 1.12 points. We therefore describe the asymmetry as a learned spectral sensitivity, not as proof that a particular analogue component causes receiver shift.
+
+\begin{figure}[t]
+\centering\includegraphics[width=\columnwidth]{fig4_controls.pdf}
+\caption{Matched architecture and strong-baseline controls on development receiver folds. TrueIB is a strict in-band pathway control; Shen-CIS/RA provide strong receiver-held-out baselines.}
+\label{fig:controls}
+\end{figure}
+
+\subsection{Controlled Invariance Does Not Guarantee Real Transfer}
+A separate receiver-style augmentation (RSA) reduces sensitivity to the selected controlled OOB-scale nuisance from a 53.96-point development degradation to 2.92 points. However, its clean pseudo-unseen receiver accuracy remains below the corresponding CT control. The result is a negative boundary, not a failed experiment: invariance to one engineered nuisance is not equivalent to generalization across real receiver domains (Fig.~\ref{fig:rsa}).
+
+\begin{figure}[t]
+\centering\includegraphics[width=\columnwidth]{fig5_mitigation_boundary.pdf}
+\caption{Mitigation boundary. RSA suppresses the selected controlled scale response but does not imply improved clean receiver-held-out accuracy.}
+\label{fig:rsa}
+\end{figure}
+
+\subsection{Blind Confirmation on Previously Unopened Receivers}
+The frozen X6 evaluation reproduces the mechanism on every official blind receiver. For B1-OOB, the receiver-level median disruption drop is 49.05 points and the median worst-scale drop is 51.83 points. For C$'$-OOB, the corresponding values are 71.78 and 70.66 points. All six receivers are positive for both effects in both architectures. Left-minus-right drop is positive on all six receivers, with receiver medians of 29.89 and 70.56 points for B1-OOB and C$'$-OOB, respectively. The pre-registered decision is STRONG GO for both backbones (Fig.~\ref{fig:blind}).
+
+\begin{figure*}[t]
+\centering\includegraphics[width=.93\textwidth]{fig6_blind_confirmation.pdf}
+\caption{Official blind confirmation. Bars show receiver-level clean-minus-disruption drops after averaging five seeds within receiver; black markers show clean-minus-worst-scale drops. All six blind receivers reproduce both effects for both OOB-aware architectures.}
+\label{fig:blind}
+\end{figure*}
+
+\begin{table}[t]
+\caption{Official blind clean accuracy, mean over five seeds (\%).}
+\label{tab:blind_clean}
+\centering\footnotesize
+\begin{tabular}{lrrrrr}
+\toprule
+Receiver & CIS & RA & B1 & C$'$ & TrueIB\\
+\midrule
+b200\_2 &99.48&99.48&56.17&72.15&58.42\\
+b200-mini\_2&99.98&100.00&60.68&88.35&59.64\\
+b210\_2&99.67&99.59&55.68&88.89&58.86\\
+n210\_2&99.99&99.99&63.01&86.23&71.61\\
+n210\_3&99.58&99.36&66.11&79.34&66.17\\
+pluto\_2&96.76&96.41&67.95&78.93&66.24\\
+\bottomrule
+\end{tabular}
+\end{table}

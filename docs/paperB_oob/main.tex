@@ -1,0 +1,48 @@
+\documentclass[journal]{IEEEtran}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{cite}
+\usepackage{url}
+\usepackage[hidelinks]{hyperref}
+\graphicspath{{figures/}}
+
+\title{Diagnosing Receiver-Sensitive Out-of-Band Dependencies in LoRa Radio-Frequency Fingerprint Identification}
+
+\author{Ziyang Wang and Chengcheng Han% 
+\thanks{Ziyang Wang is with the School of Electronic and Information Engineering, Beihang University, Beijing, China (e-mail: wangziyang1@126.com).}
+\thanks{Chengcheng Han is with the School of Electronic and Information Engineering, Beihang University, Beijing, China (e-mail: HAN106124@163.com). He is the corresponding author.}
+\thanks{This work was supported by the National Natural Science Foundation of China under Grant 62301018.}}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Out-of-band (OOB) spectral evidence is attractive for radio-frequency fingerprint identification (RFFI) because transmitter impairments can extend beyond the nominal signal band. The same evidence is also shaped by the receiver front-end, creating a deployment-dependent failure mode that is difficult to diagnose from clean accuracy alone. We present a frozen-checkpoint, intervention-based study of this tension in cross-receiver LoRa RFFI. A signal-level audit first shows that OOB-to-in-band variation contains transmitter-discriminative structure while also exhibiting systematic receiver-associated variation. Two capacity-matched OOB-aware backbones, an in-band control, and strong CIS/receiver-adversarial baselines are then evaluated with deterministic OOB scale, same-receiver cross-device shuffle, neutral replacement, and left/right interventions. On six previously unopened official blind receivers, both OOB-aware backbones reproduce large receiver-level disruption on all six receivers. The median disruption drop is 49.05 percentage points for B1-OOB and 71.78 points for C$'$-OOB; the median worst-scale drops are 51.83 and 70.66 points, respectively. Left-side OOB sensitivity exceeds right-side sensitivity on all six receivers for both backbones. In contrast, Shen-style baselines reach 96.41--100.00\% clean accuracy, showing that cross-receiver identification is not intrinsically unsolvable. The results establish a bounded mechanism claim: OOB evidence can be genuinely useful for transmitter discrimination while inducing architecture-dependent, receiver-sensitive and frequency-structured dependencies. Controlled robustness to an isolated OOB perturbation should therefore not be interpreted as real unseen-receiver generalization.
+\end{abstract}
+
+\begin{IEEEkeywords}
+LoRa, radio-frequency fingerprint identification, out-of-band spectrum, cross-receiver generalization, receiver sensitivity, intervention analysis.
+\end{IEEEkeywords}
+
+\input{sections/01_introduction}
+\input{sections/02_related_work}
+\input{sections/03_protocol}
+\input{sections/04_results}
+\input{sections/05_discussion}
+\input{sections/06_conclusion}
+
+\section*{Acknowledgment}
+The authors thank the maintainers of the public LoRa RFFI datasets and the open-source research software used in this study.
+
+\begin{IEEEbiography}{Ziyang Wang}
+is an Associate Professor with the School of Electronic and Information Engineering, Beihang University, Beijing, China. He received the Ph.D. degree in electromagnetic wave and microwave technology in 2018 and previously worked as a postdoctoral fellow at Tsinghua University. His research interests include intelligent metasurfaces, broadband reconfigurable element design, phase-controlled electromagnetic surfaces and spatial beamforming, global optimization algorithms, and 5G MIMO array antenna decoupling.
+\end{IEEEbiography}
+\begin{IEEEbiography}{Chengcheng Han}
+is currently pursuing the M.S. degree in engineering with Beihang University, Beijing, China. His research interests focus on high-temperature electromagnetic environments and electromagnetic compatibility. He is the corresponding author and can be contacted at HAN106124@163.com.
+\end{IEEEbiography}
+
+\bibliographystyle{IEEEtran}
+\bibliography{refs}
+\end{document}

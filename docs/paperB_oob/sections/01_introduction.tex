@@ -1,0 +1,24 @@
+\section{Introduction}
+\label{sec:introduction}
+\IEEEPARstart{R}{adio-frequency} fingerprint identification (RFFI) uses repeatable transmitter hardware impairments to distinguish wireless devices from received signals. It is attractive as a physical-layer complement to cryptographic identity in low-power Internet-of-Things deployments, where gateways can observe raw I/Q samples while endpoints remain resource constrained~\cite{brik2008wireless_device_id,riyaz2018deep_cnn_radio_id,jian2020deeplearning_rf_fingerprinting}. LoRa is a particularly useful test case because its long-range links are deployed with heterogeneous receivers and because its narrow nominal bandwidth leaves measurable spectral evidence outside the information-bearing band.
+
+The central deployment challenge is that a transmitter fingerprint is never observed in isolation. Receiver gain, filtering, clocking and analogue front-end response transform the same transmitter waveform before classification. Cross-receiver studies have consequently reported strong sensitivity to deployment changes and have motivated receiver-agnostic representation learning and adaptation~\cite{elmaghbub2021lora_wild,hamdaoui2022deeplearning,shen2024receiveragnostic,ma2025receiver_independent_rffi}. These methods address the failure empirically, but clean accuracy alone does not reveal which signal evidence a classifier is using or whether a representation has exchanged one nuisance for another.
+
+OOB evidence exposes this ambiguity. Spectral leakage can contain transmitter-specific information associated with power-amplifier nonlinearity and filtering~\cite{elmaghbub2020widescan,zhou2021robust_rffi_iotj}, yet OOB bins are also directly exposed to the receiver response. Thus, the same feature can be both useful and deployment-sensitive. We formulate the resulting question as follows: when an OOB-aware RFFI model succeeds, does it rely on transmitter evidence that remains stable across receivers, or on a receiver-sensitive spectral dependency that happens to be predictive in the source domain?
+
+This paper studies that question without introducing another classifier architecture. We combine a signal-level audit, frozen-checkpoint interventions, matched architecture controls, strong receiver-independent baselines, and a pre-registered blind confirmation on six official receivers. The central claim is deliberately bounded: OOB evidence contains transmitter-discriminative information, but OOB-aware models can develop receiver-sensitive and frequency-structured dependencies that persist on previously unseen receivers. We do not claim that all OOB information is harmful, that OOB variation is the causal composition of receiver shift, or that the task is intrinsically impossible.
+
+\begin{figure}[t]
+\centering\includegraphics[width=\columnwidth]{fig1_concept.pdf}
+\caption{Study concept. The same OOB evidence can carry transmitter information and be transformed by receiver front-end response. Frozen interventions probe this dependency without changing the clean main I/Q branch.}
+\label{fig:concept}
+\end{figure}
+
+Our contributions are threefold:
+\begin{enumerate}
+\item We separate OOB utility from OOB sensitivity using signal-level grouping, device and receiver probes, and interventions that alter only the OOB branch while preserving the clean main I/Q input.
+\item We show that OOB dependence is architecture-dependent and frequency-structured. A capacity-matched late-fusion CNN and an RF-HSTU cross-attentive backbone respond differently to a strict in-band control, while both exhibit a reproducible left/right asymmetry.
+\item We freeze the checkpoints, intervention constants, receiver split, and receiver-level decision rule before opening six official blind receivers. The blind results reproduce the core disruption and left-greater-than-right pattern on all six receivers.
+\end{enumerate}
+
+The remainder of this paper reviews related RFFI evidence, defines the auditable protocol, reports the development and blind results, and discusses implications and limitations.

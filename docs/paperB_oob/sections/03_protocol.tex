@@ -1,0 +1,31 @@
+\section{Auditable Experimental Protocol}
+\label{sec:protocol}
+\subsection{Dataset and Split}
+We use a 20-SDR LoRa dataset containing ten transmitter devices and twenty receiver domains. Fourteen receiver files form the development pool, with 8,000 training packets per receiver. Six official receiver files are held out as blind test domains: b200\_2, b200\_mini\_2, b210\_2, n210\_2, n210\_3 and pluto\_2. Each blind receiver contains 2,000 test packets, with 200 packets from each of ten devices. The blind archive hash and file inventory were recorded before signal values were opened. The source/blind boundary was not used for training, validation, checkpoint selection, intervention design, or hyperparameter selection.
+
+\begin{table}[t]
+\caption{Twenty-SDR study protocol. The receiver is the top-level experimental unit.}
+\label{tab:protocol}
+\centering\footnotesize
+\begin{tabular}{lccc}
+\toprule
+Pool & Receivers & Packets/receiver & Role\\
+\midrule
+Development & 14 & 8,000 train & training and development audits\\
+Official blind & 6 & 2,000 test & one-time confirmation only\\
+Transmitter classes & \multicolumn{2}{c}{10 devices, balanced labels} & closed-set identification\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{OOB Definition and Signal Audit}
+Signals are normalized per packet by their root-mean-square complex amplitude. With sampling rate $F_s=1$ MHz and nominal LoRa bandwidth $B=125$ kHz, the in-band set is $|f|\leq B/2$ and OOB is its complement. We summarize each packet by the relative OOB magnitude $20\log_{10}((\mathrm{RMS}_{\mathrm{OOB}}+\epsilon)/(\mathrm{RMS}_{\mathrm{IB}}+\epsilon))$. The signal audit groups observations by device, receiver type, receiver instance and day. Because the source HDF5 files do not expose capture identifiers, this audit is descriptive rather than a capture-level inferential test.
+
+\subsection{Frozen Backbones and Controls}
+The primary probe models are B1-OOB, an input- and capacity-matched late-fusion CNN, and C$'$-OOB, an RF-HSTU token encoder with cross-attentive OOB fusion. Both are trained with AdamW, learning rate $10^{-3}$, weight decay $5\times10^{-4}$, batch size 64, and five independent seeds. C$'$-TrueIB uses the same C$'$ family with a strict in-band spectral path and is a pathway control, not a claim that all OOB effects are removed from every representation. Shen-CIS and Shen-RA are strong spectrogram/CIS baselines. Their adaptation here is a matched PyTorch implementation, not a claim of exact reproduction of an external training codebase.
+
+\subsection{Interventions}
+For an OOB-aware model, the clean main I/Q branch and device label remain unchanged. Scale interventions multiply OOB spectral bins by $\{0.5,0.70710678,1,1.41421356,2\}$. Shuffle replaces OOB bins with a different-device donor from the same receiver file. Neutral replacement uses a development-derived, equal-receiver-weighted OOB magnitude vector and zero phase. Left/right interventions multiply only the negative- or positive-frequency OOB half by 0.5. These interventions probe the learned OOB dependency; they are not interpreted as a complete causal decomposition of receiver variation.
+
+\subsection{Freeze and Statistical Analysis}
+Twenty-five canonical checkpoints were strictly loaded and hashed before X6. The six blind receiver files were then opened once. X6 evaluates five models, five seeds and the six receivers under clean conditions, and evaluates B1-OOB/C$'$-OOB under the eight frozen intervention conditions, for 630 runs. Accuracy and Macro-F1 are computed per run. For inference, seed means are formed within receiver before aggregation. The primary effects are receiver-level clean-minus-intervention differences. A model reaches GO when disruption and worst-scale drops are positive on at least four of six receivers and both receiver medians are at least 5 percentage points. STRONG GO additionally requires left-minus-right drop to be positive on at least four receivers with a positive receiver median.
