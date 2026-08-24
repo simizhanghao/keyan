@@ -1,0 +1,19 @@
+{
+  "manifest": "data/paper/cross_day_day1to5_source_only.csv",
+  "checkpoint": "outputs/paper_ready_v3/step1_phase7_clean/runs/F_cross_attn_chirp_plain/seed_0/best.pt",
+  "perturb_type": "filter_tilt_db",
+  "strengths": [
+    0.0,
+    1.0,
+    2.0,
+    4.0,
+    6.0,
+    8.0
+  ],
+  "robustness_summary": {
+    "clean_file_acc": 0.8333333333333334,
+    "avg_robust_acc": 0.4861111111111111,
+    "robustness_auc": 0.4861111111111111,
+    "max_drop": 0.7916666666666667
+  }
+}
