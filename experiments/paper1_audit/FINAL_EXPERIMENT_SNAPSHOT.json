@@ -344,6 +344,14 @@
     {
       "path": "new_phase/experiments/paper1_audit/scripts/run_x6_confirmatory.py",
       "sha256": "e91cc8294666bc1eb63cdc3cd3b94ee12a633a97e584394c65ba39514330792a"
+    },
+    {
+      "path": "new_phase/experiments/paper1_audit/scripts/launch_x6_4gpu.py",
+      "sha256": "6f35c945a2e039dd41f9876e6d8e591fc7682ce33256ff8c6dc09a4ea797d1a9"
+    },
+    {
+      "path": "new_phase/experiments/paper1_audit/scripts/summarize_x6.py",
+      "sha256": "cf64be82a0b589d23a5a7de0acb65e392c077f418bdec961bbf4c1e5752d5728"
     }
   ],
   "artifacts": [
@@ -361,7 +369,7 @@
     },
     {
       "path": "new_phase/experiments/paper1_audit/X6_PROTOCOL_LOCK.md",
-      "sha256": "517b3f3eb3483884c5709b581907442428e4d4f8fbff95b1ce2a6f559d2d451f"
+      "sha256": "2fa6f804302fbc89b3fc9e43dc9ac38820196d0869be14742e9e35e527e8e719"
     },
     {
       "path": "new_phase/experiments/paper1_audit/results/final_training/x6_neutral/development_neutral.npy",

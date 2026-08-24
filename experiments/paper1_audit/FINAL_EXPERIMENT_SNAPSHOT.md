@@ -58,13 +58,15 @@ Status: **FROZEN BEFORE X6**. Official blind receivers were sealed when this sna
 - `new_phase/experiments/paper1_audit/scripts/run_x3_occlusion.py`: `b620658078d3d5315baf74a46d301694a57baafd3ed2ffe345d9c71bd5602ddf`
 - `new_phase/experiments/paper1_audit/scripts/build_x6_neutral.py`: `05646418e5bf8667b0a7a3b7882e1d5b4906f1366d7c4a3eb2325c8143626d22`
 - `new_phase/experiments/paper1_audit/scripts/run_x6_confirmatory.py`: `e91cc8294666bc1eb63cdc3cd3b94ee12a633a97e584394c65ba39514330792a`
+- `new_phase/experiments/paper1_audit/scripts/launch_x6_4gpu.py`: `6f35c945a2e039dd41f9876e6d8e591fc7682ce33256ff8c6dc09a4ea797d1a9`
+- `new_phase/experiments/paper1_audit/scripts/summarize_x6.py`: `cf64be82a0b589d23a5a7de0acb65e392c077f418bdec961bbf4c1e5752d5728`
 
 ## Frozen artifact hashes
 
 - `new_phase/experiments/paper1_audit/FINAL_DATA_MANIFEST.md`: `054adc62095b1810ff601a1740b5d8b7ff3cee87d470be7a51cdaedc79e28222`
 - `new_phase/experiments/paper1_audit/THREE_PAPER_BOUNDARY_LOCK.md`: `46138f0529f84fb20817051ef189142f82e772c3f879c3f0c018a96f7077a1d5`
 - `new_phase/experiments/paper1_audit/PAPER_C_PREREG_LOCK.md`: `599d66d1a4e546564a9abdf13a873b554d1f30a92529faf2a00e2eda0ed42e57`
-- `new_phase/experiments/paper1_audit/X6_PROTOCOL_LOCK.md`: `517b3f3eb3483884c5709b581907442428e4d4f8fbff95b1ce2a6f559d2d451f`
+- `new_phase/experiments/paper1_audit/X6_PROTOCOL_LOCK.md`: `2fa6f804302fbc89b3fc9e43dc9ac38820196d0869be14742e9e35e527e8e719`
 - `new_phase/experiments/paper1_audit/results/final_training/x6_neutral/development_neutral.npy`: `e4457a1592d148e93648f812907d614651c4545da1701e6077fa9b8a8261668a`
 - `new_phase/experiments/paper1_audit/results/final_training/x6_neutral/development_neutral.json`: `956bb7534dfc2902e11482cd3c2ceffd0f7dd89e1ce22a816f06b6de6be0eb83`
 

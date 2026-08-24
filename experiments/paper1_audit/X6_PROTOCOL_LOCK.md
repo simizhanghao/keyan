@@ -21,8 +21,9 @@ Status: **PRE-BLIND FROZEN**. The development-only dry run passed on 2026-08-24.
 
 - Primary paired quantities are receiver-level changes from clean, first averaged across five seeds within receiver.
 - Report all six receiver effects, their median, mean, sign count, and architecture contrast. Do not infer six independent studies from packet count.
-- GO: OOB utility and receiver-sensitive degradation replicate on a majority of blind receivers without being driven by one receiver.
-- STRONG GO: GO holds and the pre-observed left-greater-than-right sensitivity also replicates on a majority of blind receivers.
+- Define disruption drop as clean Accuracy minus the mean Accuracy of shuffle and neutral replacement. Define worst-scale drop as clean Accuracy minus the minimum Accuracy across the four non-unit scale conditions. Both are first averaged over five seeds within receiver.
+- An architecture reaches GO when both drops are positive on at least 4/6 receivers and both receiver-median drops are at least 5 percentage points. Overall GO requires at least one architecture to reach GO.
+- STRONG GO additionally requires left-minus-right drop to be positive on at least 4/6 receivers and have a positive receiver median for an architecture that reaches GO.
 - DOWNGRADE: the core utility/sensitivity pattern does not replicate. No model, checkpoint, intervention, or threshold may be changed after opening blind data.
 
 ## Execution gate

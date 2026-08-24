@@ -32,7 +32,7 @@ def main():
   for s in range(5): add(rows,model,s,RESULTS/f'short_clean/{folder}/seed_{s}.json')
  assert len(rows)==25 and all(not r['blind_opened'] and r['batch_size']==64 for r in rows)
  code=[]
- for name in ['run_final_shen.py','run_final_short.py','build_cis_cache.py','run_x3_scale.py','run_x3_shuffle.py','run_x3_occlusion.py','build_x6_neutral.py','run_x6_confirmatory.py']:
+ for name in ['run_final_shen.py','run_final_short.py','build_cis_cache.py','run_x3_scale.py','run_x3_shuffle.py','run_x3_occlusion.py','build_x6_neutral.py','run_x6_confirmatory.py','launch_x6_4gpu.py','summarize_x6.py']:
   p=ROOT/'scripts'/name; code.append({'path':str(p.relative_to(REPO)),'sha256':sha(p)})
  artifacts=[]
  for name in ['FINAL_DATA_MANIFEST.md','THREE_PAPER_BOUNDARY_LOCK.md','PAPER_C_PREREG_LOCK.md','X6_PROTOCOL_LOCK.md','results/final_training/x6_neutral/development_neutral.npy','results/final_training/x6_neutral/development_neutral.json']:
