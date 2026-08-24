@@ -1,0 +1,389 @@
+{
+  "status": "FROZEN_BEFORE_X6",
+  "checkpoint_count": 25,
+  "development_receivers": 14,
+  "development_packets": 112000,
+  "official_blind_receivers": 6,
+  "official_blind_status": "SEALED",
+  "blind_archive": {
+    "path": "/data1/hcc/llm4RF/data0820/multiple_receiver_test.zip",
+    "sha256": "e8f4cdc32cbbb7e6cfa410375e7412e204a2c412996d2a22a55ab0c8b9ff79f1",
+    "signal_values_opened": false
+  },
+  "checkpoints": [
+    {
+      "model": "Shen-CIS",
+      "seed": 0,
+      "epoch": 74,
+      "parameters": 13510424,
+      "checkpoint": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/shen_clean/Shen-CIS/seed_0.resume.pt",
+      "checkpoint_sha256": "c29b4f7f29f0a259d2d13b393b90c39486856435db976a8e84018e0e52284bb1",
+      "metrics_json": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/shen_clean/Shen-CIS/seed_0.json",
+      "metrics_sha256": "c4cded148b26ffb256e2048469dd5bf3a065b2afdc4a787c5a7a4afcd063095b",
+      "batch_size": 64,
+      "blind_opened": false
+    },
+    {
+      "model": "Shen-CIS",
+      "seed": 1,
+      "epoch": 74,
+      "parameters": 13510424,
+      "checkpoint": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/shen_clean/Shen-CIS/seed_1.resume.pt",
+      "checkpoint_sha256": "783f6d2bc010648601afe02bc78a0376d070c48d74167268302a7af9945e24e4",
+      "metrics_json": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/shen_clean/Shen-CIS/seed_1.json",
+      "metrics_sha256": "89d0cf2af613a1523ae5f2c5f56f0c1222d730ee1f9b98740fb3b684fe063b17",
+      "batch_size": 64,
+      "blind_opened": false
+    },
+    {
+      "model": "Shen-CIS",
+      "seed": 2,
+      "epoch": 74,
+      "parameters": 13510424,
+      "checkpoint": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/shen_clean/Shen-CIS/seed_2.resume.pt",
+      "checkpoint_sha256": "8c3df50bbd88c2dd172b900217911389de21c35b9aec7513578f7218adda3baf",
+      "metrics_json": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/shen_clean/Shen-CIS/seed_2.json",
+      "metrics_sha256": "7ce3fe04e78fc4d51693765c99b4b97a4be788d0d4a565be4b7617b35fff96b9",
+      "batch_size": 64,
+      "blind_opened": false
+    },
+    {
+      "model": "Shen-CIS",
+      "seed": 3,
+      "epoch": 74,
+      "parameters": 13510424,
+      "checkpoint": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/shen_clean/Shen-CIS/seed_3.resume.pt",
+      "checkpoint_sha256": "ee519bfb10ef20cf381afee1867818efdef537ece39ad54858847a94992816ca",
+      "metrics_json": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/shen_clean/Shen-CIS/seed_3.json",
+      "metrics_sha256": "d2bff9a578dfceaaf16784c541e1f8fe6e70739aa8c334c1e7854febfa5612ba",
+      "batch_size": 64,
+      "blind_opened": false
+    },
+    {
+      "model": "Shen-CIS",
+      "seed": 4,
+      "epoch": 74,
+      "parameters": 13510424,
+      "checkpoint": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/shen/Shen-CIS/seed_4.resume.pt",
+      "checkpoint_sha256": "bebfb811e298777492017ac375ecbd7e567b9fe76821c285bbb46209f119cfa7",
+      "metrics_json": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/shen/Shen-CIS/seed_4.json",
+      "metrics_sha256": "3e380d4ae1d6bd54ad98c0c8eb1efe17820308be6535a20ec2db9c5d1b0c9883",
+      "batch_size": 64,
+      "blind_opened": false
+    },
+    {
+      "model": "Shen-RA",
+      "seed": 0,
+      "epoch": 71,
+      "parameters": 13510424,
+      "checkpoint": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/shen/Shen-RA/seed_0.resume.pt",
+      "checkpoint_sha256": "a420f4ec74c1c66d6f64159be4514b72166b6cb6c23ed10382ae1bd4930d8998",
+      "metrics_json": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/shen/Shen-RA/seed_0.json",
+      "metrics_sha256": "6d94e10e67ecf41d9b54159e0ee68180d59c96a28f7c6f6b800bf1f69006b77e",
+      "batch_size": 64,
+      "blind_opened": false
+    },
+    {
+      "model": "Shen-RA",
+      "seed": 1,
+      "epoch": 71,
+      "parameters": 13510424,
+      "checkpoint": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/shen/Shen-RA/seed_1.resume.pt",
+      "checkpoint_sha256": "8526e28f2e37c2df5a17e00cb8020df897636d8fcdbdd9e3f0c472268a2eff8b",
+      "metrics_json": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/shen/Shen-RA/seed_1.json",
+      "metrics_sha256": "8810f8f47416d862868910fd804c95595a374db02a72e49fd4df519433a8dd3b",
+      "batch_size": 64,
+      "blind_opened": false
+    },
+    {
+      "model": "Shen-RA",
+      "seed": 2,
+      "epoch": 71,
+      "parameters": 13510424,
+      "checkpoint": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/shen/Shen-RA/seed_2.resume.pt",
+      "checkpoint_sha256": "c3d81b848d2cc9cda675ed5b1676afa1b74606672696aad9d728584647f984ff",
+      "metrics_json": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/shen/Shen-RA/seed_2.json",
+      "metrics_sha256": "ebc4ab618246937d9784446c3337bfa484b9e28d3e6ee7f046bdfc037c112dcd",
+      "batch_size": 64,
+      "blind_opened": false
+    },
+    {
+      "model": "Shen-RA",
+      "seed": 3,
+      "epoch": 71,
+      "parameters": 13510424,
+      "checkpoint": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/shen/Shen-RA/seed_3.resume.pt",
+      "checkpoint_sha256": "9f2da5e12b651ecc9fe230369d38c41f18fae566d59865935ec15a9f5b14ccdc",
+      "metrics_json": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/shen/Shen-RA/seed_3.json",
+      "metrics_sha256": "b90cc7b05c5de0e8adf98e5fce589dcd2dafec0f46414408929098219faf0658",
+      "batch_size": 64,
+      "blind_opened": false
+    },
+    {
+      "model": "Shen-RA",
+      "seed": 4,
+      "epoch": 71,
+      "parameters": 13510424,
+      "checkpoint": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/shen/Shen-RA/seed_4.resume.pt",
+      "checkpoint_sha256": "02e845a1eeb4154c656b004183e6d0625bfce57f477712a46a5b3d0dd0058f65",
+      "metrics_json": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/shen/Shen-RA/seed_4.json",
+      "metrics_sha256": "03caec52395ffd5197d677097dbf5258a95605a94223df34fe8c803c20920e9f",
+      "batch_size": 64,
+      "blind_opened": false
+    },
+    {
+      "model": "B1-OOB",
+      "seed": 0,
+      "epoch": 5,
+      "parameters": 539178,
+      "checkpoint": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/short_clean/B1-OOB/seed_0.pt",
+      "checkpoint_sha256": "581579577b208ecacdc20011a15da0ad2ec280cc1b31fe1e1394c2b3b8216a99",
+      "metrics_json": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/short_clean/B1-OOB/seed_0.json",
+      "metrics_sha256": "cdaea125c05e7831d1f0243efea955b9032548c400801e09a9ae88637e0ac615",
+      "batch_size": 64,
+      "blind_opened": false
+    },
+    {
+      "model": "B1-OOB",
+      "seed": 1,
+      "epoch": 5,
+      "parameters": 539178,
+      "checkpoint": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/short_clean/B1-OOB/seed_1.pt",
+      "checkpoint_sha256": "44c6c031627cd111ebab1767bc0ff047f61d13669d44233421aec3e9b89f9f89",
+      "metrics_json": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/short_clean/B1-OOB/seed_1.json",
+      "metrics_sha256": "fb8940c438dc193b1606a1c54dcaf3e64f96e81ab7fb6d04ba67b2d4a9ff8bf7",
+      "batch_size": 64,
+      "blind_opened": false
+    },
+    {
+      "model": "B1-OOB",
+      "seed": 2,
+      "epoch": 5,
+      "parameters": 539178,
+      "checkpoint": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/short_clean/B1-OOB/seed_2.pt",
+      "checkpoint_sha256": "f90b3295ff516e8ff3bc0b48b37e36e391b0ea00bacbf51f46517f4eb0446482",
+      "metrics_json": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/short_clean/B1-OOB/seed_2.json",
+      "metrics_sha256": "f6a3528348826b3796f29eb9f6daa5352e96bc78e6b9f6cb16b22696e91372ce",
+      "batch_size": 64,
+      "blind_opened": false
+    },
+    {
+      "model": "B1-OOB",
+      "seed": 3,
+      "epoch": 5,
+      "parameters": 539178,
+      "checkpoint": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/short_clean/B1-OOB/seed_3.pt",
+      "checkpoint_sha256": "99e0ad25787aebdd759bb1f4d66681d1e8262df97d3cbb8dca6497caa48e2ee7",
+      "metrics_json": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/short_clean/B1-OOB/seed_3.json",
+      "metrics_sha256": "22b6fbbf48273feed10dc24e3195721ad509fdfd14abd54cc29bb4fd33c8dff8",
+      "batch_size": 64,
+      "blind_opened": false
+    },
+    {
+      "model": "B1-OOB",
+      "seed": 4,
+      "epoch": 5,
+      "parameters": 539178,
+      "checkpoint": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/short_clean/B1-OOB/seed_4.pt",
+      "checkpoint_sha256": "cf3b767b914e08540a72b4a51a346e887eb953538e27bc849b0ef0e6382b8cc1",
+      "metrics_json": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/short_clean/B1-OOB/seed_4.json",
+      "metrics_sha256": "26c1658bbb40e1ba751b4d08bce7e82898adc0ba9a8fcc97cb8ea776b2a6d570",
+      "batch_size": 64,
+      "blind_opened": false
+    },
+    {
+      "model": "C'-OOB",
+      "seed": 0,
+      "epoch": 4,
+      "parameters": 625896,
+      "checkpoint": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/short_clean/Cprime-OOB/seed_0.pt",
+      "checkpoint_sha256": "dfa675b856e1a61e46ad82a058fe1c9fa7f92aa10725718e7c581c83dc865b67",
+      "metrics_json": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/short_clean/Cprime-OOB/seed_0.json",
+      "metrics_sha256": "850d6d9627042b7c61ac1225047e1975e45e3e932edd09697d81f466fdd20c5c",
+      "batch_size": 64,
+      "blind_opened": false
+    },
+    {
+      "model": "C'-OOB",
+      "seed": 1,
+      "epoch": 4,
+      "parameters": 625896,
+      "checkpoint": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/short_clean/Cprime-OOB/seed_1.pt",
+      "checkpoint_sha256": "8a7d1d0a9671ea929dda08b526b0e88fb21226275697c3ae9e8191665ac66388",
+      "metrics_json": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/short_clean/Cprime-OOB/seed_1.json",
+      "metrics_sha256": "38a42d51286ca507ff39cb3a47e828218c39429a65fc756606ef40c0550b53a3",
+      "batch_size": 64,
+      "blind_opened": false
+    },
+    {
+      "model": "C'-OOB",
+      "seed": 2,
+      "epoch": 4,
+      "parameters": 625896,
+      "checkpoint": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/short_clean/Cprime-OOB/seed_2.pt",
+      "checkpoint_sha256": "e9ae272dff3603edc473299de7fa9219a4baa65e14068636660fa35d794ef1b5",
+      "metrics_json": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/short_clean/Cprime-OOB/seed_2.json",
+      "metrics_sha256": "dee690744a7667a9d0f99b61f340980a40bab62dee1c987be00ca942f5c08882",
+      "batch_size": 64,
+      "blind_opened": false
+    },
+    {
+      "model": "C'-OOB",
+      "seed": 3,
+      "epoch": 4,
+      "parameters": 625896,
+      "checkpoint": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/short_clean/Cprime-OOB/seed_3.pt",
+      "checkpoint_sha256": "3a8b0b8657c1cdef84a0cfc0d80309beae21278d93fcecd5aea7cee78405f077",
+      "metrics_json": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/short_clean/Cprime-OOB/seed_3.json",
+      "metrics_sha256": "0814f91a85c4480257951696571104b929f57d645d29766b7ed749e63fac81af",
+      "batch_size": 64,
+      "blind_opened": false
+    },
+    {
+      "model": "C'-OOB",
+      "seed": 4,
+      "epoch": 4,
+      "parameters": 625896,
+      "checkpoint": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/short_clean/Cprime-OOB/seed_4.pt",
+      "checkpoint_sha256": "8b5d80a69e40d3e4860fddff36859d920280f1f71b6a2e44e9477e5e08ed3e2e",
+      "metrics_json": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/short_clean/Cprime-OOB/seed_4.json",
+      "metrics_sha256": "f69b0d85a5d0a8d27e73118b89dc6c9012ec33e0350ed78bf964889537ab74f5",
+      "batch_size": 64,
+      "blind_opened": false
+    },
+    {
+      "model": "C'-TrueIB",
+      "seed": 0,
+      "epoch": 5,
+      "parameters": 580008,
+      "checkpoint": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/short_clean/Cprime-TrueIB/seed_0.pt",
+      "checkpoint_sha256": "c4a1e5c5c777d161d555aab58d1d9fe0b7f5735a3c28df30654ed4be9be5e3b6",
+      "metrics_json": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/short_clean/Cprime-TrueIB/seed_0.json",
+      "metrics_sha256": "d786aae4c7dfde3f8e9302bccbf4f589df5c176111f7106c98a73a8c4cce4b21",
+      "batch_size": 64,
+      "blind_opened": false
+    },
+    {
+      "model": "C'-TrueIB",
+      "seed": 1,
+      "epoch": 5,
+      "parameters": 580008,
+      "checkpoint": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/short_clean/Cprime-TrueIB/seed_1.pt",
+      "checkpoint_sha256": "dd758f6dc65b034b6b02c9963324c7a79edb433409f1ec1d8fe84522ec8956d1",
+      "metrics_json": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/short_clean/Cprime-TrueIB/seed_1.json",
+      "metrics_sha256": "fa6c64d31051a11e8806f6598d7b9f809aa896c19d4e50bece86a8c543a0526a",
+      "batch_size": 64,
+      "blind_opened": false
+    },
+    {
+      "model": "C'-TrueIB",
+      "seed": 2,
+      "epoch": 5,
+      "parameters": 580008,
+      "checkpoint": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/short_clean/Cprime-TrueIB/seed_2.pt",
+      "checkpoint_sha256": "71e487ad6a8dcbce42a72ffe833ab73f55f64347917328d1f24c046f601a8794",
+      "metrics_json": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/short_clean/Cprime-TrueIB/seed_2.json",
+      "metrics_sha256": "c912d34fc9317edd3fbc792af4ff6ee8983b2809535cc884534ff94d5570e9f6",
+      "batch_size": 64,
+      "blind_opened": false
+    },
+    {
+      "model": "C'-TrueIB",
+      "seed": 3,
+      "epoch": 5,
+      "parameters": 580008,
+      "checkpoint": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/short_clean/Cprime-TrueIB/seed_3.pt",
+      "checkpoint_sha256": "a4ab63a9cc672d85f7322a5f4fe05b2ced8ce01211a3339f70a745d103910852",
+      "metrics_json": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/short_clean/Cprime-TrueIB/seed_3.json",
+      "metrics_sha256": "09823adea5e28ffcf07ff7ce014ff3580e1d39910bd8c46cb26ada10b6165eb8",
+      "batch_size": 64,
+      "blind_opened": false
+    },
+    {
+      "model": "C'-TrueIB",
+      "seed": 4,
+      "epoch": 5,
+      "parameters": 580008,
+      "checkpoint": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/short_clean/Cprime-TrueIB/seed_4.pt",
+      "checkpoint_sha256": "3746dac76fe49a62991f43fa06a5e590fd287016776c02e898ca55bb53d9c6b4",
+      "metrics_json": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/short_clean/Cprime-TrueIB/seed_4.json",
+      "metrics_sha256": "25710337412bd0e662a0d0fe8f3bba4c91ffa3757ba95d133f0d53a59c14aba7",
+      "batch_size": 64,
+      "blind_opened": false
+    }
+  ],
+  "code": [
+    {
+      "path": "new_phase/experiments/paper1_audit/scripts/run_final_shen.py",
+      "sha256": "4ff4d35a76a99e4e79e13a59c24d7c49fa472d9e3172bd716b845712b8a48812"
+    },
+    {
+      "path": "new_phase/experiments/paper1_audit/scripts/run_final_short.py",
+      "sha256": "93b279221fd61fcc5f011ad65f8925243787c416dfa13fe39e114c2e9f533df1"
+    },
+    {
+      "path": "new_phase/experiments/paper1_audit/scripts/build_cis_cache.py",
+      "sha256": "785de1d109e147c2de542953be14af3e66c45774f819c01727b437dc5a0db9ff"
+    },
+    {
+      "path": "new_phase/experiments/paper1_audit/scripts/run_x3_scale.py",
+      "sha256": "f5234d2d584a4587c8f7e14a75a2831041e12f4b19849199a7e3788137d9190a"
+    },
+    {
+      "path": "new_phase/experiments/paper1_audit/scripts/run_x3_shuffle.py",
+      "sha256": "a2303e1749abfe71467e1abf5da941be93f51ce46c5dff8771a1b8ed77e10a01"
+    },
+    {
+      "path": "new_phase/experiments/paper1_audit/scripts/run_x3_occlusion.py",
+      "sha256": "b620658078d3d5315baf74a46d301694a57baafd3ed2ffe345d9c71bd5602ddf"
+    },
+    {
+      "path": "new_phase/experiments/paper1_audit/scripts/build_x6_neutral.py",
+      "sha256": "05646418e5bf8667b0a7a3b7882e1d5b4906f1366d7c4a3eb2325c8143626d22"
+    },
+    {
+      "path": "new_phase/experiments/paper1_audit/scripts/run_x6_confirmatory.py",
+      "sha256": "e91cc8294666bc1eb63cdc3cd3b94ee12a633a97e584394c65ba39514330792a"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "new_phase/experiments/paper1_audit/FINAL_DATA_MANIFEST.md",
+      "sha256": "054adc62095b1810ff601a1740b5d8b7ff3cee87d470be7a51cdaedc79e28222"
+    },
+    {
+      "path": "new_phase/experiments/paper1_audit/THREE_PAPER_BOUNDARY_LOCK.md",
+      "sha256": "46138f0529f84fb20817051ef189142f82e772c3f879c3f0c018a96f7077a1d5"
+    },
+    {
+      "path": "new_phase/experiments/paper1_audit/PAPER_C_PREREG_LOCK.md",
+      "sha256": "599d66d1a4e546564a9abdf13a873b554d1f30a92529faf2a00e2eda0ed42e57"
+    },
+    {
+      "path": "new_phase/experiments/paper1_audit/X6_PROTOCOL_LOCK.md",
+      "sha256": "517b3f3eb3483884c5709b581907442428e4d4f8fbff95b1ce2a6f559d2d451f"
+    },
+    {
+      "path": "new_phase/experiments/paper1_audit/results/final_training/x6_neutral/development_neutral.npy",
+      "sha256": "e4457a1592d148e93648f812907d614651c4545da1701e6077fa9b8a8261668a"
+    },
+    {
+      "path": "new_phase/experiments/paper1_audit/results/final_training/x6_neutral/development_neutral.json",
+      "sha256": "956bb7534dfc2902e11482cd3c2ceffd0f7dd89e1ce22a816f06b6de6be0eb83"
+    }
+  ],
+  "environment": {
+    "python": "3.12.12",
+    "pytorch": "2.10.0+cu129",
+    "cuda_runtime": "12.9",
+    "numpy": "2.4.4",
+    "h5py": "3.16.0",
+    "platform": "Linux-5.15.0-164-generic-x86_64-with-glibc2.35",
+    "git_parent": "837c7f495ba1dd455662a4f466ad97b4e35016ab",
+    "gpu": "NVIDIA A100-SXM4-80GB, 570.158.01"
+  },
+  "excluded": [
+    "results/final_training/shen/Shen-CIS/seed_0..3 (mixed batch trajectory)",
+    "results/final_training/short/* (no saved checkpoints)"
+  ]
+}

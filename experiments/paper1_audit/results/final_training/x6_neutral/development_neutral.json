@@ -1,0 +1,13 @@
+{
+  "source": "14 development receivers only",
+  "receiver_weighting": "equal",
+  "packets_per_receiver": 256,
+  "vector": "/data1/hcc/llm4RF/new_phase/experiments/paper1_audit/results/final_training/x6_neutral/development_neutral.npy",
+  "shape": [
+    7167
+  ],
+  "dtype": "float32",
+  "sha256": "e4457a1592d148e93648f812907d614651c4545da1701e6077fa9b8a8261668a",
+  "phase_convention": "real nonnegative mean magnitude (zero phase)",
+  "blind_opened": false
+}
