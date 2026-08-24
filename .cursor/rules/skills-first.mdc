@@ -1,0 +1,35 @@
+---
+description: Every llm4RF task must load and follow matching project skills before acting
+alwaysApply: true
+---
+
+# Skills First（llm4RF 强制）
+
+本仓库所有任务必须先读 skill 再执行。禁止凭记忆跳过，禁止另起一套平行流程。
+
+开始回答或调用工具前：
+
+1. 用 Read 打开 `.cursor/skills/<匹配技能>/SKILL.md`（不要只靠对话记忆）。
+2. 按其指令执行；skill 要求停下确认时必须停下。
+3. 默认只读。未获用户明确授权时，不新建、不改、不删文件，不训、不评、不装依赖。
+
+## 路由（先读哪一个）
+
+| 用户意图 | 先读 |
+|----------|------|
+| 全文流水线、从调研到定稿 | `academic-pipeline/SKILL.md` |
+| 写论文、改稿、摘要、反驳 | `academic-paper/SKILL.md` |
+| 审稿、模拟审、re-review | `academic-paper-reviewer/SKILL.md` |
+| 文献、系统综述、事实核查 | `deep-research/SKILL.md` |
+| 实验、训练、评测、协议 | `docs/experiment_protocol.md` + 对应章节实验图 |
+
+`deep-research` 是文献调研 skill，不是 `/data1/hcc/deepresearch` 那个 RL 仓库。不要把其他仓库的 SFT/GRPO/PPO 阶段门禁套到本项目。
+
+## 本仓库硬约束
+
+- 一次只做一件可验收的事，做完停下等用户确认。
+- Claim 必须对上已有实验表；第 3/4/5 章协议数字不得混用。
+- 主线是 CNN-stem + RF-HSTU + OOB cross-attn + chirp；不把已排除模块写回主贡献。
+- 需要用户跑的命令写成「验收命令（请你执行）」，代理不代跑。
+
+项目 skill 目录：`/data1/hcc/llm4RF/.cursor/skills/`。

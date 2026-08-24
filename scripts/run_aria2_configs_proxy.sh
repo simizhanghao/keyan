@@ -4,7 +4,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 DATA_ROOT="${DATA_ROOT:-data/raw/osu_lora}"
-PROXY_URL="${PROXY_URL:-http://127.0.0.1:7898}"
+PROXY_URL="${PROXY_URL:-http://127.0.0.1:7899}"
 MAX_CONCURRENT="${MAX_CONCURRENT:-8}"
 SPLIT="${SPLIT:-8}"
 LIST_TSV="${DATA_ROOT}/download_configs.tsv"
@@ -25,7 +25,7 @@ proxy_port="${proxy_host_port##*:}"
 if ! timeout 2 bash -c ":</dev/tcp/${proxy_host}/${proxy_port}" 2>/dev/null; then
   echo "ERROR: proxy is not reachable from this server: ${PROXY_URL}" >&2
   echo "If SakuraCat runs on your local laptop, open a local terminal and run:" >&2
-  echo "  ssh -N -R 7898:127.0.0.1:7898 hanchengcheng@10.10.41.10" >&2
+  echo "  ssh -N -R 7899:127.0.0.1:7899 hanchengcheng@10.10.41.10" >&2
   exit 2
 fi
 

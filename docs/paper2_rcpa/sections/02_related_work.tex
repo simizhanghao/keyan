@@ -28,14 +28,14 @@ Scalable and contrastive LoRa RFFI methods improve embedding compactness under c
 \textbf{Our frozen-backbone K-window calibration.}
 We differ from the above directions by freezing a same-receiver backbone, diagnosing OOB entanglement on target-receiver data, and applying post-hoc prototype or linear calibration with minimal labeled target windows.
 \textbf{Direct numerical comparison with prior cross-receiver RFFI systems is not apples-to-apples} because they differ in receiver sets, devices, source-data access, target-label availability, and calibration protocols.
-Our experiments instead compare against representative \emph{same-protocol} baselines under identical block-disjoint splits (Table~\ref{tab:sota_baselines}).
+Our experiments instead compare against representative \emph{same-protocol} baselines under identical block-disjoint splits (Tables~\ref{tab:unlabeled_baselines} and~\ref{tab:kshot_baselines}).
 
 \subsection{Source-Free and Unsupervised Adaptation}
 Test-time adaptation methods such as TENT update normalization or lightweight adapter statistics on unlabeled target data by minimizing prediction entropy~\cite{wang2021tent,lim2023ttn}.
 Source-free domain adaptation frameworks such as SHOT transfer a source hypothesis without accessing source data~\cite{liang2020shot,ben2010domain_adaptation}.
 In cross-receiver RFFI, SCRFFI and related methods target adaptation with target-unlabeled data only~\cite{yang2025scrffi,yang2024cross_receiver_da}.
 These approaches assume a different deployment mode from ours: we allow a small set of labeled target-receiver calibration windows on a frozen backbone.
-Our TTA negative baselines, threshold sweep, and CORAL/mean-shift feature-alignment baselines show that unsupervised repair remains near chance under severe RX1$\rightarrow$RX2 collapse, supporting labeled calibration as the more reliable option under our protocol~\cite{sun2016deepcoral,wang2021tent}.
+Our TTA diagnostic baselines, threshold sweep, and CORAL/mean-shift feature-alignment baselines show that unsupervised repair remains near chance under severe RX1$\rightarrow$RX2 collapse, supporting labeled calibration as the more reliable option under our protocol~\cite{sun2016deepcoral,wang2021tent}.
 
 \subsection{Few-Shot and Prototype Classification}
 Prototypical classification represents each class by the mean embedding of a support set and assigns queries by nearest-prototype distance~\cite{snell2017prototypical}.
@@ -43,11 +43,11 @@ Metric-learning and center-loss objectives are widely used to improve class comp
 Few-shot and open-set RFFI studies often use episodic meta-learning or multiple enrollment captures per device~\cite{cekic2020robust_wireless_fingerprinting}.
 We do not claim a new prototype algorithm.
 Instead, we compare RCPA-T against K-shot logistic regression and classifier-head fine-tuning under a LoRa-specific protocol with one file per device per receiver, where $K$ denotes labeled windows and calibration/support/query blocks are explicitly disjoint.
-Same-protocol results (Table~\ref{tab:sota_baselines}) show that RCPA-T is competitive with linear probe while avoiding gradient-based target adaptation.
+Same-protocol results (Tables~\ref{tab:unlabeled_baselines} and~\ref{tab:kshot_baselines}) show that RCPA-T is competitive with linear probe while avoiding gradient-based target adaptation.
 
 \subsection{Positioning of This Work}
 Table~\ref{tab:related_compare} summarizes how RCPA differs from representative directions.
-Our related submitted work on OOB-guided RF-HSTU hybrid modeling~\cite{paper1_placeholder} studies architecture design and source-only same-receiver cross-day robustness; the present paper explains and mitigates the cross-receiver limitation reported there through diagnosis and target-receiver calibration on a frozen model.
+A related submitted OOB-guided RF-HSTU hybrid modeling manuscript~\cite{paper1_placeholder} studies architecture design and source-only same-receiver cross-day robustness; the present paper explains and mitigates the cross-receiver limitation reported there through diagnosis and target-receiver calibration on a frozen model.
 
 \begin{table}[t]
 \caption{Positioning against representative cross-receiver RFFI directions.}

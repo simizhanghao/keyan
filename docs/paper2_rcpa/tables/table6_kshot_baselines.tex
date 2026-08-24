@@ -1,0 +1,21 @@
+\begin{table*}[t]
+\caption{K-shot labeled calibration baselines under the same block-disjoint protocol (file-level accuracy, \%). Mean over three checkpoint seeds and three split repeats per direction.}
+\label{tab:kshot_baselines}
+\centering
+\small
+\begin{tabular}{llcccc}
+\toprule
+Method & Adapted params & $K$ & RX1$\rightarrow$RX2 & RX2$\rightarrow$RX1 & Pooled \\
+\midrule
+Linear probe & logistic & 1 & 35.6$\pm$10.0 & 31.0$\pm$10.2 & 33.3$\pm$10.4 \\
+Head FT (source init) & linear head & 1 & 33.3$\pm$10.2 & 27.3$\pm$10.0 & 30.3$\pm$10.6 \\
+RCPA-T & prototype & 1 & 36.1$\pm$11.9 & 30.1$\pm$9.4 & 33.1$\pm$11.2 \\
+Linear probe & logistic & 5 & 57.4$\pm$13.1 & 60.6$\pm$11.0 & 59.0$\pm$12.2 \\
+Head FT (source init) & linear head & 5 & 52.8$\pm$13.0 & 55.1$\pm$10.7 & 53.9$\pm$12.0 \\
+RCPA-T & prototype & 5 & 57.4$\pm$9.4 & 59.3$\pm$8.5 & 58.3$\pm$9.0 \\
+Linear probe & logistic & 10 & 69.4$\pm$13.2 & 62.0$\pm$6.9 & 65.7$\pm$11.2 \\
+Head FT (source init) & linear head & 10 & 65.7$\pm$13.0 & 62.0$\pm$6.9 & 63.9$\pm$10.6 \\
+RCPA-T & prototype & 10 & 67.6$\pm$10.0 & 71.3$\pm$9.1 & 69.4$\pm$9.7 \\
+\bottomrule
+\end{tabular}
+\end{table*}

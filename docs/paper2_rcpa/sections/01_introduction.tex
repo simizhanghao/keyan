@@ -8,10 +8,10 @@ Cross-receiver deployment is a critical practical challenge for LoRa RFFI.
 Transmitter fingerprints are not observed directly; they are filtered by the receiving front-end.
 When the gateway radio changes, receiver-specific spectral response, gain imbalance, and filtering can distort the observed impairment pattern even if the transmitter set and environment remain unchanged~\cite{elmaghbub2021lora_wild,ma2025receiver_independent_rffi}.
 As a result, models trained on one receiver often fail on another.
-Prior work on the public OSU LoRa corpus reports that strict source-only cross-receiver transfer can remain near chance despite strong same-receiver performance on related submitted hybrid models~\cite{paper1_placeholder,elmaghbub2021lora_wild,shen2021lora_jsac}.
+Prior work on the public OSU LoRa corpus reports that strict source-only cross-receiver transfer can remain near chance despite strong same-receiver performance on hybrid models from a related submitted manuscript~\cite{paper1_placeholder,elmaghbub2021lora_wild,shen2021lora_jsac}.
 
 Out-of-band (OOB) spectral leakage has long been recognized as a source of transmitter hardware evidence in LoRa RFFI~\cite{elmaghbub2020widescan,shen2021lora_jsac,hamdaoui2022deeplearning}.
-In our related submitted work, OOB evidence is fused with in-band representations through cross-attention on a fixed receiver~\cite{paper1_placeholder}.
+In a related submitted manuscript, OOB evidence is fused with in-band representations through cross-attention on a fixed receiver~\cite{paper1_placeholder}.
 Our diagnosis, however, reveals a dual role: under a fixed receiver, OOB features can carry device-discriminative information, whereas under cross-receiver shift the OOB path becomes \emph{more receiver-entangled} than the main in-band path.
 This receiver-induced OOB feature entanglement helps explain why source-only transfer remains poor even when a strong same-receiver backbone is available.
 
@@ -20,7 +20,7 @@ We show that a source-trained classifier and a source-only prototype are not tra
 Unsupervised target adaptation baselines---including entropy minimization and pseudo-label prototype updates on an unlabeled calibration pool---remain insufficient under severe cross-receiver collapse, even after confidence-threshold tuning.
 
 This paper proposes a diagnosis-first framework and Receiver-Calibrated Prototype Adaptation (RCPA).
-We use a frozen OOB-guided RF-HSTU hybrid model from our related submitted work only as a feature extractor~\cite{paper1_placeholder}; \textbf{we do not claim a new backbone architecture or a published prior method}.
+We use a frozen OOB-guided RF-HSTU hybrid model from a related submitted manuscript only as a feature extractor~\cite{paper1_placeholder}; \textbf{we do not claim a new backbone architecture or a published prior method}.
 Our focus is cross-receiver failure analysis and post-hoc target-receiver calibration.
 
 \subsection{Contributions}

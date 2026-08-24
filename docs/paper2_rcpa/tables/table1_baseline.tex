@@ -1,13 +1,13 @@
 \begin{table}[t]
-\caption{Cross-receiver source-only baselines (file-level accuracy, \%). TTA values from quick RX1$\rightarrow$RX2 run; full-direction RCPA aggregates in Table~\ref{tab:rcpa}.}
+\caption{Cross-receiver source-only baselines (file-level accuracy, \%). Mean over three checkpoint seeds and three split repeats per direction.}
 \label{tab:baseline}
 \centering
-\begin{tabular}{lcccc}
+\begin{tabular}{lcc}
 \toprule
-Direction & Source cls. & Source proto. & Entropy TTA & Pseudo-proto TTA \\
+Direction & Source classifier & Source prototype (RCPA-S) \\
 \midrule
-RX1$\rightarrow$RX2 & 19.4$\pm$3.4 & 15.3$\pm$7.3 & 20.8 & 8.3 \\
-RX2$\rightarrow$RX1 & 20.8$\pm$8.8 & 13.0$\pm$3.1 & --- & --- \\
+RX1$\rightarrow$RX2 & 19.4$\pm$3.4 & 15.3$\pm$7.3 \\
+RX2$\rightarrow$RX1 & 20.8$\pm$8.8 & 13.0$\pm$3.1 \\
 \bottomrule
 \end{tabular}
 \end{table}

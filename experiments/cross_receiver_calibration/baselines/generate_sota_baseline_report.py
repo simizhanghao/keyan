@@ -222,21 +222,67 @@ def main() -> None:
             w.writeheader()
             w.writerows(sub)
 
-    # LaTeX table (K=5 primary column + K=1,K=10 in note)
+    # LaTeX tables (split: unlabeled vs K-shot)
+    unlabeled_tex = r"""\begin{table}[t]
+\caption{Unlabeled calibration baselines under the same block-disjoint protocol (file-level accuracy, \%). Mean over three checkpoint seeds and three split repeats per direction.}
+\label{tab:unlabeled_baselines}
+\centering
+\small
+\begin{tabular}{lccc}
+\toprule
+Method & RX1$\rightarrow$RX2 & RX2$\rightarrow$RX1 & Pooled \\
+\midrule
+"""
+    unlabeled_rows = [
+        ("Source classifier", src_cls("rx1_to_rx2"), src_cls("rx2_to_rx1"), pooled_mean(rcpa_rows, "source_classifier")),
+        ("Feat.\\ mean-shift + src.\\ cls.", base_agg("feat_mean_shift_source_classifier", "rx1_to_rx2"), base_agg("feat_mean_shift_source_classifier", "rx2_to_rx1"), pooled_mean(base_rows, "feat_mean_shift_source_classifier")),
+        ("Feat.\\ CORAL + src.\\ cls.", base_agg("feat_coral_source_classifier", "rx1_to_rx2"), base_agg("feat_coral_source_classifier", "rx2_to_rx1"), pooled_mean(base_rows, "feat_coral_source_classifier")),
+    ]
+    for name, r1, r2, pool in unlabeled_rows:
+        unlabeled_tex += f"{name} & {r1} & {r2} & {pool} \\\\\n"
+    unlabeled_tex += r"""\bottomrule
+\end{tabular}
+\end{table}
+"""
+
+    kshot_tex = r"""\begin{table*}[t]
+\caption{K-shot labeled calibration baselines under the same block-disjoint protocol (file-level accuracy, \%). Mean over three checkpoint seeds and three split repeats per direction.}
+\label{tab:kshot_baselines}
+\centering
+\small
+\begin{tabular}{llcccc}
+\toprule
+Method & Adapted params & $K$ & RX1$\rightarrow$RX2 & RX2$\rightarrow$RX1 & Pooled \\
+\midrule
+"""
+    for k in ks:
+        kshot_tex += f"Linear probe & logistic & {k} & {base_agg('linear_probe_kshot', 'rx1_to_rx2', k)} & {base_agg('linear_probe_kshot', 'rx2_to_rx1', k)} & {base_pooled('linear_probe_kshot', k)} \\\\\n"
+        kshot_tex += f"Head FT (source init) & linear head & {k} & {base_agg('head_finetune_kshot', 'rx1_to_rx2', k, init='source')} & {base_agg('head_finetune_kshot', 'rx2_to_rx1', k, init='source')} & {base_pooled('head_finetune_kshot', k, init='source')} \\\\\n"
+        kshot_tex += f"RCPA-T & prototype & {k} & {rcpa_agg('rx1_to_rx2', k)} & {rcpa_agg('rx2_to_rx1', k)} & {rcpa_pooled(k)} \\\\\n"
+    kshot_tex += r"""\bottomrule
+\end{tabular}
+\end{table*}
+"""
+
+    tex_dir = Path(args.out_tex).parent
+    out_unlabeled = tex_dir / "table5_unlabeled_baselines.tex"
+    out_kshot = tex_dir / "table6_kshot_baselines.tex"
+    out_unlabeled.write_text(unlabeled_tex, encoding="utf-8")
+    out_kshot.write_text(kshot_tex, encoding="utf-8")
+
+    # Legacy combined table (deprecated; TTA moved to appendix)
     tex = r"""\begin{table*}[t]
-\caption{Same-protocol baseline comparison (file-level accuracy, \%). Mean over 3 seeds$\times$3 splits per direction unless noted. RCPA/TTA rows from frozen full-mode or quick runs; new baselines from \texttt{same\_protocol\_baselines}.}
+\caption{Same-protocol baseline comparison (file-level accuracy, \%). Mean over three checkpoint seeds and three split repeats per direction. See Tables~\ref{tab:unlabeled_baselines} and~\ref{tab:kshot_baselines} for the split presentation.}
 \label{tab:sota_baselines}
 \centering
 \small
 \begin{tabular}{llccccc}
 \toprule
-Method & Calib. mode & Trainable & $K$ & RX1$\rightarrow$RX2 & RX2$\rightarrow$RX1 & Pooled \\
+Method & Calib. mode & Adapted params & $K$ & RX1$\rightarrow$RX2 & RX2$\rightarrow$RX1 & Pooled \\
 \midrule
 """
     rows_tex = [
         ("Source classifier", "source-only", "none", "---", src_cls("rx1_to_rx2"), src_cls("rx2_to_rx1"), pooled_mean(rcpa_rows, "source_classifier")),
-        ("Entropy-min TTA", "unlabeled", "BN/stats", "---", "20.8$^{\\dagger}$", "---", "---"),
-        ("Pseudo-proto TTA", "unlabeled", "prototype", "---", "8.3$^{\\dagger}$", "---", "---"),
         ("Feat mean-shift + src cls", "unlabeled", "none", "0", base_agg("feat_mean_shift_source_classifier", "rx1_to_rx2"), base_agg("feat_mean_shift_source_classifier", "rx2_to_rx1"), pooled_mean(base_rows, "feat_mean_shift_source_classifier")),
         ("Feat CORAL + src cls", "unlabeled", "none", "0", base_agg("feat_coral_source_classifier", "rx1_to_rx2"), base_agg("feat_coral_source_classifier", "rx2_to_rx1"), pooled_mean(base_rows, "feat_coral_source_classifier")),
     ]
@@ -274,8 +320,6 @@ Method & Calib. mode & Trainable & $K$ & RX1$\rightarrow$RX2 & RX2$\rightarrow$R
 
     tex += r"""\bottomrule
 \end{tabular}
-\\[2pt]
-{\footnotesize $^{\dagger}$Quick RX1$\rightarrow$RX2 run only (TTA negative baseline).}
 \end{table*}
 """
 
@@ -283,7 +327,9 @@ Method & Calib. mode & Trainable & $K$ & RX1$\rightarrow$RX2 & RX2$\rightarrow$R
     out_tex.parent.mkdir(parents=True, exist_ok=True)
     out_tex.write_text(tex, encoding="utf-8")
     print(f"Wrote {out_report}")
-    print(f"Wrote {out_tex}")
+    print(f"Wrote {out_unlabeled}")
+    print(f"Wrote {out_kshot}")
+    print(f"Wrote {out_tex} (legacy combined)")
     print(f"Merged {len(base_rows)} baseline rows")
 
 

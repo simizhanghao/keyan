@@ -1,6 +1,9 @@
+% Paper 2 manuscript v0 — compile: pdflatex + bibtex (see README.md)
 \documentclass[journal]{IEEEtran}
+
 \usepackage{amsmath,amssymb,amsfonts}
 \usepackage{graphicx}
+\usepackage{placeins}
 \usepackage{booktabs}
 \usepackage{cite}
 \usepackage{url}
@@ -10,16 +13,23 @@
 
 \title{Diagnosing and Mitigating Receiver-Induced OOB Feature Entanglement in LoRa Radio-Frequency Fingerprinting}
 
-\author{Author Names TBD%
-\thanks{Affiliations TBD.}}
+\author{Chengcheng Han and Ziyang Wang%
+\thanks{Chengcheng Han and Ziyang Wang are with the School of Electronic and Information Engineering, Beihang University, Beijing, China (e-mail: HAN106124@163.com; wangziyang1@126.com).}
+\thanks{Corresponding author: Ziyang Wang.}
+\thanks{This work was supported by the National Natural Science Foundation of China under Grant 62301018.}}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-% TODO: 150--250 words, rewrite from scratch (do NOT copy Paper 1 abstract)
-Low-power LoRa networks rely on lightweight physical-layer authentication, but cross-receiver deployment breaks source-trained radio frequency fingerprint identification (RFFI) models.
-% Placeholder — fill after Paper 1 decision
+Low-power LoRa networks enable large-scale IoT connectivity, but gateway-side radio frequency fingerprint identification (RFFI) often degrades when the receiving front-end changes.
+Transmitter hardware impairments are observed through receiver-specific spectral response, gain, and filtering, so models trained on one receiver may fail on another even when the transmitter population is unchanged.
+Out-of-band (OOB) evidence can strengthen same-receiver LoRa authentication when fused with in-band representations, yet our diagnosis shows that OOB features become receiver-entangled under cross-receiver shift.
+We analyze this failure at physical, representation, and decision layers through OOB spectral profiling, linear receiver probes, embedding-distance ratios, and prediction-collapse analysis on a frozen OOB-guided hybrid backbone.
+We then introduce Receiver-Calibrated Prototype Adaptation (RCPA), a lightweight post-hoc method that rebuilds target-receiver class prototypes from $K$ labeled calibration windows per device under a block-disjoint protocol.
+Across RX1$\leftrightarrow$RX2 transfer, three checkpoint seeds, and three split repeats, RCPA-T improves pooled file-level accuracy from approximately 20\% (source classifier) to 58.3\% at $K{=}5$, 69.4\% at $K{=}10$, and 75.0\% at $K{=}20$, while unsupervised test-time adaptation and source-only prototypes remain near chance.
+OOB representation equalization suppresses receiver probe accuracy but does not replace labeled calibration.
+These results support a diagnosis-first cross-receiver RFFI framework rather than a new backbone architecture.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -34,6 +44,19 @@ LoRa, radio frequency fingerprint identification, cross-receiver transfer, out-o
 \input{sections/06_results}
 \input{sections/07_discussion}
 \input{sections/08_conclusion}
+\input{sections/09_appendix}
+
+\begin{IEEEbiography}{Chengcheng Han}
+received the B.S. degree in engineering and is currently pursuing the M.S. degree in engineering at Beihang University, Beijing, China.
+His research interests focus on high-temperature electromagnetic environment and electromagnetic compatibility.
+\end{IEEEbiography}
+
+\begin{IEEEbiography}{Ziyang Wang}
+is an Associate Professor with the School of Electronic and Information Engineering, Beihang University.
+He received the Ph.D. degree in electromagnetic wave and microwave technology in 2018.
+He was a Postdoctoral Fellow with Tsinghua University.
+His research interests include intelligent metasurfaces, broadband reconfigurable element design, phase-controlled electromagnetic surfaces and spatial beamforming design, global optimization algorithms, and 5G MIMO array antenna decoupling.
+\end{IEEEbiography}
 
 \bibliographystyle{IEEEtran}
 \bibliography{refs}

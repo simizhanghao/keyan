@@ -7,7 +7,7 @@ Let $\mathcal{D}_s=\{(x_i,y_i)\}$ denote labeled captures collected at source re
 At deployment, traffic is observed at target receiver $r_t\neq r_s$.
 The model must classify each target-receiver device file correctly after minimal target-side calibration.
 
-We use a frozen hybrid RF feature extractor $f(\cdot)$ trained on $r_s$ from our related submitted OOB-guided RF-HSTU work~\cite{paper1_placeholder}.
+We use a frozen hybrid RF feature extractor $f(\cdot)$ trained on $r_s$ from a related submitted OOB-guided RF-HSTU manuscript~\cite{paper1_placeholder}.
 For each window $w$, path-specific embeddings are fused into $z(w)\in\mathbb{R}^d$.
 All diagnosis below is performed on extracted embeddings and OOB spectra; we do not retrain the backbone.
 Prior cross-receiver studies show that receiver front-end impairments interfere with transmitter fingerprint extraction~\cite{shen2024receiveragnostic,ma2025receiver_independent_rffi,alshawabka2020exposing_fingerprint}, but they do not analyze OOB-path entanglement under a frozen hybrid backbone.
@@ -50,9 +50,9 @@ Cross-receiver failure arises from receiver-induced OOB entanglement and non-tra
 The frozen hybrid backbone retains partial same-device structure, making lightweight target-receiver prototype calibration a plausible repair mechanism rather than full backbone retraining or multi-receiver adversarial retraining~\cite{shen2024receiveragnostic,ma2025cross_receiver_disentangle}.
 Figure~\ref{fig:diagnosis} summarizes the four diagnosis panels used throughout the paper.
 
-\begin{figure}[t]
+\begin{figure*}[!t]
   \centering
-  \includegraphics[width=\linewidth]{fig1_diagnosis_summary}
-  \caption{Cross-receiver failure diagnosis summary: (a) receiver probe accuracy by embedding path; (b) OOB RX2/RX1 energy ratio; (c) same-device cross-RX vs.\ different-device distance ratio; (d) top-1 prediction mass under RX1$\rightarrow$RX2 collapse.}
+  \includegraphics[width=\textwidth]{fig1_diagnosis_summary}
+  \caption{Cross-receiver failure diagnosis. (a) OOB embeddings encode stronger receiver information than main or fused embeddings. (b) RX2/RX1 OOB energy ratio indicates receiver-dependent spectral bias. (c) CNN-IQ embeddings show receiver shift larger than device separation, whereas the hybrid fused embedding retains partial same-device geometry. (d) Source-only predictions collapse under RX1$\rightarrow$RX2 transfer.}
   \label{fig:diagnosis}
-\end{figure}
+\end{figure*}

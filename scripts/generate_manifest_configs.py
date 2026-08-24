@@ -16,6 +16,24 @@ from manifest_utils import (
     write_manifest,
 )
 
+# Val: high device ids from ONE source domain only; train keeps all 24 classes.
+VAL_DEVICE_MIN = 19
+
+
+def split_for_train_val(
+    device: int,
+    domain_split: str,
+    domain_id: int,
+    val_source_domain: int,
+) -> str:
+    """Within LOCO source domains, hold out devices>=19 from one source domain for val."""
+    if domain_split == "test":
+        return "test"
+    if domain_split == "train" and domain_id == val_source_domain and device >= VAL_DEVICE_MIN:
+        return "val"
+    return "train"
+
+
 CONFIG_SF = {1: 7, 2: 8, 3: 11, 4: 12}
 SETUP = "diff_configurations"
 REL_PREFIX = "Diff_Configurations_Setup"
@@ -121,9 +139,15 @@ def build_leave_one_rows(root: Path, data_root: Path) -> tuple[list[dict[str, st
     rows: list[dict[str, str]] = []
     warnings: list[str] = []
     for held_out in (1, 2, 3, 4):
+        source_configs = [c for c in (1, 2, 3, 4) if c != held_out]
+        val_source = max(source_configs)
         for config in (1, 2, 3, 4):
-            split = "test" if config == held_out else "train"
+            domain_split = "test" if config == held_out else "train"
             for raw_device in range(1, 26):
+                if raw_device in EXCLUDED_RAW_DEVICES:
+                    continue
+                device = experiment_device(raw_device)
+                split = split_for_train_val(device, domain_split, config, val_source)
                 row, warning = make_row(
                     root,
                     data_root,

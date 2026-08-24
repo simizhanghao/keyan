@@ -8,19 +8,19 @@ Each device contributes one capture file per receiver; therefore cross-receiver 
 
 \subsection{Checkpoints and transfer directions}
 We evaluate cross-receiver transfer in both directions: RX1$\rightarrow$RX2 and RX2$\rightarrow$RX1.
-Feature extractors are Phase5-clean hybrid checkpoints trained on the source receiver with three random seeds.
+Feature extractors are source-receiver training checkpoints from the hybrid backbone, trained on the source receiver with three random seeds.
 Embeddings are extracted once per direction/seed and reused across split repeats.
 
 \subsection{Evaluation protocol}
 Each target file is split into 256 deterministic windows grouped into four block-disjoint sets as described in Section~\ref{sec:rcpa}.
 Three split repeats rotate block roles.
-Full-mode RCPA experiments aggregate $3$ seeds $\times$ $3$ split repeats per direction ($n=9$ runs per direction per method/$K$).
+Main RCPA experiments aggregate $3$ seeds $\times$ $3$ split repeats per direction ($n=9$ runs per direction per method/$K$).
 Primary metrics are file-level accuracy and macro-F1; we report mean$\,\pm\,$std unless noted.
 
 \subsection{Methods evaluated}
 \textbf{Main:} source classifier, RCPA-S, RCPA-T ($K\in\{1,3,5,10,20\}$), RCPA-B ablation at selected $K$.
 
-\textbf{Supplementary:} entropy-min TTA, pseudo-proto TTA (quick run plus appendix threshold sweep), OOB representation equalization (CORAL on OOB embeddings), and alpha-sensitivity for RCPA-B.
+\textbf{Supplementary:} entropy-min TTA and pseudo-proto TTA (controlled diagnostic run plus appendix threshold sweep), OOB representation equalization (CORAL on OOB embeddings), and alpha-sensitivity for RCPA-B.
 
 \subsection{Implementation details}
 RCPA uses cosine-distance prototype classification with file-level mean embedding voting over query blocks C+D.

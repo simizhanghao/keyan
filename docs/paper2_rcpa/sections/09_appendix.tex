@@ -1,0 +1,26 @@
+\appendix
+\section{Diagnostic source-free adaptation baselines}
+\label{app:tta_diagnostic}
+
+Source-free test-time adaptation is not the focus of this paper, but we report controlled diagnostic runs to document failure under severe cross-receiver collapse.
+Entropy-min TTA and pseudo-prototype adaptation were evaluated on unlabeled calibration Block~A in a controlled RX1$\rightarrow$RX2 diagnostic run (one checkpoint seed, one split repeat).
+
+\begin{table}[!t]
+\caption{Diagnostic source-free adaptation baselines (RX1$\rightarrow$RX2, file-level accuracy, \%). Controlled diagnostic run only; not aggregated over seeds or directions.}
+\label{tab:tta_diagnostic}
+\centering
+\small
+\begin{tabular}{lc}
+\toprule
+Method & RX1$\rightarrow$RX2 \\
+\midrule
+Source classifier (matched run) & 16.7 \\
+Entropy-min TTA & 20.8 \\
+Pseudo-proto TTA & 8.3 \\
+RCPA-T ($K{=}5$, matched run) & 45.8 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+A pseudo-prototype threshold sweep with confidence thresholds $\{0.5,0.7,0.8,0.9,0.95\}$ selects between 1 and 231 pseudo-labeled windows and updates at most 10 of 24 classes.
+The best threshold ($0.5$) achieves 16.7\% file-level accuracy, still far below RCPA-T $K{=}5$ (45.8\% on the matched diagnostic run, 58.3\% pooled in the main evaluation).

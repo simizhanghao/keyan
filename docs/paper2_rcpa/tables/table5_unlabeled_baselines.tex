@@ -1,0 +1,15 @@
+\begin{table}[t]
+\caption{Unlabeled calibration baselines under the same block-disjoint protocol (file-level accuracy, \%). Mean over three checkpoint seeds and three split repeats per direction.}
+\label{tab:unlabeled_baselines}
+\centering
+\small
+\begin{tabular}{lccc}
+\toprule
+Method & RX1$\rightarrow$RX2 & RX2$\rightarrow$RX1 & Pooled \\
+\midrule
+Source classifier & 19.4$\pm$3.4 & 20.8$\pm$8.8 & 20.1$\pm$6.7 \\
+Feat.\ mean-shift + src.\ cls. & 21.8$\pm$4.3 & 17.6$\pm$10.2 & 19.7$\pm$8.1 \\
+Feat.\ CORAL + src.\ cls. & 19.4$\pm$5.2 & 30.6$\pm$11.3 & 25.0$\pm$10.4 \\
+\bottomrule
+\end{tabular}
+\end{table}

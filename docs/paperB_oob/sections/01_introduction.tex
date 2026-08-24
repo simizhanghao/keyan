@@ -6,7 +6,7 @@ The central deployment challenge is that a transmitter fingerprint is never obse
 
 OOB evidence exposes this ambiguity. Spectral leakage can contain transmitter-specific information associated with power-amplifier nonlinearity and filtering~\cite{elmaghbub2020widescan,zhou2021robust_rffi_iotj}, yet OOB bins are also directly exposed to the receiver response. Thus, the same feature can be both useful and deployment-sensitive. We formulate the resulting question as follows: when an OOB-aware RFFI model succeeds, does it rely on transmitter evidence that remains stable across receivers, or on a receiver-sensitive spectral dependency that happens to be predictive in the source domain?
 
-This paper studies that question without introducing another classifier architecture. We combine a signal-level audit, frozen-checkpoint interventions, matched architecture controls, strong receiver-independent baselines, and a pre-registered blind confirmation on six official receivers. The central claim is deliberately bounded: OOB evidence contains transmitter-discriminative information, but OOB-aware models can develop receiver-sensitive and frequency-structured dependencies that persist on previously unseen receivers. We do not claim that all OOB information is harmful, that OOB variation is the causal composition of receiver shift, or that the task is intrinsically impossible.
+This paper studies that question without introducing another classifier architecture. We combine a signal-level audit, frozen-checkpoint interventions, matched architecture controls, strong receiver-independent baselines, and a protocol-frozen confirmatory blind evaluation on six official receivers. The central claim is deliberately bounded: OOB evidence contains transmitter-discriminative information, but OOB-aware models can develop receiver-sensitive and frequency-structured dependencies that persist on previously unseen receivers. We do not claim that all OOB information is harmful, that OOB variation is the causal composition of receiver shift, or that the task is intrinsically impossible.
 
 \begin{figure}[t]
 \centering\includegraphics[width=\columnwidth]{fig1_concept.pdf}
@@ -17,7 +17,7 @@ This paper studies that question without introducing another classifier architec
 Our contributions are threefold:
 \begin{enumerate}
 \item We separate OOB utility from OOB sensitivity using signal-level grouping, device and receiver probes, and interventions that alter only the OOB branch while preserving the clean main I/Q input.
-\item We show that OOB dependence is architecture-dependent and frequency-structured. A capacity-matched late-fusion CNN and an RF-HSTU cross-attentive backbone respond differently to a strict in-band control, while both exhibit a reproducible left/right asymmetry.
+\item We show that OOB dependence is architecture-dependent and frequency-structured. A capacity-matched late-fusion CNN and an HSTU-inspired cross-attentive RF token encoder respond differently to a strict in-band control, while both exhibit a reproducible left/right asymmetry.
 \item We freeze the checkpoints, intervention constants, receiver split, and receiver-level decision rule before opening six official blind receivers. The blind results reproduce the core disruption and left-greater-than-right pattern on all six receivers.
 \end{enumerate}
 

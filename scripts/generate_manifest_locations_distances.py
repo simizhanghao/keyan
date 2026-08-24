@@ -18,6 +18,23 @@ from manifest_utils import (
 
 LOCATION_SCENE = {1: "room", 2: "office", 3: "outdoor"}
 DISTANCE_METERS = {"5m": 5, "10m": 10, "15m": 15, "20m": 20}
+VAL_DEVICE_MIN = 19
+
+
+def split_for_train_val(
+    device: int,
+    domain_split: str,
+    domain_id: int | str,
+    val_source_domain: int | str,
+) -> str:
+    """Hold out devices>=19 from one source domain for val; train keeps all 24 classes."""
+    if domain_split == "test":
+        return "test"
+    if domain_split == "train" and str(domain_id) == str(val_source_domain) and device >= VAL_DEVICE_MIN:
+        return "val"
+    return "train"
+
+
 FIELDNAMES = [
     "path",
     "relative_path",
@@ -158,9 +175,15 @@ def build_location_manifests(
                 all_rows.append(row)
 
     for held_out in (1, 2, 3):
+        source_locs = [loc for loc in (1, 2, 3) if loc != held_out]
+        val_source = max(source_locs)
         for location in (1, 2, 3):
-            split = "test" if location == held_out else "train"
+            domain_split = "test" if location == held_out else "train"
             for raw_device in range(1, 26):
+                if raw_device in EXCLUDED_RAW_DEVICES:
+                    continue
+                device = experiment_device(raw_device)
+                split = split_for_train_val(device, domain_split, location, val_source)
                 row, warning = location_row(
                     root,
                     data_root,
@@ -199,9 +222,15 @@ def build_distance_manifests(
                 all_rows.append(row)
 
     for held_out in distances:
+        source_dists = [d for d in distances if d != held_out]
+        val_source = source_dists[-1]
         for distance in distances:
-            split = "test" if distance == held_out else "train"
+            domain_split = "test" if distance == held_out else "train"
             for raw_device in range(1, 26):
+                if raw_device in EXCLUDED_RAW_DEVICES:
+                    continue
+                device = experiment_device(raw_device)
+                split = split_for_train_val(device, domain_split, distance, val_source)
                 row, warning = distance_row(
                     root,
                     data_root,

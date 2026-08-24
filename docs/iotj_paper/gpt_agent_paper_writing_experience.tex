@@ -1,0 +1,484 @@
+% !TEX program = xelatex
+% GPT + Agent 协作写 IoTJ 论文经验总结
+% 编译: xelatex gpt_agent_paper_writing_experience.tex (两遍)
+\documentclass[11pt,a4paper]{ctexart}
+
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric}
+
+\hypersetup{colorlinks=true,linkcolor=blue!60!black,urlcolor=blue!60!black}
+\setlist{nosep,leftmargin=1.5em}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.45em}
+
+\newcommand{\repo}{\texttt{hanCChan/rf-hstu-lora}}
+\newcommand{\paperdir}{\texttt{docs/iotj\_paper/}}
+\newcommand{\agent}{\textbf{Agent}}
+\newcommand{\gpt}{\textbf{GPT}}
+\newcommand{\warn}[1]{\textcolor{orange!80!black}{\textbf{注意：}#1}}
+\newcommand{\good}[1]{\textcolor{green!50!black}{\textbf{有效：}#1}}
+\newcommand{\bad}[1]{\textcolor{red!70!black}{\textbf{无效/高风险：}#1}}
+
+\title{\Large GPT + Agent 协作撰写 IEEE IoTJ 论文\\[0.3em]
+\large 从实验汇报到投稿候选稿的完整经验总结}
+\author{Chengcheng Han \quad（整理自 \repo{} 项目实践）}
+\date{2026年6月}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+本文档系统总结了在 LoRa 射频指纹识别（RFFI）项目 \repo{} 中，使用 \gpt{}（对话规划与审稿意见）与 Cursor \agent{}（代码/TeX 执行）协作撰写 \emph{IEEE Internet of Things Journal}（IoTJ）英文论文的完整历程。
+内容覆盖：实验证据链冻结、英文稿 scaffold 搭建、写作风格与 claim 边界、IEEE 双栏排版、TikZ/matplotlib 画图迭代、参考文献扩展、自动化 QA 脚本、Overleaf 打包，以及最终\textbf{放弃 v2 新增图、回到 v1 安全投稿稿}的关键裁决。
+目标读者：后续要用 AI 辅助写论文的同学，以及需要给 Agent 写明确指令的导师/作者。
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+%======================================================================
+\section{项目背景与最终产出}
+%======================================================================
+
+\subsection{论文主题}
+\begin{itemize}
+  \item \textbf{题目方向}：面向 IoT LoRa 设备认证的 OOB 引导混合射频序列建模（RF-HSTU + cross-attention + chirp embedding）。
+  \item \textbf{冻结主模型}：\texttt{F\_cross\_attn\_chirp\_plain}（论文中列名 \texttt{Ours}）。
+  \item \textbf{核心数字（不可随意改动）}：cross-day 主结果 $75.0\pm5.3\%$ vs CNN-IQ $54.2\pm14.2\%$；bootstrap CI $[+9.2,+32.5]$ pp 等，均来自 \texttt{outputs/paper\_ready\_v3/}。
+\end{itemize}
+
+\subsection{最终投稿候选（v1）}
+\begin{table}[htbp]
+  \centering
+  \caption{v1 投稿候选状态（tag: \texttt{iotj-submission-candidate-v1}，commit \texttt{a792dfb}）}
+  \begin{tabular}{@{}ll@{}}
+    \toprule
+    \textbf{项目} & \textbf{状态} \\
+    \midrule
+    工作分支 & \texttt{iotj-submit-final-v1} \\
+    页数 & 11 页（IEEEtran 双栏） \\
+    图表 & 2 图 + 6 表 \\
+    参考文献 & 26 篇 cite，\texttt{refs.bib} 31 条 \\
+    Fig.1 & TikZ 架构图（\texttt{fig:architecture}） \\
+    Fig.2 & 结果汇总 PDF（\texttt{fig:results\_summary}） \\
+    Overleaf 包 & \texttt{iotj\_overleaf\_pack\_v1\_final.zip} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{被放弃的 v2 实验分支}
+\texttt{paper-visual-polish-v2} 分支尝试新增应用场景图、composite 架构图、表格 best/second 高亮等。
+\textbf{裁决结论}：图多但质量不稳定（竖向窄流程、箭头穿字、模块层级像草稿），\emph{烂图比图少更危险}，故保留分支作记录但不再推进。
+
+%======================================================================
+\section{整体工作流：七个阶段}
+%======================================================================
+
+\begin{figure}[htbp]
+  \centering
+  \begin{tikzpicture}[
+    node distance=0.55cm and 0.3cm,
+    stage/.style={draw, rounded corners, minimum width=3.6cm, minimum height=0.75cm,
+                  align=center, font=\small},
+    arr/.style={-{Stealth[length=2mm]}, thick}
+  ]
+    \node[stage, fill=blue!8] (s1) {① 实验证据链\\冻结 \& manifest 审计};
+    \node[stage, fill=blue!8, below=of s1] (s2) {② 中文方向稿\\（给老师定方向）};
+    \node[stage, fill=blue!8, below=of s2] (s3) {③ 英文 scaffold\\分 section 撰写};
+    \node[stage, fill=green!10, below=of s3] (s4) {④ 排版 \& 表格\\标准化};
+    \node[stage, fill=green!10, below=of s4] (s5) {⑤ 画图迭代\\TikZ / matplotlib};
+    \node[stage, fill=orange!12, below=of s5] (s6) {⑥ 参考文献\\扩展 \& claim 审计};
+    \node[stage, fill=orange!12, below=of s6] (s7) {⑦ QA 冻结\\tag + Overleaf 包};
+    \foreach \a/\b in {s1/s2,s2/s3,s3/s4,s4/s5,s5/s6,s6/s7}
+      \draw[arr] (\a) -- (\b);
+  \end{tikzpicture}
+  \caption{GPT + Agent 写 IoTJ 论文的推荐阶段顺序。阶段 ① 必须在写作前完成；阶段 ⑤ 是最容易过度投入的阶段。}
+\end{figure}
+
+\subsection{阶段 ①：实验证据链先于写作}
+\good{先冻结数字，再写句子。}
+早期中文 PDF 初稿曾误写 ``Day1$\to$Day2 74.6\%''，实际协议是 Day1--4 训练 $\to$ Day5 测试。
+Agent 盲目续写会放大此类错误。
+
+\textbf{正确做法：}
+\begin{enumerate}
+  \item Manifest preflight：train 必须覆盖 label $0..23$；val 仅来自 source domain；test 仅 target。
+  \item 区分 \textbf{正式结果}（80 epoch）与 \textbf{快速趋势}（30 epoch），后者不进主表。
+  \item 跨接收机：strict source-only split 作主结果；target-val selection 标为 diagnostic/oracle。
+  \item 所有数字只从 \texttt{PAPER\_RESULTS\_SUMMARY.md} 和 \texttt{final\_tables/*.csv} 读取。
+\end{enumerate}
+
+\subsection{阶段 ②：中文稿的定位}
+中文稿\textbf{不是}投稿稿，而是：
+\begin{quote}
+  给老师/合作者确认：问题定义、方法创新点、实验协议、claim 边界、局限性表述是否可接受。
+\end{quote}
+IoTJ 官方要求英文摘要 150--250 词、IEEE 双栏模板；中文稿的价值在于\textbf{逻辑骨架}，不在于排版。
+
+\subsection{阶段 ③：英文 scaffold 与分文件结构}
+Agent 在 \paperdir{} 下建立了可维护结构：
+\begin{verbatim}
+main.tex
+refs.bib
+reference_candidates.csv    # 引用候选库（含 READ/TO_READ/EXCLUDE 状态）
+sections/01_introduction.tex ... 08_conclusion.tex
+tables/table1_cross_day.tex ... table5_edge_deployment.tex
+figures/fig1_architecture_tikz.tex
+figures/fig_results_summary.pdf
+validate_*.py  audit_*.py
+\end{verbatim}
+
+\good{一个 section 一个文件}，Agent 改局部时不至于整篇冲突；
+\good{表格独立 \texttt{\textbackslash input}}，数字与 narrative 解耦。
+
+\subsection{阶段 ④--⑦}
+后文第~\ref{sec:layout}--\ref{sec:qa} 节分别展开排版、画图、参考文献与 QA。
+
+%======================================================================
+\section{GPT 与 Agent 的分工}
+%======================================================================
+
+\begin{longtable}{@{}p{0.22\linewidth}p{0.35\linewidth}p{0.35\linewidth}@{}}
+  \toprule
+  \textbf{角色} & \textbf{适合做什么} & \textbf{不适合做什么} \\
+  \midrule
+  \endhead
+  \gpt{}（对话） &
+  论文逻辑骨架；Related Work 分类；claim 边界话术；给老师/审稿人的解释；
+  何时该停（如 v2 图质量裁决） &
+  直接改 TeX 源码；跑训练；验证 cite key 是否存在 \\
+  \agent{}（Cursor） &
+  批量改 TeX；写 audit 脚本；从 CSV 填表；TikZ 初稿；打 zip 包；git 分支管理 &
+  无约束地``再加一张图''；自行发明实验数字；替作者决定投稿策略 \\
+  \bottomrule
+  \caption{GPT 与 Agent 的能力边界}
+\end{longtable}
+
+\textbf{关键原则}：\gpt{} 负责\textbf{裁决与规格}，Agent 负责\textbf{执行与验证}。
+没有规格的执行 = 反复返工（尤其是画图）。
+
+%======================================================================
+\section{写作风格与 claim 边界}
+\label{sec:writing}
+%======================================================================
+
+\subsection{从``实验汇报''到``IoTJ 论文''}
+用户明确指令：\emph{不要在小修旧稿上继续，要按 IoTJ 逻辑重写}：
+\begin{quote}
+  问题定义 $\to$ 方法创新 $\to$ 实验协议 $\to$ 主结果 $\to$ 消融 $\to$ 部署讨论 $\to$ 局限性
+\end{quote}
+
+早期稿的问题：
+\begin{itemize}
+  \item Related Work 太空，像占位符；
+  \item 30 ep / 80 ep 结论混用；
+  \item 跨接收机写得太满（实际只是 stress test，不是 receiver-invariant）；
+  \item 方法缺公式，模块名直接堆进正文（如 \texttt{F\_cross\_attn\_...} 出现在表格列名）。
+\end{itemize}
+
+\subsection{Agent 容易犯的写作错误}
+\begin{enumerate}
+  \item \bad{过度 claim}：``receiver-independent''、``SOTA''、chirp 是``主要增益来源''（需消融支撑）。
+  \item \bad{内部路径泄露}：\texttt{outputs/paper\_ready\_v3/}、分支名 \texttt{paper-ready-v3} 写进 PDF 源码。
+  \item \bad{模型代号进表格}：列名 \texttt{F}、\texttt{M7} 等，审稿人看不懂。
+  \item \bad{模板腔}：``In this paper, we propose...'' 连续堆叠；每段开头同结构。
+\end{enumerate}
+
+\subsection{有效的风格约束（写给 Agent 的）}
+\begin{itemize}
+  \item 表格列名统一为 \texttt{Ours}；完整 log 名仅出现在 Model Variants 段落的 \texttt{\textbackslash texttt\{\}} 中一次。
+  \item 跨接收机：用 ``stress test''、``preliminary''、``limitation''，不用 ``robust transfer''。
+  \item Chirp embedding：正文强调``不 rescue naive concat''，不说``chirp 带来主要提升''（与消融数字一致）。
+  \item Limitation 段必须保留：协议边界、样本量、单数据集、接收机泛化未解决。
+  \item 摘要 150--250 词；Index Terms 与 IoTJ scope 对齐（IoT security, edge AI, LPWAN）。
+\end{itemize}
+
+\subsection{参考文献扩展策略}
+从 15 篇扩到 26 篇时：
+\begin{enumerate}
+  \item 先维护 \texttt{reference\_candidates.csv}，每条标注 \texttt{READ} / \texttt{ABSTRACT\_CHECKED} / \texttt{TO\_READ} / \texttt{EXCLUDE}。
+  \item \warn{未 READ 的条目禁止进入 \texttt{refs.bib} 和 \texttt{\textbackslash cite\{\}}。}
+  \item 优先类别：经典 RFF、CNN-RFF、domain shift、LoRa RFFI survey、DeepLoRa、channel-robust RFFI。
+  \item 扩引用主要改 Introduction / Related Work；不要为凑数加长段落。
+  \item 每扩 8--12 篇参考文献， bibliography 大约增加 0.3--0.6 页，需提前预算页数。
+\end{enumerate}
+
+%======================================================================
+\section{排版与 LaTeX 经验}
+\label{sec:layout}
+%======================================================================
+
+\subsection{模板与编译链}
+\begin{itemize}
+  \item 文档类：\texttt{IEEEtran} journal 模式，双栏。
+  \item 本地：\texttt{build.sh} = \texttt{validate} $\to$ \texttt{pdflatex} $\to$ \texttt{bibtex} $\to$ \texttt{pdflatex} $\times 2$。
+  \item Overleaf：打 zip 包上传，避免本地 TeX 版本差异。
+  \item 移除 \texttt{\textbackslash usepackage\{balance\}} 和 \texttt{\textbackslash balance}：IEEEtran 下常引发 warning，且对 11 页稿收益有限。
+\end{itemize}
+
+\subsection{表格排版：血泪教训}
+\begin{longtable}{@{}p{0.28\linewidth}p{0.62\linewidth}@{}}
+  \toprule
+  \textbf{问题} & \textbf{解决方案} \\
+  \midrule
+  \endhead
+  宽表溢出栏宽 &
+  用 \texttt{adjustbox\{max width=\textbackslash columnwidth\}} 包裹整个 \texttt{table}，
+  \warn{不要}对整表 \texttt{\textbackslash resizebox\{0.98\textbackslash columnwidth\}}（audit 脚本会报错） \\
+  字体被压到不可读 &
+  只在表格内部局部 \texttt{\textbackslash footnotesize}，不要全局缩小 \\
+  列名过长 &
+  缩写 + caption 解释；部署表用 ``Acc (\%)'' 而非完整句子 \\
+  最佳结果高亮 &
+  v2 尝试 bold + second-best 下划线；v1 保持 plain booktabs 更稳 \\
+  \bottomrule
+  \caption{IoTJ 表格排版经验}
+\end{longtable}
+
+\subsection{图表数量与页数}
+IoTJ 超过期刊页数预算会产生 mandatory over-length page charges。
+本稿最终 11 页；用户 PDF 确认可接受。
+
+\textbf{重要认知（来自最终裁决）：}
+\begin{quote}
+  审稿人不会因为``只有 2 张图''拒稿；\textbf{图少不是问题，低质量图才是问题。}\\
+  2 图 + 6 表 = 8 个图表元素，对实验型 regular paper 已够用。
+\end{quote}
+
+\subsection{Appendix 处理}
+\begin{itemize}
+  \item 删除 ``Appendix A: Reproducibility'' 长附录（含内部路径）。
+  \item 改为 References 前一段 ``Data and Code Availability''（1 段，无分支名/无 manifest 路径）。
+  \item 跨接收机 Fig.3 删除，保留 Table VI（stress test 数字足够）。
+\end{itemize}
+
+%======================================================================
+\section{画图：唯一最大的 Agent 陷阱}
+\label{sec:figures}
+%======================================================================
+
+\subsection{迭代历程}
+\begin{table}[htbp]
+  \centering
+  \small
+  \caption{Fig.1 架构图迭代（git 记录摘要）}
+  \begin{tabular}{@{}clp{7.5cm}@{}}
+    \toprule
+    \textbf{阶段} & \textbf{commit 方向} & \textbf{结果} \\
+    \midrule
+    v0 & matplotlib 方块图 & 能看，但字体/风格像脚本输出，不像 IoTJ \\
+    v1 & TikZ 三阶段架构 & \good{稳定、矢量、字体与正文一致} $\to$ 最终保留 \\
+    v2a & 应用场景 TikZ & 竖向窄流程，箭头文字互挤 \\
+    v2b & composite (a/b/c) 架构 & 内容多了，但仍像临时流程草稿 \\
+    v2c & draw.io / matplotlib 矢量 & Agent 自动摆放不稳定 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{参考优秀论文后再画}
+\texttt{layout\_reference\_review.md} 总结了两篇 Shen et al.\ LoRa RFFI 论文：
+\begin{enumerate}
+  \item 模型图应传达\textbf{机制}，不是脚本流程图。
+  \item 分支视觉分组：RF 主路径 vs OOB 辅助路径。
+  \item 张量形状用紧凑符号：$T_m\in\mathbb{R}^{P\times D}$，$P{=}32,D{=}64$。
+  \item 创新点要在图中\textbf{一眼可见}：OOB-guided cross-attention + gated residual。
+  \item Caption 做解释，图中只放短标签。
+  \item \good{TikZ / 原生 LaTeX 矢量} $>$ matplotlib 默认风格 $>$ Agent 自动 draw.io。
+\end{enumerate}
+
+\subsection{v1 两张图为什么够}
+\begin{itemize}
+  \item \textbf{Fig.1}（\texttt{fig1\_architecture\_tikz.tex}）：三阶段——多视图 CNN stem $\to$ OOB cross-attention $\to$ RF-HSTU + 文件级投票。
+  \item \textbf{Fig.2}（\texttt{fig\_results\_summary.pdf}）：三 panel 汇总 cross-day seed 稳定性、fusion/chirp 消融、distance shift。
+  \item 其余证据全在六张表里：主结果、消融、部署偏移、边缘 benchmark、跨接收机 stress test、超参。
+\end{itemize}
+
+\subsection{给老师的标准解释话术}
+\begin{quote}\small
+  这版保留了两张核心图：一张模型结构图，一张结果汇总图；同时用 6 张表给出主结果、消融、部署偏移、边缘开销和跨接收机 stress test。考虑到 IoTJ 双栏页数和超页费限制，我们没有额外加入低信息量的应用示意图或 CNN 教材式模块图，避免牺牲论文版面质量。
+\end{quote}
+
+\subsection{若必须加应用场景图}
+\bad{不要让 Agent 继续自动摆。}
+应使用 Illustrator / Figma / draw.io \textbf{人工}绘制，导出 PDF 矢量，再嵌入 LaTeX。
+
+%======================================================================
+\section{自动化 QA：把 Agent 锁在笼子里}
+\label{sec:qa}
+%======================================================================
+
+\subsection{脚本清单}
+\begin{table}[htbp]
+  \centering
+  \small
+  \begin{tabular}{@{}ll@{}}
+    \toprule
+    \textbf{脚本} & \textbf{检查内容} \\
+    \midrule
+    \texttt{validate\_citations.py} & 所有 \texttt{\textbackslash cite\{\}} 在 \texttt{refs.bib} 且状态为 READ/ABSTRACT\_CHECKED \\
+    \texttt{validate\_latex\_structure.py} & figure/table 环境合法、无嵌套错误 \\
+    \texttt{audit\_iotj\_consistency.py} & 禁止 claim、label/ref 一致性、 risky 措辞 warn \\
+    \texttt{audit\_table\_layout.py} & 禁止滥用 resizebox、表格宽度 \\
+    \texttt{audit\_layout\_visual.py} & 必需 figure label、禁止旧 label、禁止内部路径 \\
+    \texttt{git diff --check} & 无 trailing whitespace 冲突 \\
+    \bottomrule
+  \end{tabular}
+  \caption{v1 投稿前自动化 QA 套件}
+\end{table}
+
+\subsection{audit 脚本是最划算的投资}
+Agent 每次``顺手改一点''都可能重新引入：
+\begin{itemize}
+  \item 旧 figure label（\texttt{fig:cross\_receiver\_stress}）
+  \item 内部路径（\texttt{outputs/...}）
+  \item 模型代号（\texttt{F}、\texttt{M7}）
+  \item forbidden numeric claims（早期错误数字 87.5\%、74.6\% 等）
+\end{itemize}
+\textbf{规则}：每次 Agent 改完 \paperdir{}，必须跑全套 validator；FAIL 则不允许打 Overleaf 包。
+
+\subsection{Git 分支策略}
+\begin{table}[htbp]
+  \centering
+  \small
+  \begin{tabular}{@{}ll@{}}
+    \toprule
+    \textbf{分支/Tag} & \textbf{用途} \\
+    \midrule
+    \texttt{paper-ready-v3} & 主开发线 \\
+    \texttt{iotj-submission-candidate-v1} & 冻结投稿候选 tag \\
+    \texttt{iotj-submit-final-v1} & 最终工作分支（cover letter 等） \\
+    \texttt{paper-visual-polish-v2} & 废弃实验，保留不删 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\good{重要里程碑打 tag，不要只在分支上``大概差不多''。}
+
+%======================================================================
+\section{失败案例与反面教材}
+%======================================================================
+
+\begin{enumerate}
+  \item \textbf{没冻结数字就写摘要} $\to$ 协议写错（Day1$\to$Day2 vs Day1--4$\to$Day5）。
+  \item \textbf{让 Agent 自由加图} $\to$ v2 场景图/模块图像 PPT 草稿，浪费多轮迭代。
+  \item \textbf{matplotlib 默认风格直接进稿} $\to$ 审稿人一眼看出``脚本图''。
+  \item \textbf{resizebox 救表格} $\to$ 字体小到印刷不可读。
+  \item \textbf{参考文献批量导入未读论文} $\to$ cite 风险；必须用 CSV 状态机管控。
+  \item \textbf{跨接收机 Fig + Table 重复} $\to$ 占页无增量信息；删 Fig 留 Table。
+  \item \textbf{Appendix 写复现路径} $\to$ 泄露内部目录结构；改 Data Availability 一段即可。
+  \item \textbf{没有``停止条件''} $\to{}$ Agent 永远觉得``再 polish 一下更好''；需要人类裁决（v1 vs v2）。
+\end{enumerate}
+
+%======================================================================
+\section{可复用的 Agent 指令模板}
+%======================================================================
+
+\subsection{启动英文稿 scaffold}
+\begin{verbatim}
+在 docs/iotj_paper/ 建立 IEEEtran 英文 scaffold：
+- main.tex + sections/*.tex + tables/*.tex
+- 数字只从 outputs/paper_ready_v3/final_tables/ 读取
+- 不得引用 TO_READ 参考文献
+- 写 validate_citations.py 和 validate_latex_structure.py
+\end{verbatim}
+
+\subsection{排版修复（不让 Agent 乱动内容）}
+\begin{verbatim}
+只修排版，不改实验数字、不改 claim、不改 cite key：
+- 宽表用 adjustbox{max width=\columnwidth}
+- 删除 \resizebox{0.98\columnwidth}
+- 移除 \balance 和 balance 包
+- 跑全套 audit 脚本，全部 PASS 才提交
+\end{verbatim}
+
+\subsection{画图（v1 稳定路线）}
+\begin{verbatim}
+Fig.1：TikZ 三阶段架构，label=fig:architecture
+Fig.2：三 panel 结果汇总 PDF，label=fig:results_summary
+不要新增：应用场景图、CNN stem 教材图、attention 模块图
+若 audit_layout_visual.py 要求 fig:application_scenario，改回 v1 版本脚本
+\end{verbatim}
+
+\subsection{最终冻结投稿包}
+\begin{verbatim}
+git checkout -b iotj-submit-final-v1 iotj-submission-candidate-v1
+cd docs/iotj_paper
+python3 validate_citations.py && ... && python3 audit_layout_visual.py
+zip -r iotj_overleaf_pack_v1_final.zip main.tex refs.bib ... figures/
+unzip -l ... | grep application_scenario  # 期望无命中
+\end{verbatim}
+
+%======================================================================
+\section{时间线与 commit 地图（摘要）}
+%======================================================================
+
+\begin{table}[htbp]
+  \centering
+  \small
+  \begin{tabular}{@{}cl@{}}
+    \toprule
+    \textbf{阶段} & \textbf{代表性 commit} \\
+    \midrule
+    英文 scaffold + 初版 figure & \texttt{cd0a5fc} \\
+    分 section 撰写（intro $\to$ conclusion） & \texttt{bf61d4e} $\to$ \texttt{f399270} \\
+    consistency audit 脚本 & \texttt{ec1bbb9} \\
+    表格 layout 标准化 & \texttt{017bb4a} $\to$ \texttt{7c3da58} \\
+    matplotlib Fig.1 $\to$ TikZ & \texttt{847dd65} \\
+    删 appendix、Data Availability & \texttt{5c66f01} \\
+    参考文献 15 $\to$ 26 & \texttt{ec0ca4a} \\
+    术语 polish（F $\to$ Ours） & \texttt{c727a77} \\
+    Final QA report + tag v1 & \texttt{a792dfb} \\
+    v2 视觉实验（已放弃） & \texttt{53776b9} $\to$ \texttt{d78449e} \\
+    回到 v1 投稿稿 & \texttt{iotj-submit-final-v1 @ a792dfb} \\
+    \bottomrule
+  \end{tabular}
+  \caption{论文工程 git 时间线（非完整列表）}
+\end{table}
+
+%======================================================================
+\section{核心结论：十条经验}
+%======================================================================
+
+\begin{enumerate}
+  \item \textbf{证据链先于 prose}：manifest 审计 + 数字 CSV 冻结，再允许 Agent 写句子。
+  \item \textbf{中文稿定方向，英文稿投稿}：不要指望 Agent 直接出一稿终稿。
+  \item \textbf{GPT 写规格，Agent 写 diff}：没有裁决的自动化 = 返工。
+  \item \textbf{表格比图更承载实验证据}：IoTJ 实验型论文，6 表 often $>$ 6 图。
+  \item \textbf{图少不会被批，烂图会被批}：2 张干净图 $+$ 6 表 $>$ 4 张草稿图。
+  \item \textbf{TikZ 架构图是 Agent 唯一稳定的图类型}；场景图/模块图需人工。
+  \item \textbf{audit 脚本是必要护栏}：禁止路径、禁止旧 label、禁止 forbidden claims。
+  \item \textbf{参考文献用 CSV 状态机}：TO\_READ 绝不能 cite。
+  \item \textbf{里程碑打 tag}：\texttt{iotj-submission-candidate-v1} 会 save 你。
+  \item \textbf{知道何时停止}：v1 PASS 后只做 cover letter / 元数据，不要 endless polish。
+\end{enumerate}
+
+%======================================================================
+\section{下一步（投稿准备，非 Agent 主战场）}
+%======================================================================
+
+以下事项需要作者人工完成，Agent 仅可辅助草稿：
+\begin{itemize}
+  \item Cover letter（贡献 3 点 + 与 IoTJ scope 对齐）
+  \item ScholarOne 元数据：title, abstract, keywords, author order
+  \item ORCID、单位、基金号确认（见 \texttt{AUTHOR\_TODO.md}）
+  \item Traditional vs Open Access 选择
+  \item 公开 GitHub 复现链接是否获得合作者同意
+  \item Overleaf 最终编译 log：0 error，确认 26 refs、11 pages
+\end{itemize}
+
+\vfill
+\noindent\rule{\textwidth}{0.4pt}\\
+\small
+\textit{文档路径}：\paperdir\texttt{gpt\_agent\_paper\_writing\_experience.tex}\\
+\textit{关联投稿包}：\paperdir\texttt{iotj\_overleaf\_pack\_v1\_final.zip}\\
+\textit{冻结 tag}：\texttt{iotj-submission-candidate-v1} @ \texttt{a792dfb}
+
+\end{document}

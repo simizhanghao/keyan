@@ -2,7 +2,7 @@
 \label{sec:rcpa}
 
 \subsection{Frozen backbone}
-We use the OOB-guided RF-HSTU hybrid model from our related submitted work as a fixed feature extractor~\cite{paper1_placeholder}.
+We use the OOB-guided RF-HSTU hybrid model from a related submitted manuscript as a fixed feature extractor~\cite{paper1_placeholder}.
 No backbone parameters are updated in this paper.
 All calibration operates on fused embeddings $z(w)$ extracted from target-receiver windows.
 This design isolates the value of target-receiver calibration from any architecture change.
@@ -80,10 +80,3 @@ These baselines represent strong parametric target calibration alternatives to n
 \end{itemize}
 
 \textbf{Important:} RCPA-T is post-hoc target-receiver calibration, not a new RF-HSTU architecture and not a backbone retraining method.
-
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=\linewidth]{fig2_rcpa_shotcurve}
-  \caption{RCPA-T file-level accuracy versus $K$ labeled calibration windows per device (frozen full-mode results).}
-  \label{fig:rcpa_shotcurve}
-\end{figure}

@@ -27,3 +27,5 @@ data/raw/osu_lora/*
 !data/raw/osu_lora/*.txt
 data/raw/**/*.dat
 data/raw/**/*.sigmf-meta
+data0820/
+.audit_deps/

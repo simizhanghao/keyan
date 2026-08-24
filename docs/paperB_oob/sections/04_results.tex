@@ -10,7 +10,7 @@ The signal-level audit shows that OOB-to-in-band variation is not a receiver-onl
 \end{figure}
 
 \subsection{Frozen Development Interventions Reveal OOB Dependence}
-On six pseudo-unseen development receiver folds, scaling OOB bins produces accuracy drops on every fold for both OOB-aware backbones. The median drops are 47.28 points for B1-OOB and 56.60 points for C$'$-OOB. Same-receiver cross-device shuffle produces median drops of 47.39 and 60.90 points, respectively, while source-derived neutral replacement produces median drops of 43.94 and 56.77 points. The agreement between shuffle and neutral replacement is important: the response is not explained by a single arbitrary neutral vector. Device probes reach 94.4\% for B1 and 97.9\% for C$'$, whereas receiver probes reach only 16.2\% and 14.7\% against a 7.7\% receiver-group chance level. OOB therefore carries device-discriminative evidence, but the classifier's use of that evidence remains receiver-sensitive.
+On six pseudo-unseen development receiver folds, scaling OOB bins produces accuracy drops on every fold for both OOB-aware backbones. The median drops are 47.28 points for LateFusion-OOB and 56.60 points for CrossAttn-OOB. Same-receiver cross-device shuffle produces median drops of 47.39 and 60.90 points, respectively, while source-derived neutral replacement produces median drops of 43.94 and 56.77 points. The agreement between shuffle and neutral replacement is important: the response is not explained by a single arbitrary neutral vector. Device probes reach 94.4\% for LateFusion-OOB and 97.9\% for CrossAttn-OOB, whereas receiver probes reach only 16.2\% and 14.7\% against a 7.7\% receiver-group chance level. OOB therefore carries device-discriminative evidence, but the classifier's use of that evidence remains receiver-sensitive.
 
 \begin{figure*}[t]
 \centering\includegraphics[width=.93\textwidth]{fig3_development_interventions.pdf}
@@ -19,7 +19,7 @@ On six pseudo-unseen development receiver folds, scaling OOB bins produces accur
 \end{figure*}
 
 \subsection{Architecture and Frequency Controls Define the Boundary}
-Matched development folds show architecture-dependent behavior. B1-OOB reaches 56.64\% while its strict TrueIB control reaches 11.97\%. For C$'$, the corresponding values are 60.90\% and 70.91\%. Thus an OOB-aware score cannot be interpreted as a universal benefit or penalty independent of representation. The strong Shen-CIS and Shen-RA baselines reach 94.101\% and 93.847\%, respectively, establishing that the receiver-held-out task is solvable under this protocol (Fig.~\ref{fig:controls}).
+Matched development folds show architecture-dependent behavior. LateFusion-OOB reaches 56.64\% while its strict TrueIB control reaches 11.97\%. For the cross-attentive family, the corresponding values are 60.90\% and 70.91\%. Thus an OOB-aware score cannot be interpreted as a universal benefit or penalty independent of representation. The strong Shen-CIS and Shen-RA baselines reach 94.101\% and 93.847\%, respectively, establishing that the receiver-held-out task is solvable under this protocol (Fig.~\ref{fig:controls}).
 
 The left/right intervention provides a frequency-structured diagnostic. On development folds, left-OOB drops are 44.41 and 51.12 points for B1 and C$'$, while right-OOB drops are 17.04 and 1.12 points. We therefore describe the asymmetry as a learned spectral sensitivity, not as proof that a particular analogue component causes receiver shift.
 
@@ -30,37 +30,48 @@ The left/right intervention provides a frequency-structured diagnostic. On devel
 \end{figure}
 
 \subsection{Controlled Invariance Does Not Guarantee Real Transfer}
-A separate receiver-style augmentation (RSA) reduces sensitivity to the selected controlled OOB-scale nuisance from a 53.96-point development degradation to 2.92 points. However, its clean pseudo-unseen receiver accuracy remains below the corresponding CT control. The result is a negative boundary, not a failed experiment: invariance to one engineered nuisance is not equivalent to generalization across real receiver domains (Fig.~\ref{fig:rsa}).
+A separate receiver-style augmentation (RSA) reduces sensitivity to the selected controlled OOB-scale nuisance from a 53.96-point development degradation to 2.92 points. However, clean held-out accuracy is 64.26$\pm$14.16\% for the clean continuation (CT) and 60.85$\pm$16.40\% for RSA/F0 (mean$\pm$SD over receiver folds). The result is a negative boundary, not a failed experiment: invariance to one engineered nuisance is not equivalent to generalization across real receiver domains (Fig.~\ref{fig:rsa}).
 
 \begin{figure}[t]
 \centering\includegraphics[width=\columnwidth]{fig5_mitigation_boundary.pdf}
-\caption{Mitigation boundary. RSA suppresses the selected controlled scale response but does not imply improved clean receiver-held-out accuracy.}
+\caption{Mitigation boundary. (a) Full-scale accuracy drop (percentage points) for the clean continuation (CT) and RSA/F0. (b) Clean held-out accuracy (mean$\pm$SD across receiver folds). Suppressing the selected scale response does not imply improved receiver-held-out accuracy.}
 \label{fig:rsa}
 \end{figure}
 
 \subsection{Blind Confirmation on Previously Unopened Receivers}
-The frozen X6 evaluation reproduces the mechanism on every official blind receiver. For B1-OOB, the receiver-level median disruption drop is 49.05 points and the median worst-scale drop is 51.83 points. For C$'$-OOB, the corresponding values are 71.78 and 70.66 points. All six receivers are positive for both effects in both architectures. Left-minus-right drop is positive on all six receivers, with receiver medians of 29.89 and 70.56 points for B1-OOB and C$'$-OOB, respectively. The pre-registered decision is STRONG GO for both backbones (Fig.~\ref{fig:blind}).
+The protocol-frozen confirmatory blind evaluation reproduces the mechanism on every official blind receiver. For LateFusion-OOB, the receiver-level median disruption drop is 49.05 points and the median worst-scale drop is 51.83 points. For CrossAttn-OOB, the corresponding values are 71.78 and 70.66 points. All six receivers are positive for both effects in both architectures. Left-minus-right drop is positive on all six receivers, with receiver medians of 29.89 and 70.56 points for LateFusion-OOB and CrossAttn-OOB, respectively. Both backbones satisfied all prespecified confirmatory criteria (Fig.~\ref{fig:blind}).
 
 \begin{figure*}[t]
 \centering\includegraphics[width=.93\textwidth]{fig6_blind_confirmation.pdf}
-\caption{Official blind confirmation. Bars show receiver-level clean-minus-disruption drops after averaging five seeds within receiver; black markers show clean-minus-worst-scale drops. All six blind receivers reproduce both effects for both OOB-aware architectures.}
+\caption{Protocol-frozen confirmatory blind evaluation across six receiver domains. Panels show clean-minus-shuffle and clean-minus-neutral drops, clean-minus-worst-scale drops over the fixed non-unit grid, and clean-minus-left/right drops. Seed means are formed within receiver. All six domains reproduce the reported OOB utility, scale sensitivity and left/right asymmetry.}
 \label{fig:blind}
 \end{figure*}
 
 \begin{table}[t]
-\caption{Official blind clean accuracy, mean over five seeds (\%).}
+\caption{Blind clean-accuracy summary across six receiver domains (\%). Values are computed from receiver-level means over five seeds; range is minimum--maximum across domains.}
 \label{tab:blind_clean}
 \centering\footnotesize
 \begin{tabular}{lrrrrr}
 \toprule
-Receiver & CIS & RA & B1 & C$'$ & TrueIB\\
+Statistic & CIS & RA & LateFusion & CrossAttn & TrueIB\\
 \midrule
-b200\_2 &99.48&99.48&56.17&72.15&58.42\\
-b200-mini\_2&99.98&100.00&60.68&88.35&59.64\\
-b210\_2&99.67&99.59&55.68&88.89&58.86\\
-n210\_2&99.99&99.99&63.01&86.23&71.61\\
-n210\_3&99.58&99.36&66.11&79.34&66.17\\
-pluto\_2&96.76&96.41&67.95&78.93&66.24\\
+Mean &99.24&99.14&61.60&82.32&63.49\\
+Median&99.63&99.54&61.85&82.79&62.91\\
+Range &96.76--99.99&96.41--100.00&55.68--67.95&72.15--88.89&58.42--71.61\\
+\bottomrule
+\end{tabular}
+\end{table}
+\begin{table}[t]
+\caption{Blind clean Macro-F1 summary across six receiver domains (\%). Values are computed from receiver-level means over five seeds.}
+\label{tab:blind_f1}
+\centering\footnotesize
+\begin{tabular}{lrrrrr}
+\toprule
+Statistic & CIS & RA & LateFusion & CrossAttn & TrueIB\\
+\midrule
+Mean &99.23&99.12&57.13&80.78&60.64\\
+Median&99.63&99.54&57.27&81.61&59.68\\
+Range &96.69--99.99&96.27--100.00&50.27--64.06&69.62--88.22&55.43--69.35\\
 \bottomrule
 \end{tabular}
 \end{table}

@@ -17,7 +17,7 @@ from tqdm import tqdm
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from rfhstu.cnn_baseline import OSUCNNBaseline, build_cnn_input
-from rfhstu.data import DOMAIN_FIELDS
+from rfhstu.data import DOMAIN_FIELDS, SigMFIQDataset, load_manifest
 from rfhstu.features import patchify, torch_rf_views
 from rfhstu.models import DeviceClassifier, RFPatchEmbedder
 from rfhstu.prototype import build_prototypes
@@ -90,6 +90,9 @@ def build_model(args: argparse.Namespace, ckpt: dict, device: torch.device) -> t
     use_cfo_feature = ckpt_args.get("use_cfo_feature", args.use_cfo_feature)
     cfo_feature_type = ckpt_args.get("cfo_feature_type", args.cfo_feature_type)
     cfo_feature_norm = ckpt_args.get("cfo_feature_norm", args.cfo_feature_norm)
+    oob_dropout = float(ckpt_args.get("oob_dropout", getattr(args, "oob_dropout", 0.0)))
+    mixstyle = bool(ckpt_args.get("mixstyle", getattr(args, "mixstyle", False)))
+    mixstyle_alpha = float(ckpt_args.get("mixstyle_alpha", getattr(args, "mixstyle_alpha", 0.1)))
     patch_embed_type = ckpt_args.get("patch_embed_type", args.patch_embed_type)
     cnn_stem_dim = ckpt_args.get("cnn_stem_dim", args.cnn_stem_dim)
     cnn_stem_kernels = ckpt_args.get("cnn_stem_kernels", args.cnn_stem_kernels)
@@ -125,6 +128,9 @@ def build_model(args: argparse.Namespace, ckpt: dict, device: torch.device) -> t
         use_cfo_feature=use_cfo_feature,
         cfo_feature_type=cfo_feature_type,
         cfo_feature_norm=cfo_feature_norm,
+        oob_dropout=oob_dropout,
+        mixstyle=mixstyle,
+        mixstyle_alpha=mixstyle_alpha,
     ).to(device)
     model.load_state_dict(ckpt["model"], strict=False)
     model.eval()
@@ -764,17 +770,42 @@ def main() -> None:
     args.fft_norm = ckpt_args_for_norm.get("fft_norm", "log_zscore")
     args.oob_norm = ckpt_args_for_norm.get("oob_norm", "zscore")
     model = build_model(args, ckpt, device)
-    train_ds, val_ds = make_datasets(args)
+    eval_split = args.eval_split or getattr(args, "val_split", "val")
+    train_split = getattr(args, "train_split", "train")
+    fold = getattr(args, "fold", None)
+    train_rows = load_manifest(args.manifest, root=args.root, split=train_split, fold=fold)
+    eval_rows = load_manifest(args.manifest, root=args.root, split=eval_split, fold=fold)
+    input_norm = ckpt.get("args", {}).get("input_norm", getattr(args, "input_norm", "iq_rms"))
+    eval_samples = args.eval_samples_per_file or args.samples_per_file
+    if not eval_rows:
+        _, eval_ds = make_datasets(args)
+    else:
+        eval_ds = SigMFIQDataset(
+            eval_rows,
+            window_size=args.window_size,
+            samples_per_file=eval_samples,
+            random_windows=False,
+            seed=args.seed,
+            input_norm=input_norm,
+        )
     if args.eval_seed is not None:
-        val_ds.random_windows = True
-        val_ds.seed = args.eval_seed
+        eval_ds.random_windows = True
+        eval_ds.seed = args.eval_seed
+    train_ds = SigMFIQDataset(
+        train_rows,
+        window_size=args.window_size,
+        samples_per_file=args.samples_per_file,
+        random_windows=False,
+        seed=args.seed,
+        input_norm=input_norm,
+    )
     train_loader = make_loader(train_ds, args, shuffle=False)
-    val_loader = make_loader(val_ds, args, shuffle=False)
+    val_loader = make_loader(eval_ds, args, shuffle=False)
     adapt_loader = val_loader
     if args.adapt_batch_size is not None:
         adapt_args = copy.copy(args)
         adapt_args.batch_size = args.adapt_batch_size
-        adapt_loader = make_loader(val_ds, adapt_args, shuffle=False)
+        adapt_loader = make_loader(eval_ds, adapt_args, shuffle=False)
     ckpt_args = ckpt.get("args", {})
     num_classes = int(ckpt.get("num_classes", ckpt_args.get("num_classes", 25)))
 
@@ -854,10 +885,22 @@ def main() -> None:
 
     window_acc = sum(row["correct"] for row in window_rows) / max(1, len(window_rows))
     file_acc = sum(row["correct"] for row in file_rows) / max(1, len(file_rows))
+    window_macro_f1 = macro_f1(window_labels, window_preds, num_classes)
+    file_macro_f1 = macro_f1(file_labels, file_preds, num_classes)
+    ckpt_path = Path(args.checkpoint)
+    ckpt_meta = load_checkpoint(ckpt_path, map_location="cpu")
+    ckpt_extra_epoch = ckpt_meta.get("epoch", "")
+    ckpt_val_acc = ckpt_meta.get("val_acc", "")
+    ckpt_val_macro_f1 = ckpt_meta.get("val_macro_f1", "")
+    ckpt_args_saved = ckpt_meta.get("args", {})
+    checkpoint_metric = ckpt_args_saved.get("checkpoint_metric", "acc")
+    eval_checkpoint = ckpt_path.name
     metrics = {
         "window_acc": window_acc,
         "file_acc": file_acc,
-        "macro_f1": macro_f1(window_labels, window_preds, num_classes),
+        "macro_f1": window_macro_f1,
+        "window_macro_f1": window_macro_f1,
+        "file_macro_f1": file_macro_f1,
         "num_windows": len(window_rows),
         "num_files": len(file_rows),
         "num_classes": num_classes,
@@ -895,6 +938,11 @@ def main() -> None:
         "mean_oob_sim_selected": pseudo_stats["mean_oob_sim_selected"],
         "eval_seed": args.eval_seed if args.eval_seed is not None else "",
         "checkpoint": str(args.checkpoint),
+        "checkpoint_metric": checkpoint_metric,
+        "checkpoint_epoch": ckpt_extra_epoch,
+        "checkpoint_val_acc": ckpt_val_acc,
+        "checkpoint_val_macro_f1": ckpt_val_macro_f1,
+        "eval_checkpoint": eval_checkpoint,
         "manifest": str(args.manifest),
         "model_type": ckpt.get("model_type", ckpt_args.get("model_type", args.model_type)),
         "cnn_input_type": ckpt.get("cnn_input_type", ckpt_args.get("cnn_input_type", args.cnn_input_type)),
@@ -989,7 +1037,7 @@ def main() -> None:
     )
     write_csv(out_dir / "per_domain_accuracy.csv", per_domain_accuracy(window_rows), ["field", "value", "num_samples", "window_acc"])
 
-    print(format_metrics({"window_acc": window_acc, "file_acc": file_acc, "macro_f1": metrics["macro_f1"]}))
+    print(format_metrics({"window_acc": window_acc, "file_acc": file_acc, "window_macro_f1": window_macro_f1, "file_macro_f1": file_macro_f1}))
     print(f"outputs={out_dir}")
 
 

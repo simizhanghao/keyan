@@ -10,13 +10,22 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 from torch.optim import AdamW
+from torch.optim.swa_utils import AveragedModel, SWALR
 from tqdm import tqdm
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from rfhstu.cnn_baseline import OSUCNNBaseline, build_cnn_input
 from rfhstu.data import DOMAIN_FIELDS, infer_domain_sizes
-from rfhstu.losses import CenterLoss, SupConLoss, coral_loss, information_maximization_loss, supervised_contrastive_loss
+from rfhstu.losses import (
+    CenterLoss,
+    SupConLoss,
+    coral_loss,
+    focal_loss,
+    information_maximization_loss,
+    macro_f1_from_logits,
+    supervised_contrastive_loss,
+)
 from rfhstu.models import DeviceClassifier, RFPatchEmbedder
 from rfhstu.train_utils import (
     accuracy,
@@ -79,6 +88,36 @@ def maybe_load_pretrained(model: torch.nn.Module, path: str | None, device: torc
     encoder_state = {key.replace("encoder.", "", 1): value for key, value in state.items() if key.startswith("encoder.")}
     missing, unexpected = model.encoder.load_state_dict(encoder_state, strict=False)
     print(f"loaded_pretrained={path} missing={len(missing)} unexpected={len(unexpected)}")
+
+
+def compute_class_weights(train_ds, num_classes: int, device: torch.device) -> torch.Tensor:
+    counts = torch.zeros(num_classes, dtype=torch.float32)
+    for row in train_ds.rows:
+        counts[row.label] += 1.0
+    weights = counts.sum() / (num_classes * counts.clamp_min(1.0))
+    return weights.to(device)
+
+
+def classification_loss(
+    logits: torch.Tensor,
+    labels: torch.Tensor,
+    args: argparse.Namespace,
+    class_weights: torch.Tensor | None,
+) -> torch.Tensor:
+    if args.loss_type == "focal":
+        return focal_loss(
+            logits,
+            labels,
+            gamma=args.focal_gamma,
+            weight=class_weights,
+            label_smoothing=args.label_smoothing,
+        )
+    return F.cross_entropy(
+        logits,
+        labels,
+        weight=class_weights,
+        label_smoothing=args.label_smoothing,
+    )
 
 
 def prepare_model_input(iq: torch.Tensor, args: argparse.Namespace) -> torch.Tensor:
@@ -189,9 +228,11 @@ def run_epoch(
     train: bool,
     supcon_projector: torch.nn.Module | None = None,
     center_loss: CenterLoss | None = None,
+    class_weights: torch.Tensor | None = None,
+    num_classes: int = 0,
 ) -> dict[str, float]:
     model.train(train)
-    total = {"loss": 0.0, "acc": 0.0}
+    total = {"loss": 0.0, "acc": 0.0, "macro_f1": 0.0}
     count = 0
     field_to_col = {field: idx for idx, field in enumerate(DOMAIN_FIELDS)}
     supcon = SupConLoss(args.supcon_temperature)
@@ -207,7 +248,7 @@ def run_epoch(
             out = model(model_input, adv_lambda=args.adv_lambda, return_features=args.use_supcon)
             logits = out["logits"]
             z = out.get("features", out["embedding"])
-            loss = F.cross_entropy(logits, labels, label_smoothing=args.label_smoothing)
+            loss = classification_loss(logits, labels, args, class_weights)
             if args.use_hard_margin:
                 if args.use_supcon:
                     raise RuntimeError("--use-hard-margin and --use-supcon should not be enabled together in this first version.")
@@ -231,8 +272,13 @@ def run_epoch(
         bsz = model_input.shape[0]
         total["loss"] += loss.item() * bsz
         total["acc"] += accuracy(logits.detach(), labels) * bsz
+        if not train and num_classes > 0:
+            total["macro_f1"] += macro_f1_from_logits(logits.detach(), labels, num_classes) * bsz
         count += bsz
-    return {key: value / max(1, count) for key, value in total.items()}
+    metrics = {key: value / max(1, count) for key, value in total.items()}
+    if train:
+        metrics.pop("macro_f1", None)
+    return metrics
 
 
 def run_epoch_aligned(
@@ -245,10 +291,12 @@ def run_epoch_aligned(
     train: bool,
     supcon_projector: torch.nn.Module | None = None,
     center_loss: CenterLoss | None = None,
+    class_weights: torch.Tensor | None = None,
+    num_classes: int = 0,
 ) -> dict[str, float]:
     """Source labeled CE + optional target-unlabeled CORAL / IM (no target labels)."""
     model.train(train)
-    total = {"loss": 0.0, "acc": 0.0, "coral": 0.0, "im": 0.0}
+    total = {"loss": 0.0, "acc": 0.0, "coral": 0.0, "im": 0.0, "macro_f1": 0.0}
     count = 0
     field_to_col = {field: idx for idx, field in enumerate(DOMAIN_FIELDS)}
     supcon = SupConLoss(args.supcon_temperature)
@@ -265,7 +313,7 @@ def run_epoch_aligned(
             out_s = model(prepare_model_input(iq_s, args), adv_lambda=args.adv_lambda, return_features=args.use_supcon)
             logits = out_s["logits"]
             z_s = out_s.get("features", out_s["embedding"])
-            loss = F.cross_entropy(logits, labels, label_smoothing=args.label_smoothing)
+            loss = classification_loss(logits, labels, args, class_weights)
             coral_val = logits.new_zeros(())
             im_val = logits.new_zeros(())
             if train and align in {"coral", "coral_im"}:
@@ -313,8 +361,33 @@ def run_epoch_aligned(
         total["acc"] += accuracy(logits.detach(), labels) * bsz
         total["coral"] += float(coral_val.item()) * bsz
         total["im"] += float(im_val.item()) * bsz
+        if not train and num_classes > 0:
+            total["macro_f1"] += macro_f1_from_logits(logits.detach(), labels, num_classes) * bsz
         count += bsz
-    return {key: value / max(1, count) for key, value in total.items()}
+    metrics = {key: value / max(1, count) for key, value in total.items()}
+    if train:
+        metrics.pop("macro_f1", None)
+    return metrics
+
+
+def checkpoint_score(val_metrics: dict[str, float], args: argparse.Namespace) -> float:
+    if args.checkpoint_metric == "macro_f1":
+        return val_metrics.get("macro_f1", -1.0)
+    return val_metrics.get("acc", -1.0)
+
+
+def update_bn_from_loader(model: torch.nn.Module, loader, device: torch.device, args: argparse.Namespace) -> None:
+    """Refresh BatchNorm running stats after SWA (dict-batch compatible)."""
+    model.train()
+    for module in model.modules():
+        if isinstance(module, (nn.BatchNorm1d, nn.BatchNorm2d, nn.BatchNorm3d)):
+            module.reset_running_stats()
+            module.momentum = None
+    with torch.no_grad():
+        for batch in loader:
+            iq = batch["iq"].to(device)
+            model(prepare_model_input(iq, args))
+    model.eval()
 
 
 def main() -> None:
@@ -326,6 +399,7 @@ def main() -> None:
     device = resolve_device(args.device)
     train_ds, val_ds = make_datasets(args)
     num_classes = max(row.label for row in [*train_ds.rows, *val_ds.rows]) + 1
+    class_weights = compute_class_weights(train_ds, num_classes, device) if args.class_balanced_ce else None
     if args.model_type == "osu_cnn":
         domain_sizes = None
         model = OSUCNNBaseline(
@@ -367,6 +441,9 @@ def main() -> None:
             use_cfo_feature=args.use_cfo_feature,
             cfo_feature_type=args.cfo_feature_type,
             cfo_feature_norm=args.cfo_feature_norm,
+            oob_dropout=args.oob_dropout,
+            mixstyle=args.mixstyle,
+            mixstyle_alpha=args.mixstyle_alpha,
         ).to(device)
     maybe_load_pretrained(model, args.pretrained, device)
     supcon_projector = None
@@ -385,6 +462,9 @@ def main() -> None:
     if center_loss is not None:
         optim_params.extend(center_loss.parameters())
     optimizer = AdamW(optim_params, lr=args.lr, weight_decay=args.weight_decay)
+    swa_model = AveragedModel(model) if args.use_swa else None
+    swa_scheduler = SWALR(optimizer, swa_lr=max(args.lr * 0.1, 1e-5)) if args.use_swa else None
+    swa_start = max(1, int(math.ceil(args.epochs * 0.8))) if args.use_swa else args.epochs + 1
     train_loader = make_loader(train_ds, args, shuffle=True)
     val_loader = make_loader(val_ds, args, shuffle=False)
     use_alignment = (
@@ -417,15 +497,33 @@ def main() -> None:
             train_metrics = epoch_fn(
                 model, train_loader, target_loader, optimizer, device, args,
                 train=True, supcon_projector=supcon_projector, center_loss=center_loss,
+                class_weights=class_weights, num_classes=num_classes,
             )
-            val_metrics = run_epoch(model, val_loader, optimizer, device, args, train=False, supcon_projector=supcon_projector, center_loss=center_loss)
+            val_metrics = run_epoch(
+                model, val_loader, optimizer, device, args, train=False,
+                supcon_projector=supcon_projector, center_loss=center_loss,
+                class_weights=class_weights, num_classes=num_classes,
+            )
         else:
-            train_metrics = run_epoch(model, train_loader, optimizer, device, args, train=True, supcon_projector=supcon_projector, center_loss=center_loss)
-            val_metrics = run_epoch(model, val_loader, optimizer, device, args, train=False, supcon_projector=supcon_projector, center_loss=center_loss)
+            train_metrics = run_epoch(
+                model, train_loader, optimizer, device, args, train=True,
+                supcon_projector=supcon_projector, center_loss=center_loss,
+                class_weights=class_weights, num_classes=num_classes,
+            )
+            val_metrics = run_epoch(
+                model, val_loader, optimizer, device, args, train=False,
+                supcon_projector=supcon_projector, center_loss=center_loss,
+                class_weights=class_weights, num_classes=num_classes,
+            )
+        if args.use_swa and epoch >= swa_start:
+            swa_model.update_parameters(model)
+            swa_scheduler.step()
         print(f"epoch={epoch} train_{format_metrics(train_metrics)} val_{format_metrics(val_metrics)}")
         extra = {
             "epoch": epoch,
             "val_acc": val_metrics["acc"],
+            "val_macro_f1": val_metrics.get("macro_f1", 0.0),
+            "checkpoint_metric": args.checkpoint_metric,
             "num_classes": num_classes,
             "domain_sizes": domain_sizes,
             "model_type": args.model_type,
@@ -436,9 +534,26 @@ def main() -> None:
         if center_loss is not None:
             extra["center_loss"] = center_loss.state_dict()
         save_checkpoint(Path(args.out_dir) / "last.pt", model, args, extra)
-        if val_metrics["acc"] > best:
-            best = val_metrics["acc"]
+        score = checkpoint_score(val_metrics, args)
+        if score > best:
+            best = score
             save_checkpoint(Path(args.out_dir) / "best.pt", model, args, extra)
+
+    if swa_model is not None:
+        print(f"finalizing SWA from epoch>={swa_start}")
+        update_bn_from_loader(swa_model.module, train_loader, device, args)
+        swa_extra = {
+            "epoch": args.epochs,
+            "val_acc": best if args.checkpoint_metric == "acc" else "",
+            "val_macro_f1": best if args.checkpoint_metric == "macro_f1" else "",
+            "checkpoint_metric": args.checkpoint_metric,
+            "num_classes": num_classes,
+            "domain_sizes": domain_sizes,
+            "model_type": args.model_type,
+            "cnn_input_type": args.cnn_input_type,
+            "swa": True,
+        }
+        save_checkpoint(Path(args.out_dir) / "swa.pt", swa_model.module, args, swa_extra)
 
 
 if __name__ == "__main__":

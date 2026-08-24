@@ -1,0 +1,24 @@
+# Managed by nature-skills scripts/update-codex-skills.sh
+# source=/tmp/nature-skills-inspect
+# commit=552af66976bec65021371d7563103f2103450f6e
+# updated_at=2026-08-24T11:45:20+0800
+nature-academic-search
+nature-citation
+nature-data
+nature-downloader
+nature-experiment-log
+nature-figure
+nature-image2ppt
+nature-literature-pipeline
+nature-paper-card
+nature-paper-to-patent
+nature-paper2ppt
+nature-polishing
+nature-proposal-writer
+nature-reader
+nature-ref-verifier
+nature-response
+nature-reviewer
+nature-shared
+nature-statistics
+nature-writing
